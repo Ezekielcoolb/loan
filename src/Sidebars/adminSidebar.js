@@ -20,7 +20,7 @@ const sidebarConfig = [
   {
     id: 3,
     icon: "carbon:global-loan-and-trial",
-    link: "",
+    link: "/customerdetails",
     title: "LAONS",
   },
   {

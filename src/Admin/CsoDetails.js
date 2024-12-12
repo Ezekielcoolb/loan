@@ -4,6 +4,7 @@ import styled from "styled-components";
 import Customers from "./CsoDetails/CsoCustomer";
 import { use } from "react";
 import ListOfCustomers from "./CsoDetails/ListOfCustomer";
+import { Icon } from "@iconify/react/dist/iconify.js";
 
 const DetailsRap = styled.div`
   width: 100%;
@@ -185,7 +186,7 @@ const DetailsRap = styled.div`
 `;
 
 const CsoDetails = () => {
-  const [activeLink, setActiveLink] = useState("personal");
+  const [activeLink, setActiveLink] = useState("transaction");
   const [visibility, setVisibility] = useState(false);
   const [openEditForm, setEditForm] = useState(false)
   const [formData, setFormData] = useState({
@@ -240,13 +241,20 @@ const handleOpenFormEdit = () => {
       <div>
         <div className="cso-1">
           <div className="cso-link-container">
-            <Link
+            <Link style={{marginLeft:"-50px"}} className="cso-link" to="/cso"><Icon
+                              
+                              icon="formkit:arrowleft"
+                              width="90"
+                              height="16"
+                              style={{ color: "black", cursor: "pointer" }}
+                            /></Link>
+          <Link
               className={`cso-link ${
-                activeLink === "personal" ? "active" : ""
+                activeLink === "transaction" ? "active" : ""
               }`}
-              onClick={() => handleLinkClick("personal")}
+              onClick={() => handleLinkClick("transaction")}
             >
-              Personal Detail
+              Transactions
             </Link>
             <Link
               className={`cso-link ${
@@ -258,12 +266,14 @@ const handleOpenFormEdit = () => {
             </Link>
             <Link
               className={`cso-link ${
-                activeLink === "transaction" ? "active" : ""
+                activeLink === "personal" ? "active" : ""
               }`}
-              onClick={() => handleLinkClick("transaction")}
+              onClick={() => handleLinkClick("personal")}
             >
-              Transactions
+              Personal Detail
             </Link>
+           
+           
             {/* <Link
               className={`cso-link ${activeLink === "account" ? "active" : ""}`}
               onClick={() => handleLinkClick("account")}

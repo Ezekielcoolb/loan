@@ -4,6 +4,7 @@ import AdminDashboard from "../Admin/AdminDashboard";
 import Csos from "../Admin/Cso";
 import CsoDetails from "../Admin/CsoDetails";
 import Customers from "../Admin/CsoDetails/CsoCustomer";
+import CustomersDetails from "../Admin/CustomersDetails";
 
 
 
@@ -21,6 +22,7 @@ export default function Routess() {
                         {path: "/cso", element: <Csos />},
                         {path: "/csodetails", element: <CsoDetails />},
                         {path: "/csocustomers", element: <Customers />},
+                        {path: "/customerdetails", element: <CustomersDetails  />},
                     ]
                 },
                 

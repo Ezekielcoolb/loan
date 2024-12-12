@@ -2,10 +2,13 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
+import MonthlySalesChart from "./csoMatrics/MonthlySalesChart";
+import WeeklySalesChart from "./csoMatrics/WeeklySalesChart";
+import DailySalesChart from "./csoMatrics/DailySalesChart";
+import YearlySalesChart from "./csoMatrics/YearlySalesChart";
 
 const ClientRap = styled.div`
   width: 100%;
-
 
   h4 {
     font-size: 16px;
@@ -157,10 +160,9 @@ const ClientRap = styled.div`
     padding: 0px 15px;
   }
   .client-show-head {
-   display: flex;
-   flex-direction: column;
-   gap: 5px;
-   
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
   }
   .client-drop-div {
     display: flex;
@@ -174,15 +176,13 @@ const ClientRap = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center !important;
-    
   }
   .client-inner-div p {
     font-size: 12px;
-   margin: 0px !important;
+    margin: 0px !important;
   }
   .client-inner-p-1 {
     color: #727789;
-    
   }
   .client-show-head h4 {
     color: #030b26;
@@ -234,25 +234,58 @@ const ClientRap = styled.div`
     margin-top: 0px;
   }
   .client-info-drop-1 {
-    width: 50%;
-  
+    width: 40%;
+
     border-right: 1px solid #d0d5dd;
-    padding-right: 20px;
+    padding: 20px 20px;
     display: flex;
-    padding-bottom: 20px;
+  
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
   }
   .client-info-drop-2 {
-    width: 50%;
-    padding-bottom: 20px;
-    padding-left: 20px;
-    display: flex;
-    
-    flex-direction: column;
-    gap: 20px;
+    width: 60%;
+    padding: 20px 5px;
+    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
   }
- 
+.year-sub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.year-sub p {
+  font-size: 15px;
+  font-weight: 700;
+  color: #030b26;
+}
+.year-sub h3 {
+  font-size: 12px;
+  font-weight: 500;
+  color: #727789;
+}
+.year-trans {
+  border: 1px solid #d0d5dd;
+  border-radius: 14px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.total-year p {
+  text-align: center;
+  color: #030b26;
+  font-size: 20px;
+  font-weight: 700;
+}
+.target {
+  color: green !important;
+  font-size: 16px !important;
+}
+.target-red {
+  color: red !important;
+}
   .client-1 {
     display: flex;
     align-items: center;
@@ -366,8 +399,7 @@ const ClientRap = styled.div`
     margin-top: 10px;
     padding-left: 10px;
   }
- 
- 
+
   .client-small-input-div {
     padding-left: 5px;
     width: 182.5px !important;
@@ -382,8 +414,6 @@ const ClientRap = styled.div`
     gap: 15px;
   }
 
- 
- 
   .client-create-btn {
     background: #0c1d55;
     width: 185px;
@@ -427,7 +457,7 @@ const ClientRap = styled.div`
     border-radius: 50% 50%;
     margin-bottom: 20px !important;
   }
- 
+
   /* Container for the image upload */
   .image-upload-container {
     position: relative;
@@ -471,7 +501,6 @@ const ClientRap = styled.div`
     object-fit: cover;
     border-radius: 50%; /* Keep the round shape for the image */
   }
-  
 `;
 
 const Csos = () => {
@@ -498,7 +527,7 @@ const Csos = () => {
       country: "Nigeria",
       status: "male",
       noCustomer: "5",
-      branch: "Ikeja"
+      branch: "Ikeja",
     },
     {
       id: 2,
@@ -521,7 +550,7 @@ const Csos = () => {
       zipCode: "00001",
       country: "Nigeria",
       noCustomer: "5",
-      branch: "Ikeja"
+      branch: "Ikeja",
     },
     {
       id: 3,
@@ -544,7 +573,7 @@ const Csos = () => {
       zipCode: "00001",
       country: "Nigeria",
       noCustomer: "10",
-      branch: "Lekki"
+      branch: "Lekki",
     },
     {
       id: 4,
@@ -567,12 +596,12 @@ const Csos = () => {
       zipCode: "00001",
       country: "Nigeria",
       noCustomer: "1",
-      branch: "Ikeja"
+      branch: "Ikeja",
     },
     {
       id: 5,
       firstName: "Devon",
-      lastName:"Lane",
+      lastName: "Lane",
       email: "lane@gmail.com",
       phone: "(239) 555-0120",
       address: "8502 Preston Rd...",
@@ -590,7 +619,7 @@ const Csos = () => {
       country: "Nigeria",
       profileImg: "DL",
       noCustomer: "8",
-      branch: "Lekki"
+      branch: "Lekki",
     },
     {
       id: 6,
@@ -613,7 +642,7 @@ const Csos = () => {
       country: "Nigeria",
       profileImg: "DL",
       noCustomer: "4",
-      branch: "Ikeja"
+      branch: "Ikeja",
     },
     {
       id: 7,
@@ -636,7 +665,7 @@ const Csos = () => {
       country: "Nigeria",
       profileImg: "LF",
       noCustomer: "2",
-      branch: "Lekki"
+      branch: "Lekki",
     },
     {
       id: 8,
@@ -659,7 +688,7 @@ const Csos = () => {
       country: "Nigeria",
       profileImg: "AB",
       noCustomer: "2",
-      branch: "Lekki"
+      branch: "Lekki",
     },
     {
       id: 9,
@@ -679,10 +708,10 @@ const Csos = () => {
       guaratorEmail: "guarant@gmail.com",
       gender: "Female",
       status: "female",
-      date: "2024-11-01",   
+      date: "2024-11-01",
       profileImg: "MB",
       noCustomer: "5",
-      branch: "Ikeja"
+      branch: "Ikeja",
     },
     {
       id: 10,
@@ -705,7 +734,7 @@ const Csos = () => {
       status: "male",
       profileImg: "TC",
       noCustomer: "2",
-      branch: "Ikeja"
+      branch: "Ikeja",
     },
   ];
 
@@ -740,9 +769,8 @@ const Csos = () => {
     country: "",
   });
 
- 
-
-  const filteredCso = filter === "all" ? cso : cso.filter((c) => c.status === filter);
+  const filteredCso =
+    filter === "all" ? cso : cso.filter((c) => c.status === filter);
 
   const formatDateRange = (openDate, closeDate) => {
     const open = new Date(openDate);
@@ -818,10 +846,7 @@ const Csos = () => {
   const totalPages = Math.ceil(filteredCso.length / rowsPerPage);
   const indexOfLastCase = currentPage * rowsPerPage;
   const indexOfFirstCase = indexOfLastCase - rowsPerPage;
-  const currentCso = filteredCso.slice(
-    indexOfFirstCase,
-    indexOfLastCase
-  );
+  const currentCso = filteredCso.slice(indexOfFirstCase, indexOfLastCase);
 
   const handlePageChange = (pageNumber) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
@@ -835,19 +860,17 @@ const Csos = () => {
     formData.email.trim() !== "" &&
     formData.phone.trim() !== "";
 
-
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isValid) {
       setDropdownVisible(false);
     }
   };
- 
+
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
   };
-  
+
   const handleLinkClick = (link) => {
     setActiveLink(link);
   };
@@ -858,8 +881,6 @@ const Csos = () => {
       [name]: value, // Update the specific field dynamically
     }));
   };
-
-
 
   const handleImage = (e) => {
     const file = e.target.files[0];
@@ -874,7 +895,6 @@ const Csos = () => {
     }
   };
 
-
   return (
     <ClientRap>
       <div>
@@ -886,7 +906,6 @@ const Csos = () => {
             >
               CSO
             </Link>
-          
           </div>
           <div>
             <Link onClick={toggleDropdown} className="create-new-client">
@@ -912,467 +931,488 @@ const Csos = () => {
                   style={{ color: "black", cursor: "pointer" }}
                 />
               </div>
-              
-             
-                <div className="client-dropdown-div">
-                  <div class="image-upload-container">
-                    <label for="upload-input">
-                      <div class="upload-icon"></div>
-                      <input
-                        type="file"
-                        id="upload-input"
-                        accept="images/*"
-                        onChange={handleImage}
-                      />
-                    </label>
-                  </div>
 
-                  <div className="client-input-div">
-                    <label>
-                      First Name
-                      <span className="star">*</span> <br />
-                      <input
-                        className="client-small-input-div"
-                        type="text"
-                        placeholder=""
-                        name="firstName"
-                        onChange={handleChange}
-                        value={formData.firstName}
-                      />
-                    </label>
-                    <label>
-                      Last Name
-                      <span className="star">*</span> <br />
-                      <input
-                        className="client-small-input-div"
-                        type="text"
-                        placeholder=""
-                        name="lastName"
-                        onChange={handleChange}
-                        value={formData.lastName}
-                      />
-                    </label>
-                  </div>
+              <div className="client-dropdown-div">
+                <div class="image-upload-container">
+                  <label for="upload-input">
+                    <div class="upload-icon"></div>
+                    <input
+                      type="file"
+                      id="upload-input"
+                      accept="images/*"
+                      onChange={handleImage}
+                    />
+                  </label>
+                </div>
 
+                <div className="client-input-div">
                   <label>
-                    Email Address
+                    First Name
                     <span className="star">*</span> <br />
                     <input
+                      className="client-small-input-div"
+                      type="text"
+                      placeholder=""
+                      name="firstName"
+                      onChange={handleChange}
+                      value={formData.firstName}
+                    />
+                  </label>
+                  <label>
+                    Last Name
+                    <span className="star">*</span> <br />
+                    <input
+                      className="client-small-input-div"
+                      type="text"
+                      placeholder=""
+                      name="lastName"
+                      onChange={handleChange}
+                      value={formData.lastName}
+                    />
+                  </label>
+                </div>
+
+                <label>
+                  Email Address
+                  <span className="star">*</span> <br />
+                  <input
+                    type="text"
+                    placeholder=""
+                    onChange={handleChange}
+                    value={formData.email}
+                    name="email"
+                  />
+                </label>
+
+                <label>
+                  Phone Number
+                  <span className="star">*</span> <br />
+                  <input
+                    type="number"
+                    placeholder=""
+                    onChange={handleChange}
+                    name="PhoneNumber"
+                    value={formData.phone}
+                  />
+                </label>
+                <label>
+                  Work Id
+                  <span className="star">*</span> <br />
+                  <input
+                    type="number"
+                    placeholder=""
+                    onChange={handleChange}
+                    name="workId"
+                    value={formData.workId}
+                  />
+                </label>
+                <label>
+                  Date employed
+                  <span className="star">*</span> <br />
+                  <input
+                    type="date"
+                    placeholder=""
+                    onChange={handleChange}
+                    name="date"
+                    value={formData.date}
+                  />
+                </label>
+                <label>
+                  Address
+                  <input
+                    type="text"
+                    placeholder=""
+                    onChange={handleChange}
+                    name="address"
+                    value={formData.address}
+                  />
+                </label>
+
+                <div className="client-input-div">
+                  <label>
+                    City
+                    <span className="star">*</span> <br />
+                    <input
+                      className="client-small-input-div"
                       type="text"
                       placeholder=""
                       onChange={handleChange}
-                      value={formData.email}
-                      name="email"
+                      value={formData.city}
+                      name="city"
                     />
                   </label>
 
+                  <label>
+                    State
+                    <span className="star">*</span> <br />
+                    <input
+                      className="client-small-input-div"
+                      type="text"
+                      placeholder=""
+                      onChange={handleChange}
+                      name="state"
+                      value={formData.state}
+                    />
+                  </label>
+                </div>
+
+                <div className="client-input-div">
+                  <label>
+                    Zip code
+                    <span className="star">*</span> <br />
+                    <input
+                      className="client-small-input-div"
+                      type="text"
+                      placeholder=""
+                      onChange={handleChange}
+                      value={formData.zipCode}
+                      name="city"
+                    />
+                  </label>
+
+                  <label>
+                    Country
+                    <span className="star">*</span> <br />
+                    <input
+                      className="client-small-input-div"
+                      type="text"
+                      placeholder=""
+                      onChange={handleChange}
+                      name="country"
+                      value={formData.country}
+                    />
+                  </label>
+                </div>
+                <div>
+                  <h4>Guarantor </h4>
+                  <label>
+                    Full name
+                    <span className="star">*</span> <br />
+                    <input
+                      className=""
+                      type="text"
+                      placeholder=""
+                      name="guaratorName"
+                      onChange={handleChange}
+                      value={formData.guaratorName}
+                    />
+                  </label>
+                  <label>
+                    Full Address
+                    <span className="star">*</span> <br />
+                    <input
+                      style={{ height: "90px" }}
+                      type="text"
+                      placeholder=""
+                      name="guaratorAddress"
+                      onChange={handleChange}
+                      value={formData.guaratorAddress}
+                    />
+                  </label>
+                  <label>
+                    Email
+                    <span className="star">*</span> <br />
+                    <input
+                      className=""
+                      type="text"
+                      placeholder=""
+                      name="guaratorEmail"
+                      onChange={handleChange}
+                      value={formData.guaratorEmail}
+                    />
+                  </label>
                   <label>
                     Phone Number
                     <span className="star">*</span> <br />
                     <input
+                      className=""
                       type="number"
                       placeholder=""
+                      name="guaratorPhone"
                       onChange={handleChange}
-                      name="PhoneNumber"
-                      value={formData.phone}
+                      value={formData.guaratorPhone}
                     />
                   </label>
-                  <label>
-                    Work Id
-                    <span className="star">*</span> <br />
-                    <input
-                      type="number"
-                      placeholder=""
-                      onChange={handleChange}
-                      name="workId"
-                      value={formData.workId}
-                    />
-                  </label>
-                  <label>
-                    Date employed
-                    <span className="star">*</span> <br />
-                    <input
-                      type="date"
-                      placeholder=""
-                      onChange={handleChange}
-                      name="date"
-                      value={formData.date}
-                    />
-                  </label>
-                  <label>
-                    Address
-                    <input
-                      type="text"
-                      placeholder=""
-                      onChange={handleChange}
-                      name="address"
-                      value={formData.address}
-                    />
-                  </label>
-
-                  <div className="client-input-div">
-                    <label>
-                      City
-                      <span className="star">*</span> <br />
-                      <input
-                        className="client-small-input-div"
-                        type="text"
-                        placeholder=""
-                        onChange={handleChange}
-                        value={formData.city}
-                        name="city"
-                      />
-                    </label>
-
-                    <label>
-                      State
-                      <span className="star">*</span> <br />
-                      <input
-                        className="client-small-input-div"
-                        type="text"
-                        placeholder=""
-                        onChange={handleChange}
-                        name="state"
-                        value={formData.state}
-                      />
-                    </label>
-                  </div>
-
-                  <div className="client-input-div">
-                    <label>
-                      Zip code
-                      <span className="star">*</span> <br />
-                      <input
-                        className="client-small-input-div"
-                        type="text"
-                        placeholder=""
-                        onChange={handleChange}
-                        value={formData.zipCode}
-                        name="city"
-                      />
-                    </label>
-
-                    <label>
-                      Country
-                      <span className="star">*</span> <br />
-                      <input
-                        className="client-small-input-div"
-                        type="text"
-                        placeholder=""
-                        onChange={handleChange}
-                        name="country"
-                        value={formData.country}
-                      />
-                    </label>
-                  </div>
-                 <div>
-                    <h4>Guarantor </h4>
-                    <label>
-                      Full name
-                      <span className="star">*</span> <br />
-                      <input
-                        className=""
-                        type="text"
-                        placeholder=""
-                        name="guaratorName"
-                        onChange={handleChange}
-                        value={formData.guaratorName}
-                      />
-                    </label>
-                    <label>
-                      Full Address
-                      <span className="star">*</span> <br />
-                      <input
-                        style={{height: "90px"}}
-                        type="text"
-                        placeholder=""
-                        name="guaratorAddress"
-                        onChange={handleChange}
-                        value={formData.guaratorAddress}
-                      />
-                    </label>
-                    <label>
-                     Email
-                      <span className="star">*</span> <br />
-                      <input
-                        className=""
-                        type="text"
-                        placeholder=""
-                        name="guaratorEmail"
-                        onChange={handleChange}
-                        value={formData.guaratorEmail}
-                      />
-                    </label>
-                    <label>
-                     Phone Number
-                      <span className="star">*</span> <br />
-                      <input
-                        className=""
-                        type="number"
-                        placeholder=""
-                        name="guaratorPhone"
-                        onChange={handleChange}
-                        value={formData.guaratorPhone}
-                      />
-                    </label>
-                 </div>
-                  
-
-                  <div className="save-cancel-div">
-                    <Link
-                      className="client-cancel-btn"
-                      onClick={() => setDropdownVisible(false)}
-                    >
-                      Cancel
-                    </Link>
-                    <Link
-                      className="client-create-btn"
-                      onClick={handleSubmit}
-                      disabled={!isValid}
-                      style={{
-                        backgroundColor: isValid ? "#0c1d55" : "#727789",
-                      }}
-                    >
-                      Save
-                    </Link>
-                  </div>
                 </div>
+
+                <div className="save-cancel-div">
+                  <Link
+                    className="client-cancel-btn"
+                    onClick={() => setDropdownVisible(false)}
+                  >
+                    Cancel
+                  </Link>
+                  <Link
+                    className="client-create-btn"
+                    onClick={handleSubmit}
+                    disabled={!isValid}
+                    style={{
+                      backgroundColor: isValid ? "#0c1d55" : "#727789",
+                    }}
+                  >
+                    Save
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>
         <div style={{ marginLeft: "15px" }}>
-        {activeLink === "cso" && (
-          <>
-           <div className="status-btn" style={{ marginBottom: "20px" }}>
-        {["all", "male", "female"].map((status) => (
-          <Link className="status-link"
-            key={status}
-            onClick={() => setFilter(status)}
-            style={{
-             
-              backgroundColor: filter === status ? "#030B260D" : "#ffffff",
-              color: filter === status ? "#030b26" : "#727789",
-            }}
-          >
-            {status.charAt(0).toUpperCase() + status.slice(1)}
-          </Link>
-        ))}
-      </div>
-          <div className="table-container">
-            <table className="custom-table">
-              <thead>
-                <tr>
-                  <th style={{ width: "30px" }}>
-                    <input type="checkbox" />
-                  </th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Phone Number</th>
-                  <th>Gender</th>
-                  <th>No of customer</th>
-                  <th>Branch</th>
-                 
-                </tr>
-              </thead>
-              <tbody>
-                {currentCso  ? (
-                 currentCso.map((caseItem) => (
-                    <tr key={caseItem.id} onClick={() => handleRowClick(caseItem)} style={{ cursor: "pointer" }}>
-                      <td>
-                        <input type="checkbox" onClick={(e) => { e.stopPropagation(); handleRowClick(caseItem); }}/>
-                      </td>
-                      <td>{caseItem.firstName} {caseItem.lastName}</td>
-                      <td>{caseItem.email}</td>
-                      <td>{caseItem.phone}</td>
-                      <td>{caseItem.gender}</td>
-                      <td>{caseItem.noCustomer}</td>
-                      <td>{caseItem.branch}</td>
-                     
+          {activeLink === "cso" && (
+            <>
+              <div className="status-btn" style={{ marginBottom: "20px" }}>
+                {["all", "male", "female"].map((status) => (
+                  <Link
+                    className="status-link"
+                    key={status}
+                    onClick={() => setFilter(status)}
+                    style={{
+                      backgroundColor:
+                        filter === status ? "#030B260D" : "#ffffff",
+                      color: filter === status ? "#030b26" : "#727789",
+                    }}
+                  >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </Link>
+                ))}
+              </div>
+              <div className="table-container">
+                <table className="custom-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: "30px" }}>
+                        <input type="checkbox" />
+                      </th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Phone Number</th>
+                      <th>Gender</th>
+                      <th>No of customer</th>
+                      <th>Branch</th>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="10" className="no-case">
-                      <img src="/images/mask_img.png" alt="" />
-                      <h3>No case found.</h3>
-                      <p style={{}}>
-                        Stay organized by keeping every case detail in one
-                        place.
-                      </p>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody>
+                    {currentCso ? (
+                      currentCso.map((caseItem) => (
+                        <tr
+                          key={caseItem.id}
+                          onClick={() => handleRowClick(caseItem)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <td>
+                            <input
+                              type="checkbox"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRowClick(caseItem);
+                              }}
+                            />
+                          </td>
+                          <td>
+                            {caseItem.firstName} {caseItem.lastName}
+                          </td>
+                          <td>{caseItem.email}</td>
+                          <td>{caseItem.phone}</td>
+                          <td>{caseItem.gender}</td>
+                          <td>{caseItem.noCustomer}</td>
+                          <td>{caseItem.branch}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="10" className="no-case">
+                          <img src="/images/mask_img.png" alt="" />
+                          <h3>No case found.</h3>
+                          <p style={{}}>
+                            Stay organized by keeping every case detail in one
+                            place.
+                          </p>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
 
-             {/* Pagination Controls */}
-      <div className="pagination-div">
-        <Link
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="next-page-link"
-        >
-            <Icon icon="formkit:arrowleft" width="18" height="18"  style={{color: "#636878"}} />
+                {/* Pagination Controls */}
+                <div className="pagination-div">
+                  <Link
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="next-page-link"
+                  >
+                    <Icon
+                      icon="formkit:arrowleft"
+                      width="18"
+                      height="18"
+                      style={{ color: "#636878" }}
+                    />
+                    Previous
+                  </Link>
+                  <div>
+                    {Array.from(
+                      { length: totalPages },
+                      (_, index) => index + 1
+                    ).map((pageNumber) => (
+                      <Link
+                        className="paginations"
+                        key={pageNumber}
+                        onClick={() => handlePageChange(pageNumber)}
+                        style={{
+                          color:
+                            pageNumber === currentPage ? "#030b26" : "#727789",
+                        }}
+                      >
+                        {pageNumber}
+                      </Link>
+                    ))}
+                  </div>
+                  <Link
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="next-page-link"
+                  >
+                    Next
+                    <Icon
+                      icon="formkit:arrowright"
+                      width="18"
+                      height="18"
+                      style={{ color: "#636878" }}
+                    />
+                  </Link>
+                </div>
 
-          Previous
-        </Link>
-        <div>
-        {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
-          <Link
-          className="paginations"
-            key={pageNumber}
-            onClick={() => handlePageChange(pageNumber)}
-            style={{
-              color: pageNumber === currentPage ? "#030b26" : "#727789",
-            }}
-          >
-            {pageNumber}
-          </Link>
-        ))}
-        </div>
-        <Link
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="next-page-link"
-        >
-          Next
-          <Icon icon="formkit:arrowright" width="18" height="18"  style={{color: "#636878"}} />
-        </Link>
-      </div>
+                {/* Dropdown */}
+                {selectedCso && (
+                  <div
+                    style={{
+                      position: "fixed",
+                      top: 0,
+                      left: 0,
+                      width: "100vw",
+                      height: "100vh",
+                      background: "rgba(0, 0, 0, 0.5)",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      zIndex: 1000,
+                    }}
+                  >
+                    <div
+                      ref={clientdropdownRef}
+                      style={{
+                        background: "white",
+                        borderRadius: "8px",
 
-       {/* Dropdown */}
-       {selectedCso && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            ref={clientdropdownRef}
-            style={{
-              background: "white",
-              borderRadius: "8px",
-              
-              width: "541px",
-              
-              overflowY: "auto",
-            }}
-          >
-            <div className="client-drop-header">
-             <div className="client-show-head">
-                <h4>{selectedCso.firstName}  {selectedCso.lastName}</h4>
-                <p>{selectedCso.date}</p>
-             </div>
-             <div >
-             <Icon
-                  onClick={() => setSelectedCso(null)}
-                  icon="uil:times"
-                  width="16"
-                  height="16"
-                  style={{ color: "black", cursor: "pointer" }}
-                />
-             </div>
-           
-            </div>
-            
-            <div className="client-drop-div">
-                <div className="client-info-drop-1">
-                    <h4>Personal Details</h4>
-                    <div className="profileImg">
-                            {selectedCso.profileImg}
+                        width: "700px",
+
+                        overflowY: "auto",
+                      }}
+                    >
+                      <div className="client-drop-header">
+                        <div className="client-show-head">
+                          <h4>
+                            {selectedCso.firstName} {selectedCso.lastName}
+                          </h4>
+                          <p>{selectedCso.date}</p>
+                        </div>
+                        <div>
+                          <Icon
+                            onClick={() => setSelectedCso(null)}
+                            icon="uil:times"
+                            width="16"
+                            height="16"
+                            style={{ color: "black", cursor: "pointer" }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="client-drop-div">
+                        <div className="client-info-drop-1">
+                         
+
+                          <div className="year-trans">
+                            <h4>Monthly Transaction</h4>
+                            <div className="year-sub">
+                              <h3>Target</h3>
+                              <p>300000</p>
+                            </div>
+                            <div className="year-sub">
+                              <h3>Amount Made</h3>
+                              <p>250000</p>
+                            </div>
+                            <div className="year-sub">
+                              <h3>Evaluation</h3>
+                              <p className="target-red">Target Not Met</p>
+                            </div>
                           </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">First Name</p>
-                        <p className="client-inner-p-2">{selectedCso.firstName}</p>
+                          <div className="year-trans">
+                            <h4>Weekly Transaction</h4>
+                            <div className="year-sub">
+                              <h3>Target</h3>
+                              <p>100000</p>
+                            </div>
+                            <div className="year-sub">
+                              <h3>Amount Made</h3>
+                              <p>150000</p>
+                            </div>
+                            <div className="year-sub">
+                              <h3>Evaluation</h3>
+                              <p className="target">Target Met</p>
+                            </div>
+                          </div>
+                          <div className="year-trans">
+                            <h4>Daily Transaction</h4>
+                            <div className="year-sub">
+                              <h3>Target</h3>
+                              <p>50000</p>
+                            </div>
+                            <div className="year-sub">
+                              <h3>Amount Made</h3>
+                              <p>70000</p>
+                            </div>
+                            <div className="year-sub">
+                              <h3>Evaluation</h3>
+                              <p className="target">Target Met</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="client-info-drop-2">
+                          <div>
+                            <h5>Yearly Matrics</h5>
+                            <YearlySalesChart />
+                          </div>
+                          <div>
+                            <h5>Monthly Matrics</h5>
+                            <MonthlySalesChart />
+                          </div>
+                          <div>
+                            <h5>Weekly Matrics</h5>
+                            <WeeklySalesChart />
+                          </div>
+                          <div>
+                            <h5>Daily Matrics</h5>
+                            <DailySalesChart />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="edi-del-btn">
+                        <Link to="/csodetails" className="edit-client">
+                          See Details
+                        </Link>
+                        <Link
+                          onClick={() => setSelectedCso(null)}
+                          className="delete-client"
+                        >
+                          Cancel
+                        </Link>
+                      </div>
                     </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Last Name </p>
-                        <p className="client-inner-p-2">{selectedCso.lastName}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Email</p>
-                        <p className="client-inner-p-2">{selectedCso.email}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Phone Number</p>
-                        <p className="client-inner-p-2">{selectedCso.phone}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Gender</p>
-                        <p className="client-inner-p-2">{selectedCso.gender}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Branch</p>
-                        <p className="client-inner-p-2">{selectedCso.branch}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Address</p>
-                        <p className="client-inner-p-2">{selectedCso.address}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Guarantor</p>
-                        <p className="client-inner-p-2">{selectedCso.guaratorName}</p>
-                    </div>
-                   
-                </div>
-                <div className="client-info-drop-2">
-                    <h4>Transactions</h4>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Number of customers</p>
-                        <p className="client-inner-p-2">{selectedCso.noCustomer}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Today's target</p>
-                        <p className="client-inner-p-2">N500000</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Amount made so far</p>
-                        <p className="client-inner-p-2">N30000</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Balance</p>
-                        <p className="client-inner-p-2">N20000</p>
-                    </div>
-                    <div style={{borderTop: "1px solid #d0d5dd", paddingTop: "15px"}} className="client-inner-div">
-                        <p style={{fontSize: "16px"}} className="client-inner-p-1">December's target</p>
-                        <p style={{fontSize: "16px"}}  className="client-inner-p-2">N300000</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p style={{fontSize: "16px"}}  className="client-inner-p-1">December returns</p>
-                        <p style={{fontSize: "16px"}}  className="client-inner-p-2">N200000</p>
-                    </div>
-                    <div style={{borderTop: "1px solid #d0d5dd", paddingTop: "15px"}} className="client-inner-div">
-                        <p className="client-inner-p-1">Target Status</p>
-                        <p style={{color: "red"}}  className="client-inner-p-2">Not met yet</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">General evaluation</p>
-                        <p style={{color: "green", fontSize: "16px"}}  className="client-inner-p-2">60%</p>
-                    </div>
-                  
-                </div>
-            </div>
-           <div className="edi-del-btn">
-              <Link to="/csodetails" className="edit-client">See Details</Link>
-              <Link   onClick={() => setSelectedCso(null)} className="delete-client">Cancel</Link>
-           </div>
-          </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
-      )}
-          </div>
-          </>
-        )}
-        </div>
-        
       </div>
     </ClientRap>
   );
