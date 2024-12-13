@@ -115,6 +115,24 @@ const LoanRap = styled.div`
     text-decoration: none;
     background: #ffffff;
   }
+  .edit-client {
+    height: 30px;
+    width: 76px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    background: #0c1d55;
+  }
+  .edi-del-btn {
+    display: flex;
+    margin: 15px;
+    gap: 10px;
+  }
   .amount {
     font-size: 18px;
     color: #0c1d55;
@@ -478,12 +496,26 @@ const CustomerLoan = () => {
                           ).toLocaleString()}
                         </p>
                       </div>
-                      <Link
-                        className="delete-client"
-                        onClick={() => setSelectedCustomer(null)}
-                      >
-                        Close
-                      </Link>
+                      <div  className="edi-del-btn">
+                                             <Link className="edit-client"
+                                               style={{ marginTop: "20px" }}
+                                               onClick={() => setSelectedCso(null)}
+                                             >
+                                               Download
+                                             </Link>
+                                             <Link className="delete-client"
+                                               style={{ marginTop: "20px" }}
+                                               onClick={() => setSelectedCso(null)}
+                                             >
+                                               Share
+                                             </Link>
+                                             <Link className="delete-client"
+                                               style={{ marginTop: "20px" }}
+                                               onClick={() => setSelectedCso(null)}
+                                             >
+                                               Close
+                                             </Link>
+                                             </div>
                     </div>
                   </div>
                 </div>
