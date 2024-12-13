@@ -128,10 +128,14 @@ const LoanRap = styled.div`
     text-decoration: none;
     background: #0c1d55;
   }
+  .edi {
+    display: flex;
+  }
   .edi-del-btn {
     display: flex;
     margin: 15px;
     gap: 10px;
+
   }
   .amount {
     font-size: 18px;
