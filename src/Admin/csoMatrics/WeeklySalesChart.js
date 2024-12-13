@@ -89,7 +89,7 @@ const WeeklySalesChart = () => {
   };
 
   return (
-    <div style={{ width: "200px", height: "200px" }}>
+    <div style={{ width: "300px", height: "300px" }}>
      
       <Line data={data} options={options} />
     </div>

@@ -239,7 +239,7 @@ const ClientRap = styled.div`
     border-right: 1px solid #d0d5dd;
     padding: 20px 20px;
     display: flex;
-  
+
     flex-direction: column;
     gap: 15px;
   }
@@ -247,45 +247,49 @@ const ClientRap = styled.div`
     width: 60%;
     padding: 20px 5px;
     gap: 10px;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+   
   }
-.year-sub {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.year-sub p {
-  font-size: 15px;
-  font-weight: 700;
-  color: #030b26;
-}
-.year-sub h3 {
-  font-size: 12px;
-  font-weight: 500;
-  color: #727789;
-}
-.year-trans {
-  border: 1px solid #d0d5dd;
-  border-radius: 14px;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.total-year p {
-  text-align: center;
-  color: #030b26;
-  font-size: 20px;
-  font-weight: 700;
-}
-.target {
-  color: green !important;
-  font-size: 16px !important;
-}
-.target-red {
-  color: red !important;
-}
+  .financial-matric {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .year-sub {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .year-sub p {
+    font-size: 15px;
+    font-weight: 700;
+    color: #030b26;
+  }
+  .year-sub h3 {
+    font-size: 12px;
+    font-weight: 500;
+    color: #727789;
+  }
+  .year-trans {
+    border: 1px solid #d0d5dd;
+    border-radius: 14px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .total-year p {
+    text-align: center;
+    color: #030b26;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .target {
+    color: green !important;
+    font-size: 16px !important;
+  }
+  .target-red {
+    color: red !important;
+  }
   .client-1 {
     display: flex;
     align-items: center;
@@ -303,6 +307,20 @@ const ClientRap = styled.div`
     cursor: pointer;
     border-bottom: 2px solid transparent; /* Default underline */
     transition: all 0.3s ease;
+  }
+  .year-month-div {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .year-month-link {
+    text-decoration: none;
+    color: #727789;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .year-month-link.active {
+    color: green;
   }
   .client-link.active {
     font-weight: 600;
@@ -743,10 +761,13 @@ const Csos = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [clicked, setClicked] = useState(false);
   const [isopen, setOpen] = useState(false);
-
+  const [matrixOpen, setMatricOpen] = useState("yearly");
   const [selectedCso, setSelectedCso] = useState(null);
   const [formattedDateRange, setFormattedDateRange] = useState("");
 
+  const handleMatricOpen = (links) => {
+    setMatricOpen(links);
+  };
   const [formData, setFormData] = useState({
     img: null, // Store the file object
     imgPreview: null,
@@ -1328,8 +1349,6 @@ const Csos = () => {
 
                       <div className="client-drop-div">
                         <div className="client-info-drop-1">
-                         
-
                           <div className="year-trans">
                             <h4>Monthly Transaction</h4>
                             <div className="year-sub">
@@ -1377,21 +1396,63 @@ const Csos = () => {
                           </div>
                         </div>
                         <div className="client-info-drop-2">
-                          <div>
-                            <h5>Yearly Matrics</h5>
-                            <YearlySalesChart />
+                          
+                          <div className="financial-matric">
+                          <h4>Financial Matrics</h4>
+                          <div className="year-month-div">
+                            <Link
+                              className={`year-month-link ${
+                                matrixOpen === "yearly" ? "active" : ""
+                              }`}
+                              onClick={() => handleMatricOpen("yearly")}
+                            >
+                              Yearly
+                            </Link>
+                            <Link className={`year-month-link ${
+                                matrixOpen === "monthly" ? "active" : ""
+                              }`}
+                            onClick={() => handleMatricOpen("monthly")}>
+                              Monthly
+                            </Link>
+                            <Link className={`year-month-link ${
+                                matrixOpen === "weekly" ? "active" : ""
+                              }`}
+                            onClick={() => handleMatricOpen("weekly")}>
+                              Weekly
+                            </Link>
+                            <Link className={`year-month-link ${
+                                matrixOpen === "daily" ? "active" : ""
+                              }`}
+                            onClick={() => handleMatricOpen("daily")}>
+                              Daily
+                            </Link>
                           </div>
                           <div>
-                            <h5>Monthly Matrics</h5>
-                            <MonthlySalesChart />
+                            {matrixOpen === "yearly" && (
+                              <div>
+                                <h5>Yearly Matrics</h5>
+                                <YearlySalesChart />
+                              </div>
+                            )}
+                            {matrixOpen === "monthly" && (
+                              <div>
+                                <h5>Monthly Matrics</h5>
+                                <MonthlySalesChart />
+                              </div>
+                            )}
+                            {matrixOpen === "weekly" && (
+                              <div>
+                                <h5>Weekly Matrics</h5>
+                                <WeeklySalesChart />
+                              </div>
+                            )}
+                            {matrixOpen === "daily" && (
+                              <div>
+                                <h5>Daily Matrics</h5>
+                                <DailySalesChart />
+                              </div>
+                            )}
                           </div>
-                          <div>
-                            <h5>Weekly Matrics</h5>
-                            <WeeklySalesChart />
-                          </div>
-                          <div>
-                            <h5>Daily Matrics</h5>
-                            <DailySalesChart />
                           </div>
                         </div>
                       </div>
