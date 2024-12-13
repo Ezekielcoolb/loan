@@ -128,7 +128,9 @@ const LoanRap = styled.div`
     text-decoration: none;
     background: #0c1d55;
   }
- 
+ .di {
+    
+ }
   .edi-del-btn {
     display: flex;
     margin: 15px;
