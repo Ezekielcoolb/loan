@@ -129,7 +129,7 @@ const LoanRap = styled.div`
     background: #0c1d55;
   }
  .di {
-    
+
  }
   .edi-del-btn {
     display: flex;
@@ -503,19 +503,19 @@ const CustomerLoan = () => {
                       <div  className="edi-del-btn">
                                              <Link className="edit-client"
                                                style={{ marginTop: "20px" }}
-                                               onClick={() => setSelectedCso(null)}
+                                              
                                              >
                                                Download
                                              </Link>
                                              <Link className="delete-client"
                                                style={{ marginTop: "20px" }}
-                                               onClick={() => setSelectedCso(null)}
+                                              
                                              >
                                                Share
                                              </Link>
                                              <Link className="delete-client"
                                                style={{ marginTop: "20px" }}
-                                               onClick={() => setSelectedCso(null)}
+                                               onClick={() => setSelectedCustomer(null)}
                                              >
                                                Close
                                              </Link>
