@@ -458,6 +458,19 @@ const CsoLoan = () => {
         <h4 className="month-h4">
           Transactions for {selectedMonth} ({selectedYear})
         </h4>
+
+        <div className="search-div" style={{ margin: "20px" }}>
+          <div style={{ position: "relative" }}>
+            <input type="text" placeholder="search" />
+            <Icon
+              className="search-position"
+              icon="material-symbols-light:search"
+              width="18"
+              height="18"
+              style={{ color: "#9499AC" }}
+            />
+          </div>
+        </div>
         <main>
           <div className="table-container">
             <table className="custom-table">
