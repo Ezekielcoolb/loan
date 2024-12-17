@@ -53,13 +53,7 @@ const ClientRap = styled.div`
     align-items: center;
     margin-bottom: 10px;
   }
-  .table-container {
-    margin: 15px auto;
-    width: 1090px;
-    overflow-x: auto;
-    border-top-right-radius: 12px;
-    border-top-left-radius: 12px;
-  }
+
   .status-link {
     text-decoration: none;
     display: flex;
@@ -83,6 +77,13 @@ const ClientRap = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+  .table-container {
+    margin: 15px auto;
+    width: 1090px;
+    overflow-x: auto;
+    border-top-right-radius: 12px;
+    border-top-left-radius: 12px;
   }
   .custom-table {
     width: 100%;
@@ -247,7 +248,6 @@ const ClientRap = styled.div`
     width: 60%;
     padding: 20px 5px;
     gap: 10px;
-   
   }
   .financial-matric {
     display: flex;
@@ -1181,21 +1181,35 @@ const Csos = () => {
         <div style={{ marginLeft: "15px" }}>
           {activeLink === "cso" && (
             <>
-              <div className="status-btn" style={{ marginBottom: "20px" }}>
-                {["all", "male", "female"].map((status) => (
-                  <Link
-                    className="status-link"
-                    key={status}
-                    onClick={() => setFilter(status)}
-                    style={{
-                      backgroundColor:
-                        filter === status ? "#030B260D" : "#ffffff",
-                      color: filter === status ? "#030b26" : "#727789",
-                    }}
-                  >
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                  </Link>
-                ))}
+              <div className="sub-bill-1">
+                <div className="status-btn" style={{ marginBottom: "20px" }}>
+                  {["all", "male", "female"].map((status) => (
+                    <Link
+                      className="status-link"
+                      key={status}
+                      onClick={() => setFilter(status)}
+                      style={{
+                        backgroundColor:
+                          filter === status ? "#030B260D" : "#ffffff",
+                        color: filter === status ? "#030b26" : "#727789",
+                      }}
+                    >
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </Link>
+                  ))}
+                </div>
+                <div className="search-div" style={{ marginBottom: "20px" }}>
+                  <div style={{ position: "relative" }}>
+                    <input type="text" placeholder="search" />
+                    <Icon
+                      className="search-position"
+                      icon="material-symbols-light:search"
+                      width="18"
+                      height="18"
+                      style={{ color: "#9499AC" }}
+                    />
+                  </div>
+                </div>
               </div>
               <div className="table-container">
                 <table className="custom-table">
@@ -1315,7 +1329,7 @@ const Csos = () => {
                       display: "flex",
                       justifyContent: "center",
                       alignItems: "center",
-                      zIndex: 1000,
+                      zIndex: 9999,
                     }}
                   >
                     <div
@@ -1396,63 +1410,68 @@ const Csos = () => {
                           </div>
                         </div>
                         <div className="client-info-drop-2">
-                          
                           <div className="financial-matric">
-                          <h4>Financial Matrics</h4>
-                          <div className="year-month-div">
-                            <Link
-                              className={`year-month-link ${
-                                matrixOpen === "yearly" ? "active" : ""
-                              }`}
-                              onClick={() => handleMatricOpen("yearly")}
-                            >
-                              Yearly
-                            </Link>
-                            <Link className={`year-month-link ${
-                                matrixOpen === "monthly" ? "active" : ""
-                              }`}
-                            onClick={() => handleMatricOpen("monthly")}>
-                              Monthly
-                            </Link>
-                            <Link className={`year-month-link ${
-                                matrixOpen === "weekly" ? "active" : ""
-                              }`}
-                            onClick={() => handleMatricOpen("weekly")}>
-                              Weekly
-                            </Link>
-                            <Link className={`year-month-link ${
-                                matrixOpen === "daily" ? "active" : ""
-                              }`}
-                            onClick={() => handleMatricOpen("daily")}>
-                              Daily
-                            </Link>
-                          </div>
-                          <div>
-                            {matrixOpen === "yearly" && (
-                              <div>
-                                <h5>Yearly Matrics</h5>
-                                <YearlySalesChart />
-                              </div>
-                            )}
-                            {matrixOpen === "monthly" && (
-                              <div>
-                                <h5>Monthly Matrics</h5>
-                                <MonthlySalesChart />
-                              </div>
-                            )}
-                            {matrixOpen === "weekly" && (
-                              <div>
-                                <h5>Weekly Matrics</h5>
-                                <WeeklySalesChart />
-                              </div>
-                            )}
-                            {matrixOpen === "daily" && (
-                              <div>
-                                <h5>Daily Matrics</h5>
-                                <DailySalesChart />
-                              </div>
-                            )}
-                          </div>
+                            <h4>Financial Matrics</h4>
+                            <div className="year-month-div">
+                              <Link
+                                className={`year-month-link ${
+                                  matrixOpen === "yearly" ? "active" : ""
+                                }`}
+                                onClick={() => handleMatricOpen("yearly")}
+                              >
+                                Yearly
+                              </Link>
+                              <Link
+                                className={`year-month-link ${
+                                  matrixOpen === "monthly" ? "active" : ""
+                                }`}
+                                onClick={() => handleMatricOpen("monthly")}
+                              >
+                                Monthly
+                              </Link>
+                              <Link
+                                className={`year-month-link ${
+                                  matrixOpen === "weekly" ? "active" : ""
+                                }`}
+                                onClick={() => handleMatricOpen("weekly")}
+                              >
+                                Weekly
+                              </Link>
+                              <Link
+                                className={`year-month-link ${
+                                  matrixOpen === "daily" ? "active" : ""
+                                }`}
+                                onClick={() => handleMatricOpen("daily")}
+                              >
+                                Daily
+                              </Link>
+                            </div>
+                            <div>
+                              {matrixOpen === "yearly" && (
+                                <div>
+                                  <h5>Yearly Matrics</h5>
+                                  <YearlySalesChart />
+                                </div>
+                              )}
+                              {matrixOpen === "monthly" && (
+                                <div>
+                                  <h5>Monthly Matrics</h5>
+                                  <MonthlySalesChart />
+                                </div>
+                              )}
+                              {matrixOpen === "weekly" && (
+                                <div>
+                                  <h5>Weekly Matrics</h5>
+                                  <WeeklySalesChart />
+                                </div>
+                              )}
+                              {matrixOpen === "daily" && (
+                                <div>
+                                  <h5>Daily Matrics</h5>
+                                  <DailySalesChart />
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>

@@ -40,7 +40,7 @@ const sidebarConfig = [
   {
     id: 6,
     icon: "streamline:information-desk-customer",
-    link: "",
+    link: "/customerdetails",
     title: "CUSTOMERS",
   },
 
@@ -54,7 +54,7 @@ const sidebarConfig = [
   {
     id: 8,
     icon: "ri:home-office-line",
-    link: "",
+    link: "/branches",
     title: "BRANCH",
   },
   {

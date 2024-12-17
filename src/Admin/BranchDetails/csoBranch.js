@@ -312,7 +312,7 @@ const processedData = mockData.map((monthData) => {
 });
 const ITEMS_PER_PAGE = 5;
 // Main App Component
-const CsoLoan = () => {
+const BranchCSO = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCso, setSelectedCso] = useState(null);
   // Get the current month and year
@@ -419,7 +419,7 @@ const CsoLoan = () => {
     <LoanRap>
       <div className="loan">
         <header className="loan-header">
-          <h1>Loan Management Dashboard</h1>
+          <h1>Branch A CSO's Transactions</h1>
         </header>
         {/* Month and Year Selection */}
         <div className="all-month-year">
@@ -458,6 +458,19 @@ const CsoLoan = () => {
         <h4 className="month-h4">
           Transactions for {selectedMonth} ({selectedYear})
         </h4>
+
+        <div className="search-div" style={{ margin: "20px" }}>
+          <div style={{ position: "relative" }}>
+            <input type="text" placeholder="search" />
+            <Icon
+              className="search-position"
+              icon="material-symbols-light:search"
+              width="18"
+              height="18"
+              style={{ color: "#9499AC" }}
+            />
+          </div>
+        </div>
         <main>
           <div className="table-container">
             <table className="custom-table">
@@ -635,4 +648,4 @@ const CsoLoan = () => {
   );
 };
 
-export default CsoLoan;
+export default BranchCSO;

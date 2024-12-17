@@ -139,7 +139,7 @@ const DetailsRap = styled.div`
     flex-direction: column;
     gap: 10px;
   }
-  .person-details-edit  {
+  .person-details-edit {
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -188,7 +188,7 @@ const DetailsRap = styled.div`
 const CsoDetails = () => {
   const [activeLink, setActiveLink] = useState("transaction");
   const [visibility, setVisibility] = useState(false);
-  const [openEditForm, setEditForm] = useState(false)
+  const [openEditForm, setEditForm] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "Olayinka",
     lastName: "Jamiu",
@@ -209,10 +209,7 @@ const CsoDetails = () => {
     formData.email.trim() !== "" &&
     formData.phone.trim() !== "" &&
     formData.branch.trim() !== "" &&
-    formData.address.trim() !== "" ;
-   
-
- 
+    formData.address.trim() !== "";
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -223,9 +220,9 @@ const CsoDetails = () => {
   const handleLinkClick = (link) => {
     setActiveLink(link);
   };
-const handleOpenFormEdit = () => {
-    setEditForm(!openEditForm)
-}
+  const handleOpenFormEdit = () => {
+    setEditForm(!openEditForm);
+  };
   const toogleVisiblility = () => {
     setVisibility(!visibility);
   };
@@ -241,14 +238,19 @@ const handleOpenFormEdit = () => {
       <div>
         <div className="cso-1">
           <div className="cso-link-container">
-            <Link style={{marginLeft:"-50px"}} className="cso-link" to="/cso"><Icon
-                              
-                              icon="formkit:arrowleft"
-                              width="90"
-                              height="16"
-                              style={{ color: "black", cursor: "pointer" }}
-                            /></Link>
-          <Link
+            <Link
+              style={{ marginLeft: "-50px" }}
+              className="cso-link"
+              to="/cso"
+            >
+              <Icon
+                icon="formkit:arrowleft"
+                width="90"
+                height="16"
+                style={{ color: "black", cursor: "pointer" }}
+              />
+            </Link>
+            <Link
               className={`cso-link ${
                 activeLink === "transaction" ? "active" : ""
               }`}
@@ -272,8 +274,7 @@ const handleOpenFormEdit = () => {
             >
               Personal Detail
             </Link>
-           
-           
+
             {/* <Link
               className={`cso-link ${activeLink === "account" ? "active" : ""}`}
               onClick={() => handleLinkClick("account")}
@@ -308,180 +309,177 @@ const handleOpenFormEdit = () => {
                 <h4>Personal Details</h4>
                 <p>Personal details of Yinka</p>
                 <Link
-                    className="client-cancel-btn"
-                    onClick={handleOpenFormEdit}
-                  >
-                    Edit details
-                  </Link>
+                  className="client-cancel-btn"
+                  onClick={handleOpenFormEdit}
+                >
+                  Edit details
+                </Link>
               </div>
               {openEditForm ? (
                 <div>
-                <div className="person-details-edit">
-                  <label>
-                    First Name <br />
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
-                      onClick={handleChange}
-                    />
-                  </label>
-                  <label>
-                    Last Name <br />
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onClick={handleChange}
-                    />
-                  </label>
-                  <label>
-                    Address <br />
-                    <input
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onClick={handleChange}
-                    />
-                  </label>
-                  <label>
-                    Email <br />
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onClick={handleChange}
-                    />
-                  </label>
-                  <label>
-                    Phone Number <br />
-                    <input
-                      type="number"
-                      name="phone"
-                      value={formData.phone}
-                      onClick={handleChange}
-                    />
-                  </label>
-                  <label>
-                    Gender <br />
-                    <input
-                      type="text"
-                      name="gender"
-                      value={formData.gender}
-                      onClick={handleChange}
-                    />
-                  </label>
-                  <label>
-                    Date employed <br />
-                    <input
-                      type="date"
-                      name="employedDate"
-                      value={formData.employedDate}
-                      onClick={handleChange}
-                    />
-                  </label>
-                  <label>
-                    Branch <br />
-                    <input
-                      type="text"
-                      name="branch"
-                      value={formData.branch}
-                      onClick={handleChange}
-                    />
-                  </label>
+                  <div className="person-details-edit">
+                    <label>
+                      First Name <br />
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={formData.firstName}
+                        onClick={handleChange}
+                      />
+                    </label>
+                    <label>
+                      Last Name <br />
+                      <input
+                        type="text"
+                        name="lastName"
+                        value={formData.lastName}
+                        onClick={handleChange}
+                      />
+                    </label>
+                    <label>
+                      Address <br />
+                      <input
+                        type="text"
+                        name="address"
+                        value={formData.address}
+                        onClick={handleChange}
+                      />
+                    </label>
+                    <label>
+                      Email <br />
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onClick={handleChange}
+                      />
+                    </label>
+                    <label>
+                      Phone Number <br />
+                      <input
+                        type="number"
+                        name="phone"
+                        value={formData.phone}
+                        onClick={handleChange}
+                      />
+                    </label>
+                    <label>
+                      Gender <br />
+                      <input
+                        type="text"
+                        name="gender"
+                        value={formData.gender}
+                        onClick={handleChange}
+                      />
+                    </label>
+                    <label>
+                      Date employed <br />
+                      <input
+                        type="date"
+                        name="employedDate"
+                        value={formData.employedDate}
+                        onClick={handleChange}
+                      />
+                    </label>
+                    <label>
+                      Branch <br />
+                      <input
+                        type="text"
+                        name="branch"
+                        value={formData.branch}
+                        onClick={handleChange}
+                      />
+                    </label>
 
-                  <label>
-                    Guarantor's Name <br />
-                    <input
-                      type="text"
-                      name="guarantorName"
-                      value={formData.guarantorName}
-                      onClick={handleChange}
-                    />
-                  </label>
-                  <label>
-                    Guarantor's Number <br />
-                    <input
-                      type="number"
-                      name="guarantorPhone"
-                      value={formData.guarantorPhone}
-                      onClick={handleChange}
-                    />
-                  </label>
+                    <label>
+                      Guarantor's Name <br />
+                      <input
+                        type="text"
+                        name="guarantorName"
+                        value={formData.guarantorName}
+                        onClick={handleChange}
+                      />
+                    </label>
+                    <label>
+                      Guarantor's Number <br />
+                      <input
+                        type="number"
+                        name="guarantorPhone"
+                        value={formData.guarantorPhone}
+                        onClick={handleChange}
+                      />
+                    </label>
+                  </div>
+                  <div className="save-cancel-div">
+                    <Link
+                      className="client-cancel-btn"
+                      onClick={handleOpenFormEdit}
+                    >
+                      Cancel
+                    </Link>
+                    <Link
+                      className="client-create-btn"
+                      onClick={handleSubmit}
+                      disabled={!isValid}
+                      style={{
+                        backgroundColor: isValid ? "#0c1d55" : "#727789",
+                      }}
+                    >
+                      Save
+                    </Link>
+                  </div>
                 </div>
-                <div className="save-cancel-div">
-                  <Link
-                    className="client-cancel-btn"
-                    onClick={handleOpenFormEdit}
-                  >
-                    Cancel
-                  </Link>
-                  <Link
-                    className="client-create-btn"
-                    onClick={handleSubmit}
-                    disabled={!isValid}
-                    style={{
-                      backgroundColor: isValid ? "#0c1d55" : "#727789",
-                    }}
-                  >
-                    Save
-                  </Link>
+              ) : (
+                <div className="personal-second">
+                  <div className="personal-inner-div">
+                    <h4>First Name</h4>
+                    <p>{formData.firstName}</p>
+                  </div>
+                  <div className="personal-inner-div">
+                    <h4>Last Name</h4>
+                    <p>{formData.lastName}</p>
+                  </div>
+                  <div className="personal-inner-div">
+                    <h4>Address</h4>
+                    <p>{formData.address}</p>
+                  </div>
+                  <div className="personal-inner-div">
+                    <h4>Email</h4>
+                    <p>{formData.email}</p>
+                  </div>
+                  <div className="personal-inner-div">
+                    <h4>Phone number</h4>
+                    <p>{formData.phone}</p>
+                  </div>
+                  <div className="personal-inner-div">
+                    <h4>Gender</h4>
+                    <p>{formData.gender}</p>
+                  </div>
+                  <div className="personal-inner-div">
+                    <h4>Date Employed</h4>
+                    <p>{formData.employedDate}</p>
+                  </div>
+                  <div className="personal-inner-div">
+                    <h4>Number of customer</h4>
+                    <p>{formData.customers}</p>
+                  </div>
+                  <div className="personal-inner-div">
+                    <h4>Branch Associated</h4>
+                    <p>{formData.branch}</p>
+                  </div>
+                  <div className="personal-inner-div">
+                    <h4>Guarantor's Name</h4>
+                    <p>{formData.guarantorName}</p>
+                  </div>
+                  <div className="personal-inner-div">
+                    <h4>Guarantor's Number</h4>
+                    <p>{formData.guarantorPhone}</p>
+                  </div>
                 </div>
-              </div>
-              ) :  
-              <div className="personal-second">
-              <div className="personal-inner-div">
-                <h4>First Name</h4>
-                <p>{formData.firstName}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Last Name</h4>
-                <p>{formData.lastName}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Address</h4>
-                <p>{formData.address}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Email</h4>
-                <p>{formData.email}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Phone number</h4>
-                <p>{formData.phone}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Gender</h4>
-                <p>{formData.gender}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Date Employed</h4>
-                <p>{formData.employedDate}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Number of customer</h4>
-                <p>{formData.customers}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Branch Associated</h4>
-                <p>{formData.branch}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Guarantor's Name</h4>
-                <p>{formData.guarantorName}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Guarantor's Number</h4>
-                <p>{formData.guarantorPhone}</p>
-              </div>
-            </div>
-            }
-             
-
-              
+              )}
             </div>
           )}
-        {activeLink === "customers" && <ListOfCustomers />}
+          {activeLink === "customers" && <ListOfCustomers />}
           {activeLink === "transaction" && <Customers />}
         </div>
       </div>

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import moment from "moment";
 import styled from "styled-components";
+import generatePDF from "react-to-pdf";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link } from "react-router-dom";
 
@@ -19,21 +20,33 @@ const LoanRap = styled.div`
     font-weight: 400;
   }
   .loan {
-    
-    
     margin: 20px;
+  }
+  th {
+    font-size: 14px;
+    font-weight: 500;
+    color: #727789;
+  }
+  td {
+    font-size: 13px;
+    font-weight: 400;
+    color: #727789;
+  }
+ 
+  .custom-table tbody tr td input[type="checkbox"] {
+    margin: 0;
   }
 
   .loan-header {
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
-    gap: 15px
+    gap: 15px;
   }
-.loan-header h1 {
+  .loan-header h1 {
     font-size: 18px;
     font-weight: 800;
-}
+  }
 
   .table-container {
     margin: 15px auto;
@@ -91,14 +104,14 @@ const LoanRap = styled.div`
     justify-content: space-between;
     background: #030b260a;
     border-bottom: 0.5px solid #dbe0ee;
-    height: 45px;
-    padding: 0px 15px;
+    height: 45px !important;
+    padding: 15px 15px;
   }
   .statement-body {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
+    overflow: hidden;
+    gap: 10px;
     padding: 20px;
   }
   .delete-client {
@@ -128,14 +141,12 @@ const LoanRap = styled.div`
     text-decoration: none;
     background: #0c1d55;
   }
- .di {
-
- }
+  .di {
+  }
   .edi-del-btn {
     display: flex;
     margin: 15px;
     gap: 10px;
-
   }
   .amount {
     font-size: 18px;
@@ -176,112 +187,179 @@ const LoanRap = styled.div`
     align-items: center;
     margin-bottom: 20px;
   }
+  .mini-statement span,
+  .loan-balance p {
+    color: #030b26;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .mini-statement h5 {
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+    align-items: center;
+  }
+  .disburst {
+    display: flex;
+    justify-content: space-between;
+    align-self: center;
+  }
+  .loan-start {
+    font-size: 16px;
+    color: #030b26;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .loan-start span {
+    color: #030b26;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .loan-balance {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 `;
 const ITEMS_PER_PAGE = 5;
+
+// Mock customer data
 const mockCustomers = [
   {
     id: 1,
-    name: "Customer A",
-    loan: 10000,
+    name: "John Doe",
+    loan: 50000,
     interestRate: 0.08,
+    loanStartDate: "2024-11-20",
     payments: {
-      "2024-12-11": 500,
-      "2024-12-12": 300,
-      "2024-12-13": 200,
+      "2024-11-20": 2500,
+      "2024-11-21": 2500,
+      "2024-11-22": 2500,
     },
   },
   {
     id: 2,
-    name: "Customer B",
-    loan: 15000,
+    name: "Jane Smith",
+    loan: 75000,
     interestRate: 0.08,
+    loanStartDate: "2024-12-01",
     payments: {
-      "2024-12-10": 400,
-      "2024-12-12": 500,
-      "2024-12-13": 300,
+      "2024-12-01": 3000,
+      "2024-12-02": 3000,
+    },
+  },
+  {
+    id: 3,
+    name: "Michael Johnson",
+    loan: 40000,
+    interestRate: 0.08,
+    loanStartDate: "2024-11-26",
+    payments: {
+      "2024-11-26": 2000,
+      "2024-11-27": 2000,
+      "2024-11-28": 2000,
     },
   },
 ];
 
 const CustomerLoan = () => {
-  const [selectedWeek, setSelectedWeek] = useState(moment().startOf("week"));
+  const [selectedMonth, setSelectedMonth] = useState(
+    moment().format("YYYY-MM")
+  );
+  const [currentWeekStart, setCurrentWeekStart] = useState(
+    moment().startOf("week")
+  );
+  const [filteredCustomers, setFilteredCustomers] = useState([]);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerPayments, setCustomerPayments] = useState(mockCustomers);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [viewingWeek, setViewingWeek] = useState("current");
 
-  const getCurrentWeekDays = () => {
-    const startOfWeek = moment(selectedWeek).startOf("week");
-    return Array.from({ length: 7 }, (_, i) =>
-      startOfWeek.clone().add(i, "days").format("YYYY-MM-DD")
-    );
-  };
+  const statementPdf = useRef();
 
- 
+  useEffect(() => {
+    // Filter customers who have active loans within the selected week and haven't fully paid their loans
+    const updatedCustomers = mockCustomers.filter((customer) => {
+      const loanStart = moment(customer.loanStartDate);
+      const weekEnd = currentWeekStart.clone().add(6, "days");
 
-  const handleWeekChange = (direction) => {
-    setSelectedWeek((prev) =>
-      direction === "prev"
-        ? moment(prev).subtract(1, "weeks")
-        : moment(prev).add(1, "weeks")
-    );
-  };
+      // Calculate remaining balance
+      const remainingBalance = calculateRemainingBalance(customer);
 
-  const weekDays = getCurrentWeekDays();
+      // Include only customers with loans started within or before the selected week and unpaid balance
+      return loanStart.isSameOrBefore(weekEnd, "day") && remainingBalance > 0;
+    });
 
-  // Calculate pagination
-  const totalPages = Math.ceil(customerPayments.length / ITEMS_PER_PAGE);
-  const paginatedData = customerPayments.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleRowClick = (customer) => {
-    setSelectedCustomer(customer);
-  };
+    setFilteredCustomers(updatedCustomers);
+  }, [currentWeekStart]);
 
   const calculateRemainingBalance = (customer) => {
     const totalPaid = Object.values(customer.payments).reduce(
       (sum, payment) => sum + payment,
       0
     );
-    const interest = customer.loan * customer.interestRate;
-    const totalOwed = customer.loan + interest;
+    const totalOwed = customer.loan + customer.loan * customer.interestRate;
     return totalOwed - totalPaid;
   };
-  // Helper to calculate the start and end of a week
-  const getWeekRange = (weekType) => {
-    const today = moment();
-    if (weekType === "current") {
-      return {
-        start: today.clone().startOf("week"),
-        end: today.clone().endOf("week"),
-      };
-    } else if (weekType === "previous") {
-      return {
-        start: today.clone().subtract(1, "week").startOf("week"),
-        end: today.clone().subtract(1, "week").endOf("week"),
-      };
-    }
+
+  const getWeekDays = (weekStart) => {
+    return Array.from({ length: 7 }, (_, i) =>
+      weekStart.clone().add(i, "days").format("YYYY-MM-DD")
+    );
   };
 
- 
+  const handleWeekChange = (direction) => {
+    setCurrentWeekStart((prev) =>
+      direction === "prev"
+        ? prev.clone().subtract(1, "week")
+        : prev.clone().add(1, "week")
+    );
+  };
 
-  const getPaymentsForMonth = (payments) => {
-    const startOfMonth = moment().startOf("month");
-    const endOfMonth = moment().endOf("month");
+  const weekDays = getWeekDays(currentWeekStart);
 
-    return Object.entries(payments).reduce((acc, [date, amount]) => {
-      const paymentDate = moment(date);
-      if (paymentDate.isBetween(startOfMonth, endOfMonth, "day", "[]")) {
-        acc[date] = amount;
-      }
-      return acc;
-    }, {});
+
+    //   pagination
+   
+     
+     const rowsPerPage = 5;
+   
+     // Pagination Logic
+     const totalPages = Math.ceil(filteredCustomers.length / rowsPerPage);
+     const indexOfLastCase = currentPage * rowsPerPage;
+     const indexOfFirstCase = indexOfLastCase - rowsPerPage;
+     const currentCustomers = filteredCustomers.slice(indexOfFirstCase, indexOfLastCase);
+   
+     const handlePageChange = (pageNumber) => {
+       if (pageNumber > 0 && pageNumber <= totalPages) {
+         setCurrentPage(pageNumber);
+       }
+     };
+
+
+  const handleRowClick = (customer) => {
+    setSelectedCustomer(customer);
+  };
+
+  const getDailyPayments = (customer) => {
+    const payments = [];
+    const startDate = moment(customer.loanStartDate);
+    const today = moment();
+
+    for (
+      let date = startDate.clone();
+      date.isSameOrBefore(today, "day");
+      date.add(1, "day")
+    ) {
+      const formattedDate = date.format("YYYY-MM-DD");
+      payments.push({
+        date: formattedDate,
+        amount: customer.payments[formattedDate] || 0,
+      });
+    }
+
+    return payments;
   };
 
   return (
@@ -289,43 +367,44 @@ const CustomerLoan = () => {
       <div className="loan">
         <header className="loan-header">
           <h1>Customer Loan Payment Dashboard</h1>
-          <div className="month-change-bttn">
-            <button onClick={() => handleWeekChange("prev")}>
-              Previous Week
-            </button>
-            <span>
-              {moment(selectedWeek).startOf("week").format("MMM DD")} -
-              {moment(selectedWeek).endOf("week").format("MMM DD, YYYY")}
-            </span>
-            <button onClick={() => handleWeekChange("next")}>Next Week</button>
+          <div className="controls">
+            <div className="week-controls">
+              <button onClick={() => handleWeekChange("prev")}>
+                Previous Week
+              </button>
+              <span>
+                {currentWeekStart.format("MMM DD")} -{" "}
+                {currentWeekStart.clone().add(6, "days").format("MMM DD, YYYY")}
+              </span>
+              <button onClick={() => handleWeekChange("next")}>
+                Next Week
+              </button>
+            </div>
           </div>
         </header>
 
         <main>
-          <div className="table-container">
+          <div  className="table-container">
             <table className="custom-table">
               <thead>
                 <tr>
                   <th>Customer Name</th>
-                  <th>Loan (₦)</th>
+                  <th>Amount Disb (P) (₦)</th>
                   <th>Interest (₦)</th>
-                  <th>Total Amount (₦)</th>
+                  <th>Amount + Interest (P + I) (₦)</th>
+                  <th>Loan Start Date</th>
                   {weekDays.map((day) => (
-                    <th key={day}>{moment(day).format("ddd")}</th>
+                    <th key={day}>{moment(day).format("dddD")}</th>
                   ))}
-                  <th>Remaining (₦)</th>
+                  <th>Loan Balance (₦)</th>
                 </tr>
               </thead>
               <tbody>
-                {paginatedData.length > 0 ? (
-                  paginatedData.map((customer) => {
+                {currentCustomers.length > 0 ? (
+                  currentCustomers.map((customer) => {
                     const interest = customer.loan * customer.interestRate;
-                    const total = customer.loan + interest;
-                    const totalPaid = weekDays.reduce(
-                      (sum, day) => sum + (customer.payments[day] || 0),
-                      0
-                    );
-                    const remaining = total - totalPaid;
+                    const totalOwed = customer.loan + interest;
+                    const remaining = calculateRemainingBalance(customer);
 
                     return (
                       <tr
@@ -336,9 +415,18 @@ const CustomerLoan = () => {
                         <td>{customer.name}</td>
                         <td>{customer.loan.toLocaleString()}</td>
                         <td>{interest.toLocaleString()}</td>
-                        <td>{total.toLocaleString()}</td>
+                        <td>{totalOwed.toLocaleString()}</td>
+                        <td>
+                          {moment(customer.loanStartDate).format(
+                            "MMM DD, YYYY"
+                          )}
+                        </td>
                         {weekDays.map((day) => (
-                          <td key={day}>{customer.payments[day] || 0}</td>
+                          <td key={day}>
+                            {customer.payments[day]
+                              ? customer.payments[day].toLocaleString()
+                              : 0}
+                          </td>
                         ))}
                         <td>{remaining.toLocaleString()}</td>
                       </tr>
@@ -346,55 +434,59 @@ const CustomerLoan = () => {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={weekDays.length + 5} className="no-case">
-                      No loan was given out for the selected month.
+                    <td colSpan={weekDays.length + 5} className="no-loan">
+                      No customers with active loans in this week.
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
             <div className="pagination-div">
-              <Link
-                onClick={() => handlePageChange(-1)}
-                disabled={currentPage === 1}
-                className="next-page-link"
-              >
-                <Icon
-                  icon="formkit:arrowleft"
-                  width="18"
-                  height="18"
-                  style={{ color: "#636878" }}
-                />
-                Previous
-              </Link>
-              <div>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <Link
-                      className="paginations"
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                    >
-                      {page}
-                     
-                    </Link>
-                  )
-                )}
-              </div>
-              <Link
-                onClick={() => handlePageChange(1)}
-                disabled={currentPage === totalPages}
-                className="next-page-link"
-              >
-                Next
-                <Icon
-                  icon="formkit:arrowright"
-                  width="18"
-                  height="18"
-                  style={{ color: "#636878" }}
-                />
-              </Link>
-            </div>
+                              <Link
+                                onClick={() => handlePageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="next-page-link"
+                              >
+                                <Icon
+                                  icon="formkit:arrowleft"
+                                  width="18"
+                                  height="18"
+                                  style={{ color: "#636878" }}
+                                />
+                                Previous
+                              </Link>
+                              <div>
+                                {Array.from(
+                                  { length: totalPages },
+                                  (_, index) => index + 1
+                                ).map((pageNumber) => (
+                                  <Link
+                                    className="paginations"
+                                    key={pageNumber}
+                                    onClick={() => handlePageChange(pageNumber)}
+                                    style={{
+                                      color:
+                                        pageNumber === currentPage ? "#030b26" : "#727789",
+                                    }}
+                                  >
+                                    {pageNumber}
+                                  </Link>
+                                ))}
+                              </div>
+                              <Link
+                                onClick={() => handlePageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="next-page-link"
+                              >
+                                Next
+                                <Icon
+                                  icon="formkit:arrowright"
+                                  width="18"
+                                  height="18"
+                                  style={{ color: "#636878" }}
+                                />
+                              </Link>
+                            </div>
             {selectedCustomer && (
               <div
                 style={{
@@ -408,120 +500,166 @@ const CustomerLoan = () => {
                   justifyContent: "center",
                   alignItems: "center",
                   zIndex: 9999,
+                  backdropFilter: "blur(5px)",
                 }}
               >
                 <div
+                  ref={statementPdf}
                   style={{
                     background: "white",
                     borderRadius: "8px",
-
                     maxWidth: "600px",
                     width: "90%",
-                    overflowY: "auto",
+                    maxHeight: "550px", // Limit height to 700px
+                 
+                    
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  <div>
-                    <div className="statement-drop-header">
-                      <h4>
-                        Mini Statement for{" "}
-                        <span style={{ color: "green" }}>
-                          {" "}
-                          {selectedCustomer.name}
-                        </span>
-                      </h4>
+                  <div
+                   className="statement-drop-header"
+                  >
+                    <h3>Mini Statement for {selectedCustomer.name}</h3>
                       <Icon
-                        onClick={() => setSelectedCustomer(null)}
-                        icon="uil:times"
-                        width="16"
-                        height="16"
-                        style={{ color: "black", cursor: "pointer" }}
-                      />
-                    </div>
-                    <div className="statement-body">
-                      <div className="statement-detail-head">
-                        <p>
-                          Current Loan Amount:{" "}
-                          <span className="amount">
-                            {" "}
-                            ₦{selectedCustomer.loan.toLocaleString()}{" "}
-                          </span>{" "}
-                        </p>{" "}
-                        <p>+</p>
-                        <p>
-                          Interest:{" "}
-                          <span className="amount">
-                            {" "}
-                            ₦
-                            {(
-                              selectedCustomer.loan *
-                              selectedCustomer.interestRate
-                            ).toLocaleString()}
-                          </span>
-                        </p>{" "}
-                        <p>=</p>
-                        <p>
-                          Total Expected Payment:{" "}
-                          <span className="amount">
-                            {" "}
-                            ₦
-                            {(
-                              selectedCustomer.loan +
-                              selectedCustomer.loan *
-                                selectedCustomer.interestRate
-                            ).toLocaleString()}
-                          </span>
-                        </p>
-                      </div>
-                      <h5>Payments for the Month</h5>
-                      <table className="custom-table">
-                        <thead>
-                          <tr>
-                            <th>Date</th>
-                            <th>Amount Paid (₦)</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {Object.entries(
-                            getPaymentsForMonth(selectedCustomer.payments)
-                          ).map(([date, amount]) => (
-                            <tr key={date}>
-                              <td>{moment(date).format("YYYY-MM-DD")}</td>
-                              <td>{amount.toLocaleString()}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      <div className="remaining-balance">
-                        <h5>Remaining Amount to be Paid</h5>
-                        <p className="amount">
-                          ₦
-                          {calculateRemainingBalance(
-                            selectedCustomer
-                          ).toLocaleString()}
-                        </p>
-                      </div>
-                      <div  className="edi-del-btn">
-                                             <Link className="edit-client"
-                                               style={{ marginTop: "20px" }}
-                                              
-                                             >
-                                               Download
-                                             </Link>
-                                             <Link className="delete-client"
-                                               style={{ marginTop: "20px" }}
-                                              
-                                             >
-                                               Share
-                                             </Link>
-                                             <Link className="delete-client"
-                                               style={{ marginTop: "20px" }}
-                                               onClick={() => setSelectedCustomer(null)}
-                                             >
-                                               Close
-                                             </Link>
-                                             </div>
-                    </div>
+                                                onClick={() => setSelectedCustomer(null)}
+                                                icon="uil:times"
+                                                width="16"
+                                                height="16"
+                                                style={{ color: "black", cursor: "pointer" }}
+                                              />
+                   
                   </div>
+                  <div className="statement-body ">
+                  
+
+                  <div
+                    className="mini-statement"
+                    style={{ marginBottom: "20px" }}
+                  >
+                    <div className="disburst">
+                      <h5>
+                        Amount Disb (P)
+                        <span>₦{selectedCustomer.loan.toLocaleString()}</span>
+                      </h5>
+                      <h4>+</h4>
+                      <h5>
+                        Interest
+                        <span>
+                          ₦
+                          {(
+                            selectedCustomer.loan *
+                            selectedCustomer.interestRate
+                          ).toLocaleString()}
+                        </span>
+                      </h5>
+                      <h4>=</h4>
+                      <h5>
+                        Amount + Interest (P + I)
+                        <span>
+                          ₦
+                          {(
+                            selectedCustomer.loan +
+                            selectedCustomer.loan *
+                              selectedCustomer.interestRate
+                          ).toLocaleString()}
+                        </span>
+                      </h5>
+                    </div>
+                    <p className="loan-start">
+                      Loan Start Date:
+                      <span>
+                        {moment(selectedCustomer.loanStartDate).format(
+                          "MMM DD, YYYY"
+                        )}
+                      </span>
+                    </p>
+                  </div>
+
+                  <h4>Payment History</h4>
+                  <div
+                    id="statement-content"
+                    style={{
+                      flexGrow: 1, // Ensures the table takes up available space
+                      overflowY: "auto", // Enables vertical scrolling only for the table
+                      border: "1px solid #ccc",
+                      borderRadius: "5px",
+                      padding: "10px",
+                    }}
+                  >
+                    <table
+                      className="custom-table"
+                      style={{ width: "100%", borderCollapse: "collapse" }}
+                    >
+                      <thead>
+                        <tr>
+                          <th
+                            style={{
+                              borderBottom: "1px solid #ccc",
+                              paddingBottom: "10px",
+                            }}
+                          >
+                            Date
+                          </th>
+                          <th
+                            style={{
+                              borderBottom: "1px solid #ccc",
+                              paddingBottom: "10px",
+                            }}
+                          >
+                            Amount Paid (₦)
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {getDailyPayments(selectedCustomer).map(
+                          ({ date, amount }) => (
+                            <tr key={date}>
+                              <td style={{ padding: "5px 0" }}>
+                                {moment(date).format("ddd, MMM DD")}
+                              </td>
+                              <td
+                                style={{ padding: "5px 0", textAlign: "right" }}
+                              >
+                                {amount.toLocaleString()}
+                              </td>
+                            </tr>
+                          )
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="loan-balance" style={{ marginTop: "20px" }}>
+                    <h4>Loan Balance</h4>
+                    <p style={{ fontWeight: "bold", fontSize: "18px" }}>
+                      ₦
+                      {calculateRemainingBalance(
+                        selectedCustomer
+                      ).toLocaleString()}
+                    </p>
+                  </div>
+                  </div>
+                  <div className="edi-del-btn">
+                    <Link
+                     
+                      className="edit-client"
+                      onClick={() => {
+                        generatePDF(statementPdf, {
+                          filename: "ministatement",
+                        });
+                      }}
+                    >
+                      Download
+                    </Link>
+                    <Link
+                      onClick={() => setSelectedCustomer(null)}
+                      className="delete-client"
+                    >
+                      Cancel
+                    </Link>
+                  </div>
+                  
                 </div>
               </div>
             )}

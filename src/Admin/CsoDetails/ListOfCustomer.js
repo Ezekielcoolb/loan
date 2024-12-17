@@ -887,7 +887,7 @@ const ListOfCustomers = () => {
                   <tr>
                     <td colSpan="10" className="no-case">
                       <img src="/images/mask_img.png" alt="" />
-                      <h3>No case found.</h3>
+                      <h3>No customers found.</h3>
                       <p style={{}}>
                         Stay organized by keeping every case detail in one
                         place.
