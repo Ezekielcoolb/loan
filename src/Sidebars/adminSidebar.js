@@ -21,12 +21,12 @@ const sidebarConfig = [
     id: 3,
     icon: "carbon:global-loan-and-trial",
     link: "/loan",
-    title: "LAONS",
+    title: "LOANS",
   },
   {
     id: 4,
     icon: "arcticons:studentloan-connect",
-    link: "",
+    link: "/newloan",
     title: "NEW LOAN",
   },
 
@@ -34,7 +34,7 @@ const sidebarConfig = [
   {
     id: 5,
     icon: "carbon:money",
-    link: "",
+    link: "/disbursement",
     title: "DISBURSEMENT",
   },
   {
@@ -123,17 +123,18 @@ export default function AdminSidebar() {
 const SIDEBAR = styled.div`
   background-color: #ffffff;
   border-right: 1px solid #DBE0EE;
-  height: auto !important;
+
   padding: 20px;
   padding-top: 40px;
   width: 20%;
+  height: 100vh !important;
   position: relative;
   z-index: 9999;
   .containers {
     display: flex;
     flex-direction: row;
     width:14%;
- 
+  
     align-items: center;
     position: fixed;
     background-color: #ffffff;

@@ -125,68 +125,71 @@ const AllCustomerDetail = () => {
         </div>
         <div>
           {activeLink === "transaction" && <CustomersDaily />}
-
+        </div>
+        <div>
+        {activeLink==="personal" &&
           <div className="personal">
-            <div className="personal-first">
-              <h4>Personal Details</h4>
-              <p>Personal details of Yinka</p>
-            </div>
+          <div className="personal-first">
+            <h4>Personal Details</h4>
+            <p>Personal details of Yinka</p>
+          </div>
 
-            <div className="personal-second">
-              <div className="personal-inner-div">
-                <h4>First Name</h4>
-                <p>{formData.firstName}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Last Name</h4>
-                <p>{formData.lastName}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Address</h4>
-                <p>{formData.address}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Email</h4>
-                <p>{formData.email}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Phone number</h4>
-                <p>{formData.phone}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Gender</h4>
-                <p>{formData.gender}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Date Employed</h4>
-                <p>{formData.employedDate}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Number of loan</h4>
-                <p>{formData.customers}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Number of times defaulted</h4>
-                <p>{formData.defaulted}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>General loan performance</h4>
-                <p>{formData.performance}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Branch Associated</h4>
-                <p>{formData.branch}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Guarantor's Name</h4>
-                <p>{formData.guarantorName}</p>
-              </div>
-              <div className="personal-inner-div">
-                <h4>Guarantor's Number</h4>
-                <p>{formData.guarantorPhone}</p>
-              </div>
+          <div className="personal-second">
+            <div className="personal-inner-div">
+              <h4>First Name</h4>
+              <p>{formData.firstName}</p>
+            </div>
+            <div className="personal-inner-div">
+              <h4>Last Name</h4>
+              <p>{formData.lastName}</p>
+            </div>
+            <div className="personal-inner-div">
+              <h4>Address</h4>
+              <p>{formData.address}</p>
+            </div>
+            <div className="personal-inner-div">
+              <h4>Email</h4>
+              <p>{formData.email}</p>
+            </div>
+            <div className="personal-inner-div">
+              <h4>Phone number</h4>
+              <p>{formData.phone}</p>
+            </div>
+            <div className="personal-inner-div">
+              <h4>Gender</h4>
+              <p>{formData.gender}</p>
+            </div>
+            <div className="personal-inner-div">
+              <h4>Date Employed</h4>
+              <p>{formData.employedDate}</p>
+            </div>
+            <div className="personal-inner-div">
+              <h4>Number of loan</h4>
+              <p>{formData.customers}</p>
+            </div>
+            <div className="personal-inner-div">
+              <h4>Number of times defaulted</h4>
+              <p>{formData.defaulted}</p>
+            </div>
+            <div className="personal-inner-div">
+              <h4>General loan performance</h4>
+              <p>{formData.performance}</p>
+            </div>
+            <div className="personal-inner-div">
+              <h4>Branch Associated</h4>
+              <p>{formData.branch}</p>
+            </div>
+            <div className="personal-inner-div">
+              <h4>Guarantor's Name</h4>
+              <p>{formData.guarantorName}</p>
+            </div>
+            <div className="personal-inner-div">
+              <h4>Guarantor's Number</h4>
+              <p>{formData.guarantorPhone}</p>
             </div>
           </div>
+        </div>
+        }
         </div>
       </div>
     </CustDetailRap>

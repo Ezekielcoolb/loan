@@ -12,6 +12,8 @@ import BranchDetails from "../Admin/BranchDetail";
 import BranchCSO from "../Admin/BranchDetails/csoBranch";
 import BranchCustomers from "../Admin/BranchDetails/BranchCustomer";
 import AllCustomerDetail from "../Admin/CustomerDetail/allCustomerDetails";
+import NewLoan from "../Admin/NewLoan";
+import Disbursment from "../Admin/Disburstment";
 
 
 
@@ -37,6 +39,8 @@ export default function Routess() {
                         {path: "/branchcso", element: <BranchCSO  />},
                         {path: "/branchcustomers", element: <BranchCustomers  />},
                         {path: "/allcustomers", element: <AllCustomerDetail  />},
+                        {path: "/newloan", element: <NewLoan  />},
+                        {path: "/disbursement", element: <Disbursment  />},
                     ]
                 },
                 
