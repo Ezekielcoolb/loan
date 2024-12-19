@@ -24,7 +24,7 @@ const NewLoanRap = styled.div`
     flex-direction: column;
     gap: 15px;
     width: 50%;
-    padding: 20px;
+    padding: 0px 15px;
     border-right: 1px solid #d0d5dd;
   }
   .left-drop-div p {
@@ -38,7 +38,7 @@ const NewLoanRap = styled.div`
   .right-drop-div {
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 15px;
   }
   .right-drop-div h4 {
     color: #030b26;
@@ -74,6 +74,7 @@ const NewLoanRap = styled.div`
   }
   .dropdown-div {
     display: flex !important;
+    padding: 0px !important;
   }
   .flex-verify {
     display: flex;
@@ -230,10 +231,10 @@ const NewLoan = () => {
   const [loanRequests, setLoanRequests] = useState(initialLoanRequests);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [takeAction, setTakeAction] = useState(false);
+  const [rejection, setRejection] = useState(false);
 
-
-const handleApproveCancel = () => {
-  setTakeAction(false)
+const handleApproveReject = () => {
+  setRejection(true)
    
 }
   const handleLoanApprove = () => {
@@ -374,20 +375,28 @@ const handleApproveCancel = () => {
                       <p>Send verification form to guarantor</p>
                       <Link className="verify-btn">Send</Link>
                     </div>
+                    <div className="flex-verify">
+                      <p> Enable CSO to change customer information</p>
+                      <Link className="verify-btn">Enable</Link>
+                    </div>
                     <div className="flex-verify ">
                       <Link className="verify-btn">Call Customer</Link>
                       <Link className="verify-btn">Call Guarantor</Link>
                     </div>
                     <Link className="verify-btn">Verify BVN</Link>
+                    <div className="flex-verify">
+                      <p> Enable CSO to change customer information</p>
+                      <Link className="verify-btn">Enable</Link>
+                    </div>
                   </div>
                 </div>
                 <div className="edi-del-btn">
-                  {!takeAction ?
+                  {!takeAction   ?
                   <>
                   <Link  onClick={handleLoanApprove}className="edit-client">
                    Approve
                   </Link>
-                  <Link onClick={() => rejectLoan(selectedCustomer.id)} className="edit-client reject-btn">
+                  <Link onClick={handleApproveReject} className="edit-client reject-btn">
                    Reject
                   </Link>
                   <Link
@@ -402,7 +411,7 @@ const handleApproveCancel = () => {
                    <input  type="number" placeholder="Input amount approved" />
                  <div className="approve-can-btn">
                    
-                  <Link  onClick={() => approveLoan(selectedCustomer.id)}className="edit-client">
+                  <Link  onClick={() => approveLoan(selectedCustomer.id)}className="edit-client ">
                    Approve
                   </Link>
                   <Link
@@ -413,6 +422,23 @@ const handleApproveCancel = () => {
                   </Link>
                   </div> 
                   </div>}
+                {rejection ? (<>
+                  <div className="amount-approved">
+                   <input  type="text" placeholder="Input reason for rejection" />
+                 <div className="approve-can-btn">
+                   
+                  <Link  onClick={() => rejectLoan(selectedCustomer.id)} className="edit-client reject-btn">
+                   Reject
+                  </Link>
+                  <Link
+                    onClick={() => setRejection(false)}
+                    className="delete-client"
+                  >
+                    Cancel
+                  </Link>
+                  </div> 
+                  </div>
+                  </>): ""}
                 </div>
               
               </div>

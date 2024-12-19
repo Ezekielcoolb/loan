@@ -47,7 +47,7 @@ const sidebarConfig = [
   {
     id: 7,
     icon: "mdi:comment-account-outline",
-    link: "",
+    link: "/transactions",
     title: "Transaction",
   },
   {

@@ -14,6 +14,9 @@ import BranchCustomers from "../Admin/BranchDetails/BranchCustomer";
 import AllCustomerDetail from "../Admin/CustomerDetail/allCustomerDetails";
 import NewLoan from "../Admin/NewLoan";
 import Disbursment from "../Admin/Disburstment";
+import DisbursementRepayment from "../Admin/TransactionDetails/DisbursementDetail";
+import LoanSubmissions from "../Admin/TransactionDetails/LoanApplication";
+import AllTransactions from "../Admin/Transaction";
 
 
 
@@ -41,6 +44,8 @@ export default function Routess() {
                         {path: "/allcustomers", element: <AllCustomerDetail  />},
                         {path: "/newloan", element: <NewLoan  />},
                         {path: "/disbursement", element: <Disbursment  />},
+                     
+                        {path: "/transactions", element: <AllTransactions  />},
                     ]
                 },
                 
