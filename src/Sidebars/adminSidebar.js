@@ -9,25 +9,25 @@ const sidebarConfig = [
     id: 1,
     icon: "ic:round-dashboard",
     link: "/dashboard",
-    title: "DASHBOARD",
+    title: "Dashboard",
   },
   {
     id: 2,
     icon: "fluent:people-edit-16-regular",
     link: "/cso",
-    title: "CSO",
+    title: "Customer Service Officer",
   },
   {
     id: 3,
     icon: "carbon:global-loan-and-trial",
     link: "/loan",
-    title: "LOANS",
+    title: "Loans",
   },
   {
     id: 4,
     icon: "arcticons:studentloan-connect",
     link: "/newloan",
-    title: "NEW LOAN",
+    title: "New Loan",
   },
 
 
@@ -35,33 +35,38 @@ const sidebarConfig = [
     id: 5,
     icon: "carbon:money",
     link: "/disbursement",
-    title: "DISBURSEMENT",
+    title: "Disbursement",
   },
   {
     id: 6,
     icon: "streamline:information-desk-customer",
     link: "/customerdetails",
-    title: "CUSTOMERS",
+    title: "Customers",
   },
-
 
   {
     id: 7,
     icon: "mdi:comment-account-outline",
     link: "",
-    title: "ACCOUNT",
+    title: "Transaction",
   },
   {
     id: 8,
-    icon: "ri:home-office-line",
-    link: "/branches",
-    title: "BRANCH",
+    icon: "mdi:comment-account-outline",
+    link: "",
+    title: "Account",
   },
   {
     id: 9,
+    icon: "ri:home-office-line",
+    link: "/branches",
+    title: "Branch",
+  },
+  {
+    id: 10,
     icon: "lets-icons:setting-line",
     link: "",
-    title: "SETTING",
+    title: "Setting",
   },
  
 ];
