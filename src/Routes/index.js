@@ -17,6 +17,7 @@ import Disbursment from "../Admin/Disburstment";
 import DisbursementRepayment from "../Admin/TransactionDetails/DisbursementDetail";
 import LoanSubmissions from "../Admin/TransactionDetails/LoanApplication";
 import AllTransactions from "../Admin/Transaction";
+import Setting from "../Admin/Setting";
 
 
 
@@ -46,6 +47,7 @@ export default function Routess() {
                         {path: "/disbursement", element: <Disbursment  />},
                      
                         {path: "/transactions", element: <AllTransactions  />},
+                        {path: "/settings", element: <Setting  />},
                     ]
                 },
                 

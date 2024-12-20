@@ -65,7 +65,7 @@ const sidebarConfig = [
   {
     id: 10,
     icon: "lets-icons:setting-line",
-    link: "",
+    link: "/settings",
     title: "Setting",
   },
  
