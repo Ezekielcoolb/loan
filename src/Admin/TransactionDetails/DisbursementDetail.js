@@ -6,6 +6,8 @@ import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
 
 const DisbursementRepaymentRap = styled.div`
+width: 100%;
+padding: 20px;
   /* Wrapper for overall calendar styling */
   .react-calendar {
     width: 100%;
@@ -23,6 +25,36 @@ const DisbursementRepaymentRap = styled.div`
     justify-content: space-between;
     align-items: center;
   }
+  .total-dis-repay {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    border: 1px solid #d0d5dd;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 20px;
+    color: #727789
+  }
+  .total-dis-repay span {
+    color: #030b26;
+    font-size: 20px;
+    font-weight: 800;
+  }
+  .amount-dis-repay {
+    display: flex;
+    gap: 20px;
+  }
+  .search-div {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .search-position {
+  position: absolute;
+  right: 150px;
+  top: 10px;
+}
 `;
 
 const loans = [
@@ -75,6 +107,17 @@ const DisbursementRepayment = () => {
       setFilteredLoans(loans);
     }
   }, [selectedDate]);
+  // Calculate total amounts
+  const totalAmountDisbursed = filteredLoans.reduce(
+    (total, loan) => total + loan.amountDisbursed,
+    0
+  );
+
+  const totalAmountRepaid = filteredLoans.reduce(
+    (total, loan) => total + loan.amountPaid,
+    0
+  );
+
 
   return (
     <DisbursementRepaymentRap>
@@ -83,6 +126,16 @@ const DisbursementRepayment = () => {
       {/* Calendar for selecting dates */}
       <div className="calendar-bust" style={{ marginBottom: "20px" }}>
         <div className="search-div" style={{ margin: "20px" }}>
+             {/* Totals */}
+      <div className="amount-dis-repay">
+        <h4 className="total-dis-repay">Total Amount Disbursed: 
+            <span>
+            ₦{totalAmountDisbursed.toLocaleString()}
+            </span></h4>
+        <h4 className="total-dis-repay">Total Amount Repaid:
+            <span>
+            ₦{totalAmountRepaid.toLocaleString()}</span> </h4>
+      </div>
           <div style={{ position: "relative" }}>
             <input type="text" placeholder="search" />
             <Icon

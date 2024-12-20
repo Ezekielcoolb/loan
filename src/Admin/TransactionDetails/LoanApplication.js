@@ -52,6 +52,41 @@ const LoanSubmissionsWrapper = styled.div`
     justify-content: space-between;
     align-items: center;
   }
+  .numberOfLoan {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 20px;
+    color: #727789
+  }
+  .numberOfLoan span {
+    height: 80px;
+    width: 80px;
+    color: #030b26;
+    font-size: 20px;
+    font-weight: 800;
+    border: 3px solid #727789 ;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .search-div {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+.loan-counts {
+    display: flex;
+    gap: 10px;
+}
+.search-position {
+  position: absolute;
+  right: 250px;
+  top: 10px;
+}
 `;
 
 const loanApplications = [
@@ -91,6 +126,16 @@ const LoanSubmissions = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [filteredStatus, setFilteredStatus] = useState("all");
 
+
+   // Counts for loans
+   const totalLoans = loanApplications.length;
+   const approvedLoans = loanApplications.filter(
+     (loan) => loan.status === "approved"
+   ).length;
+   const declinedLoans = loanApplications.filter(
+     (loan) => loan.status === "declined"
+   ).length;
+ 
   const handleFilter = (status) => {
     setFilteredStatus(status);
   };
@@ -119,6 +164,18 @@ const LoanSubmissions = () => {
 
       <div className="calendar-bust" style={{ marginBottom: "20px" }}>
         <div className="search-div" style={{ margin: "20px" }}>
+             {/* Loan counts */}
+      <div className="loan-counts" >
+        <p className="numberOfLoan">Total Loans Submitted: 
+            
+            <span>{totalLoans}</span></p>
+        <p  className="numberOfLoan">Approved Loans: 
+            <span>{approvedLoans}</span>
+
+        </p>
+        <p  className="numberOfLoan">Declined Loans: 
+           <span> {declinedLoans}</span></p>
+      </div>
           <div style={{ position: "relative" }}>
             <input type="text" placeholder="search" />
             <Icon
