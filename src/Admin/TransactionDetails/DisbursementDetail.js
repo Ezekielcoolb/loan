@@ -121,6 +121,7 @@ const DisbursementRepayment = () => {
 
   return (
     <DisbursementRepaymentRap>
+      <div className="find-lawyer-header">
       <h2>Disbursement & Repayment</h2>
 
       {/* Calendar for selecting dates */}
@@ -149,8 +150,10 @@ const DisbursementRepayment = () => {
         </div>
         <Calendar onChange={handleDateChange} />
       </div>
-
+</div>
       <div className="table-container">
+      <div  className="new-table-scroll">
+      <div className="table-div-con">
         <table className="custom-table">
           <thead>
             <tr>
@@ -197,6 +200,8 @@ const DisbursementRepayment = () => {
             )}
           </tbody>
         </table>
+        </div>
+        </div>
       </div>
     </DisbursementRepaymentRap>
   );

@@ -444,6 +444,7 @@ const CustomersDetails = () => {
         <div style={{ padding: "20px" }}>
           {currentCustomers.map((branch) => (
             <div key={branch.id}>
+              <div className="find-lawyer-header">
               <h4 style={{ marginBottom: "15px" }}> List of Customers</h4>
               <div className="sub-bill-1">
                 <div className="status-btn" style={{ marginBottom: "20px" }}>
@@ -476,7 +477,10 @@ const CustomersDetails = () => {
 
                 </div>
               </div>
+</div>
               <div className="table-container">
+              <div  className="new-table-scroll">
+              <div className="table-div-con">
                 <table className="custom-table">
                   <thead>
                     <tr>
@@ -510,6 +514,8 @@ const CustomersDetails = () => {
                   </thead>
                   <tbody>{renderCustomerTable(branch)}</tbody>
                 </table>
+                </div>
+                </div>
                 <div className="pagination-div">
                   <Link
                     onClick={() => handlePageChange(currentPage - 1)}

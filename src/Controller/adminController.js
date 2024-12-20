@@ -32,7 +32,7 @@ const Wrapper = styled.div`
     flex-direction: row;
   }
   .div{
-   
+   background: #f7f7f7;
     margin-top: 30px !important;
     width: 80% !important;
   }

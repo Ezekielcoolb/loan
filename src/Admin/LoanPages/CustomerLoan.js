@@ -222,6 +222,11 @@ const LoanRap = styled.div`
     align-items: center;
     gap: 10px;
   }
+  .loan {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+  }
 `;
 const ITEMS_PER_PAGE = 5;
 

@@ -77,7 +77,7 @@ const NewLoanRap = styled.div`
     flex-direction: column;
     padding: 20px;
   }
-  .dropdown-div span{
+  .dropdown-div span {
     font-size: 18px;
     font-weight: 700;
     color: #030b26;
@@ -129,20 +129,20 @@ const NewLoanRap = styled.div`
   }
   .approve-can-btn {
     display: flex;
-   
+
     gap: 10px;
-    
   }
-  .amount-approved  input{
+  .amount-approved input {
     border-style: none;
-    background:rgb(234, 234, 239);
+    background: rgb(234, 234, 239);
     height: 35px;
     width: 250px;
     padding: 10px;
     border-radius: 10px;
     margin-bottom: 8px;
   }
-  .approve, .reject {
+  .approve,
+  .reject {
     text-decoration: none;
     display: flex;
     justify-content: center;
@@ -169,7 +169,7 @@ const NewLoanRap = styled.div`
     flex-direction: column;
     gap: 15px;
   }
-  .perform-action  div {
+  .perform-action div {
     display: flex;
     gap: 20px;
   }
@@ -246,53 +246,56 @@ const Disbursment = () => {
     setSelectedCustomer(null);
   };
 
-  
-
   return (
     <NewLoanRap>
       <div>
-        <h2>Loan Disbursement</h2>
+        <div className="find-lawyer-header">
+          <h2>Loan Disbursement</h2>
+        </div>
         <div className="table-container">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Amount Approved</th>
-                <th>Account Number</th>
-                <th>Bank</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loanRequests.map((loan) => (
-                <tr
-                  key={loan.id}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => setSelectedCustomer(loan)}
-                >
-                  <td>{loan.name}</td>
-                  <td>₦{loan.amount.toLocaleString()}</td>
-                 
-                  <td>{loan.accountNumber}</td>
-                  <td>{loan.bank}</td>
-                  <td
-                    style={{
-                      color:
-                        loan.status === "Waiting Disbursment"
-                          ? "blue"
-                          : loan.status === "Disbursed"
-                          ? "green"
-                          : "blue",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {loan.status}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="new-table-scroll">
+            <div className="table-div-con">
+              <table className="custom-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Amount Approved</th>
+                    <th>Account Number</th>
+                    <th>Bank</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loanRequests.map((loan) => (
+                    <tr
+                      key={loan.id}
+                      style={{ cursor: "pointer" }}
+                      onClick={() => setSelectedCustomer(loan)}
+                    >
+                      <td>{loan.name}</td>
+                      <td>₦{loan.amount.toLocaleString()}</td>
 
+                      <td>{loan.accountNumber}</td>
+                      <td>{loan.bank}</td>
+                      <td
+                        style={{
+                          color:
+                            loan.status === "Waiting Disbursment"
+                              ? "blue"
+                              : loan.status === "Disbursed"
+                              ? "green"
+                              : "blue",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {loan.status}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
           {/* Customer Details Modal */}
           {selectedCustomer && (
             <div className="dropdown-container">
@@ -308,32 +311,33 @@ const Disbursment = () => {
                   />
                 </div>
                 <div className="dropdown-div">
-                  
-                <p><span>{selectedCustomer.amount}</span> has been approved for <span>{selectedCustomer.name} 
-                    </span>. <br /> Please disburse before the end of the day</p>
-                  
-                <div className="edi-del-btn">
-                  <>
-                  <Link  onClick={() => approveLoan(selectedCustomer.id)} className="edit-client">
-                   Disbursed
-                  </Link>
-                 
-                  <Link
-                    onClick={() => setSelectedCustomer(null)}
-                    className="delete-client"
-                  >
-                    Cancel
-                  </Link>
-                  </>
-                 
+                  <p>
+                    <span>{selectedCustomer.amount}</span> has been approved for{" "}
+                    <span>{selectedCustomer.name}</span>. <br /> Please disburse
+                    before the end of the day
+                  </p>
+
+                  <div className="edi-del-btn">
+                    <>
+                      <Link
+                        onClick={() => approveLoan(selectedCustomer.id)}
+                        className="edit-client"
+                      >
+                        Disbursed
+                      </Link>
+
+                      <Link
+                        onClick={() => setSelectedCustomer(null)}
+                        className="delete-client"
+                      >
+                        Cancel
+                      </Link>
+                    </>
+                  </div>
                 </div>
-                </div>
-              
               </div>
             </div>
           )}
-
-
         </div>
       </div>
     </NewLoanRap>

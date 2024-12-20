@@ -30,6 +30,9 @@ const LoanRap = styled.div`
   }
   .loan {
     margin: 20px;
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 15px;
   }
 
   .loan-header {

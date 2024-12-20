@@ -87,15 +87,51 @@ td {
   flex-wrap: wrap;
   gap: 15px;
 }
-.custom-table tbody tr td input[type="checkbox"] {
-  margin: 0;
+.find-lawyer-header {
+  background: #ffffff;
+  border-top-right-radius: 15px;
+  border-top-left-radius: 15px;
+  padding: 15px 20px;
+
 }
 .table-container {
-  margin: 15px 15px;
-  min-width: 760px;
-  overflow-x: auto;
-  border-top-right-radius: 12px;
-  border-top-left-radius: 12px;
+  margin:  auto;
+background: #ffffff;
+
+}
+.new-table-scroll {
+width: 100% !important;
+overflow-x: auto;
+
+}
+
+/* For WebKit Browsers (Chrome, Edge, Safari) */
+.new-table-scroll::-webkit-scrollbar {
+  height: 3px; /* Set scrollbar width */
+ 
+}
+
+.new-table-scroll::-webkit-scrollbar-thumb {
+  background: #888; /* Scrollbar thumb color */
+  border-radius: 4px; /* Optional for rounded scrollbar */
+}
+
+.new-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Thumb hover color */
+}
+
+.new-table-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Scrollbar track color */
+}
+
+/* Hide Up and Down Arrows in Scrollbar */
+.new-table-scroll::-webkit-scrollbar-button {
+  display: none; /* Hides the arrows */
+}
+.table-div-con {
+  min-width: 1000px;
+ 
+ 
 }
 
 .custom-table {
@@ -104,7 +140,8 @@ td {
   text-align: left;
   border: 1px solid #d0d5dd;
 }
-
+table {
+}
 .custom-table thead th {
   padding: 10px;
   background-color: #f4f4f4;
@@ -120,6 +157,10 @@ td {
 .custom-table tbody td {
   padding: 10px;
   border: none;
+}
+
+.custom-table tbody tr td input[type="checkbox"] {
+  margin: 0;
 }
 .dropdown-container {
   position: fixed;
@@ -216,6 +257,9 @@ td {
 .inner-summary-div {
   display: flex;
   gap: 15px;
+}
+.pagination-div {
+  background: #ffffff;
 }
 .summary {
   border: 1px solid #d0d5dd;

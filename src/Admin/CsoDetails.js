@@ -90,6 +90,7 @@ const DetailsRap = styled.div`
     border: 1px solid #d0d5dd;
     border-radius: 14px;
     margin: 20px;
+    background: #ffffff;
     padding: 20px;
     width: 760px;
   }

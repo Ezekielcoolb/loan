@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
 
 const BranchCustomerRap = styled.div`
+padding: 20px;
   width: 100%;
   h4 {
     font-size: 16px;
@@ -233,6 +234,7 @@ const BranchCustomers = () => {
       <div>
         {branches.map((branch) => (
           <div key={branch.id}>
+            <div className="find-lawyer-header">
             <h4 style={{ padding: "15px" }}>{branch.branchName} customers</h4>
 
             <div className="search-div" style={{ margin: "20px" }}>
@@ -247,7 +249,11 @@ const BranchCustomers = () => {
                 />
               </div>
             </div>
+</div>
+
             <div className="table-container">
+            <div  className="new-table-scroll">
+            <div className="table-div-con">
               <table className="custom-table">
                 <thead>
                   <tr>
@@ -281,6 +287,8 @@ const BranchCustomers = () => {
                 </thead>
                 <tbody>{renderCustomerTable(branch)}</tbody>
               </table>
+              </div>
+              </div>
 
               {showModal && selectedCustomer && (
                 <div className="modal">

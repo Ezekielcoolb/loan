@@ -101,6 +101,9 @@ const BranchTransaction = () => {
           </p>
           </div>
         </div>
+        <div className="table-container">
+              <div  className="new-table-scroll">
+              <div className="table-div-con">
         <table className="custom-table">
           <thead>
             <tr>
@@ -154,7 +157,9 @@ const BranchTransaction = () => {
             })}
           </tbody>
         </table>
-
+        </div>
+        </div>
+</div>
        
       </div>
     );
@@ -165,7 +170,7 @@ const BranchTransaction = () => {
         <div>
          
         </div>
-        <div className="table-container">
+        <div style={{margin: "20px"}} className="find-lawyer-header">
           {branches.map((branch) => (
             <div key={branch.id} className="branch-target">
               <h4>{branch.branchName} Annual Transactions</h4>

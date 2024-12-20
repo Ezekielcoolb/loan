@@ -123,20 +123,20 @@ const NewLoanRap = styled.div`
   }
   .approve-can-btn {
     display: flex;
-   
+
     gap: 10px;
-    
   }
-  .amount-approved  input{
+  .amount-approved input {
     border-style: none;
-    background:rgb(234, 234, 239);
+    background: rgb(234, 234, 239);
     height: 35px;
     width: 250px;
     padding: 10px;
     border-radius: 10px;
     margin-bottom: 8px;
   }
-  .approve, .reject {
+  .approve,
+  .reject {
     text-decoration: none;
     display: flex;
     justify-content: center;
@@ -163,7 +163,7 @@ const NewLoanRap = styled.div`
     flex-direction: column;
     gap: 15px;
   }
-  .perform-action  div {
+  .perform-action div {
     display: flex;
     gap: 20px;
   }
@@ -233,14 +233,12 @@ const NewLoan = () => {
   const [takeAction, setTakeAction] = useState(false);
   const [rejection, setRejection] = useState(false);
 
-const handleApproveReject = () => {
-  setRejection(true)
-   
-}
+  const handleApproveReject = () => {
+    setRejection(true);
+  };
   const handleLoanApprove = () => {
-    setTakeAction(true)
-   
-  }
+    setTakeAction(true);
+  };
   // Handle approving loan
   const approveLoan = (id) => {
     const updatedLoans = loanRequests.map((loan) =>
@@ -261,54 +259,60 @@ const handleApproveReject = () => {
 
   return (
     <NewLoanRap>
-      <div>
-        <h2>Loan Requests</h2>
-        <div className="table-container">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Loan Request</th>
-                <th>Business Type</th>
-                <th>Business Size</th>
-                <th>BVN</th>
-                <th>Account Number</th>
-                <th>Bank</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loanRequests.map((loan) => (
-                <tr
-                  key={loan.id}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => setSelectedCustomer(loan)}
-                >
-                  <td>{loan.name}</td>
-                  <td>₦{loan.amount.toLocaleString()}</td>
-                  <td>{loan.businessType}</td>
-                  <td>{loan.businessSize}</td>
-                  <td>{loan.bvn}</td>
-                  <td>{loan.accountNumber}</td>
-                  <td>{loan.bank}</td>
-                  <td
-                    style={{
-                      color:
-                        loan.status === "Waiting Approval"
-                          ? "blue"
-                          : loan.status === "Loan Approved"
-                          ? "green"
-                          : "red",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {loan.status}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="new-loan">
+        <div className="find-lawyer-header">
+          <h2>Loan Requests</h2>
+        </div>
 
+        <div className="table-container">
+          <div className="new-table-scroll">
+            <div className="table-div-con">
+              <table className="custom-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Loan Request</th>
+                    <th>Business Type</th>
+                    <th>Business Size</th>
+                    <th>BVN</th>
+                    <th>Account Number</th>
+                    <th>Bank</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loanRequests.map((loan) => (
+                    <tr
+                      key={loan.id}
+                      style={{ cursor: "pointer" }}
+                      onClick={() => setSelectedCustomer(loan)}
+                    >
+                      <td>{loan.name}</td>
+                      <td>₦{loan.amount.toLocaleString()}</td>
+                      <td>{loan.businessType}</td>
+                      <td>{loan.businessSize}</td>
+                      <td>{loan.bvn}</td>
+                      <td>{loan.accountNumber}</td>
+                      <td>{loan.bank}</td>
+                      <td
+                        style={{
+                          color:
+                            loan.status === "Waiting Approval"
+                              ? "blue"
+                              : loan.status === "Loan Approved"
+                              ? "green"
+                              : "red",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {loan.status}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
           {/* Customer Details Modal */}
           {selectedCustomer && (
             <div className="dropdown-container">
@@ -391,61 +395,76 @@ const handleApproveReject = () => {
                   </div>
                 </div>
                 <div className="edi-del-btn">
-                  {!takeAction   ?
-                  <>
-                  <Link  onClick={handleLoanApprove}className="edit-client">
-                   Approve
-                  </Link>
-                  <Link onClick={handleApproveReject} className="edit-client reject-btn">
-                   Reject
-                  </Link>
-                  <Link
-                    onClick={() => setSelectedCustomer(null)}
-                    className="delete-client"
-                  >
-                    Cancel
-                  </Link>
-                  </>
-                  : 
-                  <div className="amount-approved">
-                   <input  type="number" placeholder="Input amount approved" />
-                 <div className="approve-can-btn">
-                   
-                  <Link  onClick={() => approveLoan(selectedCustomer.id)}className="edit-client ">
-                   Approve
-                  </Link>
-                  <Link
-                    onClick={() => setTakeAction(false)}
-                    className="delete-client"
-                  >
-                    Cancel
-                  </Link>
-                  </div> 
-                  </div>}
-                {rejection ? (<>
-                  <div className="amount-approved">
-                   <input  type="text" placeholder="Input reason for rejection" />
-                 <div className="approve-can-btn">
-                   
-                  <Link  onClick={() => rejectLoan(selectedCustomer.id)} className="edit-client reject-btn">
-                   Reject
-                  </Link>
-                  <Link
-                    onClick={() => setRejection(false)}
-                    className="delete-client"
-                  >
-                    Cancel
-                  </Link>
-                  </div> 
-                  </div>
-                  </>): ""}
+                  {!takeAction ? (
+                    <>
+                      <Link onClick={handleLoanApprove} className="edit-client">
+                        Approve
+                      </Link>
+                      <Link
+                        onClick={handleApproveReject}
+                        className="edit-client reject-btn"
+                      >
+                        Reject
+                      </Link>
+                      <Link
+                        onClick={() => setSelectedCustomer(null)}
+                        className="delete-client"
+                      >
+                        Cancel
+                      </Link>
+                    </>
+                  ) : (
+                    <div className="amount-approved">
+                      <input
+                        type="number"
+                        placeholder="Input amount approved"
+                      />
+                      <div className="approve-can-btn">
+                        <Link
+                          onClick={() => approveLoan(selectedCustomer.id)}
+                          className="edit-client "
+                        >
+                          Approve
+                        </Link>
+                        <Link
+                          onClick={() => setTakeAction(false)}
+                          className="delete-client"
+                        >
+                          Cancel
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                  {rejection ? (
+                    <>
+                      <div className="amount-approved">
+                        <input
+                          type="text"
+                          placeholder="Input reason for rejection"
+                        />
+                        <div className="approve-can-btn">
+                          <Link
+                            onClick={() => rejectLoan(selectedCustomer.id)}
+                            className="edit-client reject-btn"
+                          >
+                            Reject
+                          </Link>
+                          <Link
+                            onClick={() => setRejection(false)}
+                            className="delete-client"
+                          >
+                            Cancel
+                          </Link>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    ""
+                  )}
                 </div>
-              
               </div>
             </div>
           )}
-
-
         </div>
       </div>
     </NewLoanRap>

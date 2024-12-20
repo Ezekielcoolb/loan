@@ -34,40 +34,7 @@ const BranchRap = styled.div`
     color: #727789;
   }
 
-  .custom-table tbody tr td input[type="checkbox"] {
-    margin: 0;
-  }
-  .table-container {
-    margin: 15px 15px;
-    min-width: 760px;
-    overflow-x: auto;
-    border-top-right-radius: 12px;
-    border-top-left-radius: 12px;
-  }
-
-  .custom-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-    border: 1px solid #d0d5dd;
-  }
-
-  .custom-table thead th {
-    padding: 10px;
-    background-color: #f4f4f4;
-    font-weight: bold;
-    font-size: 14px;
-    border: 1px solid #d0d5dd;
-  }
-
-  .custom-table tbody tr {
-    padding: 10px;
-    border: 1px solid #d0d5dd;
-  }
-  .custom-table tbody td {
-    padding: 10px;
-    border: none;
-  }
+ 
   .loan-details {
     display: flex;
     flex-direction: column;
@@ -681,41 +648,46 @@ const LoanBranches = () => {
           </div>
         </div>
       </div>
-
-      <div className="search-div" style={{ margin: "20px" }}>
-        <div style={{ position: "relative" }}>
-          <input type="text" placeholder="search" />
-          <Icon
-            className="search-position"
-            icon="material-symbols-light:search"
-            width="18"
-            height="18"
-            style={{ color: "#9499AC" }}
-          />
+      <div style={{margin: "0px 20px"}}>
+      <div className="find-lawyer-header">
+        <div className="search-div" style={{ margin: "20px" }}>
+          <div style={{ position: "relative" }}>
+            <input type="text" placeholder="search" />
+            <Icon
+              className="search-position"
+              icon="material-symbols-light:search"
+              width="18"
+              height="18"
+              style={{ color: "#9499AC" }}
+            />
+          </div>
         </div>
       </div>
       <div className="table-container">
-        <table className="custom-table">
-          <thead>
-            <tr>
-              <th>Branch Name</th>
-              <th>Address</th>
-              <th>Supervisor</th>
-              <th>Phone</th>
-              <th>
-                Current <br /> Disb (P) (₦)
-              </th>
-              <th>Interest (₦)</th>
-              <th>Paid(₦)</th>
-              <th>
-                Loan <br />
-                Balance (₦)
-              </th>
-            </tr>
-          </thead>
-          <tbody>{renderBranchTable()}</tbody>
-        </table>
-
+        <div className="new-table-scroll">
+          <div className="table-div-con">
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>Branch Name</th>
+                  <th>Address</th>
+                  <th>Supervisor</th>
+                  <th>Phone</th>
+                  <th>
+                    Current <br /> Disb (P) (₦)
+                  </th>
+                  <th>Interest (₦)</th>
+                  <th>Paid(₦)</th>
+                  <th>
+                    Loan <br />
+                    Balance (₦)
+                  </th>
+                </tr>
+              </thead>
+              <tbody>{renderBranchTable()}</tbody>
+            </table>
+          </div>
+        </div>
         <div className="pagination-div">
           <Link
             onClick={() => handlePageChange(currentPage - 1)}
@@ -931,6 +903,7 @@ const LoanBranches = () => {
             </div>
           </div>
         )}
+      </div>
       </div>
     </BranchRap>
   );

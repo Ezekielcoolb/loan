@@ -6,7 +6,6 @@ import styled from "styled-components";
 const ClientRap = styled.div`
   width: 100%;
 
-
   h4 {
     font-size: 16px;
     font-weight: 600;
@@ -50,13 +49,7 @@ const ClientRap = styled.div`
     align-items: center;
     margin-bottom: 10px;
   }
-  .table-container {
-    margin: 15px auto;
-    width: 1090px;
-    overflow-x: auto;
-    border-top-right-radius: 12px;
-    border-top-left-radius: 12px;
-  }
+
   .status-link {
     text-decoration: none;
     display: flex;
@@ -81,34 +74,7 @@ const ClientRap = styled.div`
     align-items: center;
     justify-content: center;
   }
-  .custom-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-    border: 1px solid #d0d5dd;
-  }
-  table {
-  }
-  .custom-table thead th {
-    padding: 10px;
-    background-color: #f4f4f4;
-    font-weight: bold;
-    font-size: 14px;
-    border: 1px solid #d0d5dd;
-  }
-
-  .custom-table tbody tr {
-    padding: 10px;
-    border: 1px solid #d0d5dd;
-  }
-  .custom-table tbody td {
-    padding: 10px;
-    border: none;
-  }
-
-  .custom-table tbody tr td input[type="checkbox"] {
-    margin: 0;
-  }
+  
   .no-case {
     height: 300px;
     margin-top: 70px;
@@ -157,10 +123,9 @@ const ClientRap = styled.div`
     padding: 0px 15px;
   }
   .client-show-head {
-   display: flex;
-   flex-direction: column;
-   gap: 5px;
-   
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
   }
   .client-drop-div {
     display: flex;
@@ -174,15 +139,13 @@ const ClientRap = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center !important;
-    
   }
   .client-inner-div p {
     font-size: 12px;
-   margin: 0px !important;
+    margin: 0px !important;
   }
   .client-inner-p-1 {
     color: #727789;
-    
   }
   .client-show-head h4 {
     color: #030b26;
@@ -235,7 +198,7 @@ const ClientRap = styled.div`
   }
   .client-info-drop-1 {
     width: 50%;
-  
+
     border-right: 1px solid #d0d5dd;
     padding-right: 20px;
     display: flex;
@@ -248,11 +211,11 @@ const ClientRap = styled.div`
     padding-bottom: 20px;
     padding-left: 20px;
     display: flex;
-    
+
     flex-direction: column;
     gap: 20px;
   }
- 
+
   .client-1 {
     display: flex;
     align-items: center;
@@ -366,8 +329,7 @@ const ClientRap = styled.div`
     margin-top: 10px;
     padding-left: 10px;
   }
- 
- 
+
   .client-small-input-div {
     padding-left: 5px;
     width: 182.5px !important;
@@ -382,8 +344,6 @@ const ClientRap = styled.div`
     gap: 15px;
   }
 
- 
- 
   .client-create-btn {
     background: #0c1d55;
     width: 185px;
@@ -427,7 +387,7 @@ const ClientRap = styled.div`
     border-radius: 50% 50%;
     margin-bottom: 20px !important;
   }
- 
+
   /* Container for the image upload */
   .image-upload-container {
     position: relative;
@@ -471,7 +431,6 @@ const ClientRap = styled.div`
     object-fit: cover;
     border-radius: 50%; /* Keep the round shape for the image */
   }
-  
 `;
 
 const ListOfCustomers = () => {
@@ -480,11 +439,11 @@ const ListOfCustomers = () => {
     {
       id: 1,
       name: "Jacob James",
-    
+
       email: "jacob@gmail.com",
       phone: "(406) 555-0120",
       address: "21b, Lagon",
-     
+
       guaratorName: "Segun Adams",
       guaratorAddress: "Lagos Ng",
       guaratorPhone: "0902827654",
@@ -497,7 +456,7 @@ const ListOfCustomers = () => {
       zipCode: "00001",
       country: "Nigeria",
       status: "male",
-      currentLoanAmount:"66000",
+      currentLoanAmount: "66000",
       effectiveLoanDate: "Apr 23, 2024",
       loanType: "Daily",
       bvn: "0000000000",
@@ -509,7 +468,7 @@ const ListOfCustomers = () => {
     {
       id: 2,
       name: "Dariene Brad",
-      
+
       email: "dariene@gmail.com",
       phone: "(207) 555-0120",
       address: "21b, Lagos",
@@ -526,7 +485,7 @@ const ListOfCustomers = () => {
       state: "Lagos",
       zipCode: "00001",
       country: "Nigeria",
-      currentLoanAmount:"66000",
+      currentLoanAmount: "66000",
       effectiveLoanDate: "Apr 23, 2024",
       loanType: "Daily",
       bvn: "0000000000",
@@ -538,11 +497,11 @@ const ListOfCustomers = () => {
     {
       id: 3,
       name: "Annette Black",
-     
+
       email: "black@gmail.com",
       phone: "(239) 555-0120",
       address: "8502 Preston Rd...",
-     
+
       guaratorName: "Segun Adams",
       guaratorAddress: "Lagos Ng",
       guaratorPhone: "0902827654",
@@ -555,23 +514,23 @@ const ListOfCustomers = () => {
       state: "Lagos",
       zipCode: "00001",
       country: "Nigeria",
-      currentLoanAmount:"66000",
-    effectiveLoanDate: "Apr 23, 2024",
-    loanType: "Daily",
-    bvn: "0000000000",
-    residentAddress: "Lagos Lagos",
-    businessAddress: " Lagos Lagos",
-    natureOfBusiness: "Trader",
-    group: "Trader Association",
+      currentLoanAmount: "66000",
+      effectiveLoanDate: "Apr 23, 2024",
+      loanType: "Daily",
+      bvn: "0000000000",
+      residentAddress: "Lagos Lagos",
+      businessAddress: " Lagos Lagos",
+      natureOfBusiness: "Trader",
+      group: "Trader Association",
     },
     {
       id: 4,
       name: "Jerome Bel",
-    
+
       email: "bel@gmail.com",
       phone: "(239) 555-0120",
       address: "8502 Preston Rd...",
-    
+
       guaratorName: "Segun Adams",
       guaratorAddress: "Lagos Ng",
       guaratorPhone: "0902827654",
@@ -584,23 +543,23 @@ const ListOfCustomers = () => {
       state: "Lagos",
       zipCode: "00001",
       country: "Nigeria",
-      currentLoanAmount:"66000",
-    effectiveLoanDate: "Apr 23, 2024",
-    loanType: "Daily",
-    bvn: "0000000000",
-    residentAddress: "Lagos Lagos",
-    businessAddress: " Lagos Lagos",
-    natureOfBusiness: "Trader",
-    group: "Trader Association",
+      currentLoanAmount: "66000",
+      effectiveLoanDate: "Apr 23, 2024",
+      loanType: "Daily",
+      bvn: "0000000000",
+      residentAddress: "Lagos Lagos",
+      businessAddress: " Lagos Lagos",
+      natureOfBusiness: "Trader",
+      group: "Trader Association",
     },
     {
       id: 5,
       name: "Devon Lane",
-    
+
       email: "lane@gmail.com",
       phone: "(239) 555-0120",
       address: "8502 Preston Rd...",
-     
+
       guaratorName: "Segun Adams",
       guaratorAddress: "Lagos Ng",
       guaratorPhone: "0902827654",
@@ -613,11 +572,11 @@ const ListOfCustomers = () => {
       zipCode: "00001",
       country: "Nigeria",
       profileImg: "DL",
-      currentLoanAmount:"66000",
+      currentLoanAmount: "66000",
       effectiveLoanDate: "Apr 23, 2024",
       loanType: "Daily",
       bvn: "0000000000",
-      
+
       businessAddress: " Lagos Lagos",
       natureOfBusiness: "Trader",
       group: "Trader Association",
@@ -625,36 +584,33 @@ const ListOfCustomers = () => {
     {
       id: 6,
       name: "Darin Love",
-    
+
       email: "jacob@gmail.com",
       phone: "(406) 555-0120",
       address: "21b, Lagon",
-      
+
       guaratorName: "Segun Adams",
       guaratorAddress: "Lagos Ng",
       guaratorPhone: "0902827654",
       guaratorEmail: "guarant@gmail.com",
       gender: "Male",
       status: "male",
-    
+
       city: "Lagos",
       state: "Lagos",
       zipCode: "00001",
       country: "Nigeria",
       profileImg: "DL",
       numberOfLoan: "3",
-    currentLoanAmount:"66000",
-    effectiveLoanDate: "Apr 23, 2024",
-    loanType: "Daily",
-    bvn: "0000000000",
-    residentAddress: "Lagos Lagos",
-    businessAddress: " Lagos Lagos",
-    natureOfBusiness: "Trader",
-    group: "Trader Association",
+      currentLoanAmount: "66000",
+      effectiveLoanDate: "Apr 23, 2024",
+      loanType: "Daily",
+      bvn: "0000000000",
+      residentAddress: "Lagos Lagos",
+      businessAddress: " Lagos Lagos",
+      natureOfBusiness: "Trader",
+      group: "Trader Association",
     },
-    
-    
-   
   ];
 
   const [filter, setFilter] = useState("all");
@@ -673,7 +629,7 @@ const ListOfCustomers = () => {
     dateOfBirth: "",
     email: "",
     phone: "",
-   
+
     guaratorName: "",
     guaratorAddress: "",
     guaratorPhone: "",
@@ -686,7 +642,7 @@ const ListOfCustomers = () => {
     zipCode: "",
     country: "",
     numberOfLoan: "",
-    currentLoanAmount:"",
+    currentLoanAmount: "",
     effectiveLoanDate: "",
     loanType: "",
     bvn: "",
@@ -696,9 +652,8 @@ const ListOfCustomers = () => {
     group: "",
   });
 
- 
-
-  const filteredCso = filter === "all" ? customers : customers.filter((c) => c.status === filter);
+  const filteredCso =
+    filter === "all" ? customers : customers.filter((c) => c.status === filter);
 
   const formatDateRange = (openDate, closeDate) => {
     const open = new Date(openDate);
@@ -739,8 +694,6 @@ const ListOfCustomers = () => {
     setSelectedCso(null); // Reset the selected case
   };
 
-
-
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (
@@ -769,10 +722,7 @@ const ListOfCustomers = () => {
   const totalPages = Math.ceil(filteredCso.length / rowsPerPage);
   const indexOfLastCase = currentPage * rowsPerPage;
   const indexOfFirstCase = indexOfLastCase - rowsPerPage;
-  const currentCso = filteredCso.slice(
-    indexOfFirstCase,
-    indexOfLastCase
-  );
+  const currentCso = filteredCso.slice(indexOfFirstCase, indexOfLastCase);
 
   const handlePageChange = (pageNumber) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
@@ -780,15 +730,10 @@ const ListOfCustomers = () => {
     }
   };
 
-
-
-
-
- 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
   };
-  
+
   const handleLinkClick = (link) => {
     setActiveLink(link);
   };
@@ -799,8 +744,6 @@ const ListOfCustomers = () => {
       [name]: value, // Update the specific field dynamically
     }));
   };
-
-
 
   const handleImage = (e) => {
     const file = e.target.files[0];
@@ -815,256 +758,319 @@ const ListOfCustomers = () => {
     }
   };
 
-
   return (
     <ClientRap>
       <div>
         <div className="client-1">
           <div className="client-link-container">
             <Link
-              className={`client-link ${activeLink === "customers" ? "active" : ""}`}
+              className={`client-link ${
+                activeLink === "customers" ? "active" : ""
+              }`}
               onClick={() => handleLinkClick("customers")}
             >
               Customers
             </Link>
-          
           </div>
-         
-
-       
         </div>
-        <div style={{ marginLeft: "15px" }}>
-        {activeLink === "customers" && (
-          <>
-           <div className="status-btn" style={{ marginBottom: "20px" }}>
-        {["all", "male", "female"].map((status) => (
-          <Link className="status-link"
-            key={status}
-            onClick={() => setFilter(status)}
-            style={{
-             
-              backgroundColor: filter === status ? "#030B260D" : "#ffffff",
-              color: filter === status ? "#030b26" : "#727789",
-            }}
-          >
-            {status.charAt(0).toUpperCase() + status.slice(1)}
-          </Link>
-        ))}
-      </div>
-          <div className="table-container">
-            <table className="custom-table">
-              <thead>
-                <tr>
-                  <th style={{ width: "30px" }}>
-                    <input type="checkbox" />
-                  </th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Phone Number</th>
-                  <th>Gender</th>
-                  <th>Address</th>
-                  <th>Current Loan</th>
-                 
-                </tr>
-              </thead>
-              <tbody>
-                {currentCso  ? (
-                 currentCso.map((caseItem) => (
-                    <tr key={caseItem.id} onClick={() => handleRowClick(caseItem)} style={{ cursor: "pointer" }}>
-                      <td>
-                        <input type="checkbox" onClick={(e) => { e.stopPropagation(); handleRowClick(caseItem); }}/>
-                      </td>
-                      <td>{caseItem.name}{caseItem.lastName}</td>
-                      <td>{caseItem.email}</td>
-                      <td>{caseItem.phone}</td>
-                      <td>{caseItem.gender}</td>
-                      <td>{caseItem.address}</td>
-                      <td>{caseItem.currentLoanAmount}</td>
-                     
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="10" className="no-case">
-                      <img src="/images/mask_img.png" alt="" />
-                      <h3>No customers found.</h3>
-                      <p style={{}}>
-                        Stay organized by keeping every case detail in one
-                        place.
-                      </p>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+        <div style={{ margin: "0px 20px" }}>
+          {activeLink === "customers" && (
+            <>
+              <div className="find-lawyer-header">
+                <div className="status-btn" style={{ marginBottom: "20px" }}>
+                  {["all", "male", "female"].map((status) => (
+                    <Link
+                      className="status-link"
+                      key={status}
+                      onClick={() => setFilter(status)}
+                      style={{
+                        backgroundColor:
+                          filter === status ? "#030B260D" : "#ffffff",
+                        color: filter === status ? "#030b26" : "#727789",
+                      }}
+                    >
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              <div className="table-container">
+                <div className="new-table-scroll">
+                  <div className="table-div-con">
+                    <table className="custom-table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: "30px" }}>
+                            <input type="checkbox" />
+                          </th>
+                          <th>Name</th>
+                          <th>Email</th>
+                          <th>Phone Number</th>
+                          <th>Gender</th>
+                          <th>Address</th>
+                          <th>Current Loan</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentCso ? (
+                          currentCso.map((caseItem) => (
+                            <tr
+                              key={caseItem.id}
+                              onClick={() => handleRowClick(caseItem)}
+                              style={{ cursor: "pointer" }}
+                            >
+                              <td>
+                                <input
+                                  type="checkbox"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRowClick(caseItem);
+                                  }}
+                                />
+                              </td>
+                              <td>
+                                {caseItem.name}
+                                {caseItem.lastName}
+                              </td>
+                              <td>{caseItem.email}</td>
+                              <td>{caseItem.phone}</td>
+                              <td>{caseItem.gender}</td>
+                              <td>{caseItem.address}</td>
+                              <td>{caseItem.currentLoanAmount}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="10" className="no-case">
+                              <img src="/images/mask_img.png" alt="" />
+                              <h3>No customers found.</h3>
+                              <p style={{}}>
+                                Stay organized by keeping every case detail in
+                                one place.
+                              </p>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                {/* Pagination Controls */}
+                <div className="pagination-div">
+                  <Link
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="next-page-link"
+                  >
+                    <Icon
+                      icon="formkit:arrowleft"
+                      width="18"
+                      height="18"
+                      style={{ color: "#636878" }}
+                    />
+                    Previous
+                  </Link>
+                  <div>
+                    {Array.from(
+                      { length: totalPages },
+                      (_, index) => index + 1
+                    ).map((pageNumber) => (
+                      <Link
+                        className="paginations"
+                        key={pageNumber}
+                        onClick={() => handlePageChange(pageNumber)}
+                        style={{
+                          color:
+                            pageNumber === currentPage ? "#030b26" : "#727789",
+                        }}
+                      >
+                        {pageNumber}
+                      </Link>
+                    ))}
+                  </div>
+                  <Link
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="next-page-link"
+                  >
+                    Next
+                    <Icon
+                      icon="formkit:arrowright"
+                      width="18"
+                      height="18"
+                      style={{ color: "#636878" }}
+                    />
+                  </Link>
+                </div>
 
-             {/* Pagination Controls */}
-      <div className="pagination-div">
-        <Link
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="next-page-link"
-        >
-            <Icon icon="formkit:arrowleft" width="18" height="18"  style={{color: "#636878"}} />
+                {/* Dropdown */}
+                {selectedCso && (
+                  <div
+                    style={{
+                      position: "fixed",
+                      top: 0,
+                      left: 0,
+                      width: "100vw",
+                      height: "100vh",
+                      background: "rgba(0, 0, 0, 0.5)",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      zIndex: 1000,
+                    }}
+                  >
+                    <div
+                      ref={clientdropdownRef}
+                      style={{
+                        background: "white",
+                        borderRadius: "8px",
 
-          Previous
-        </Link>
-        <div>
-        {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
-          <Link
-          className="paginations"
-            key={pageNumber}
-            onClick={() => handlePageChange(pageNumber)}
-            style={{
-              color: pageNumber === currentPage ? "#030b26" : "#727789",
-            }}
-          >
-            {pageNumber}
-          </Link>
-        ))}
-        </div>
-        <Link
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="next-page-link"
-        >
-          Next
-          <Icon icon="formkit:arrowright" width="18" height="18"  style={{color: "#636878"}} />
-        </Link>
-      </div>
+                        width: "541px",
 
-       {/* Dropdown */}
-       {selectedCso && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            ref={clientdropdownRef}
-            style={{
-              background: "white",
-              borderRadius: "8px",
-              
-              width: "541px",
-              
-              overflowY: "auto",
-            }}
-          >
-            <div className="client-drop-header">
-             <div className="client-show-head">
-                <h4>{selectedCso.name}  {selectedCso.lastName}</h4>
-                <p>{selectedCso.date}</p>
-             </div>
-             <div >
-             <Icon
-                  onClick={() => setSelectedCso(null)}
-                  icon="uil:times"
-                  width="16"
-                  height="16"
-                  style={{ color: "black", cursor: "pointer" }}
-                />
-             </div>
-           
-            </div>
-            
-            <div className="client-drop-div">
-                <div className="client-info-drop-1">
-                    <h4>Personal Details</h4>
-                    <div className="profileImg">
+                        overflowY: "auto",
+                      }}
+                    >
+                      <div className="client-drop-header">
+                        <div className="client-show-head">
+                          <h4>
+                            {selectedCso.name} {selectedCso.lastName}
+                          </h4>
+                          <p>{selectedCso.date}</p>
+                        </div>
+                        <div>
+                          <Icon
+                            onClick={() => setSelectedCso(null)}
+                            icon="uil:times"
+                            width="16"
+                            height="16"
+                            style={{ color: "black", cursor: "pointer" }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="client-drop-div">
+                        <div className="client-info-drop-1">
+                          <h4>Personal Details</h4>
+                          <div className="profileImg">
                             {selectedCso.profileImg}
                           </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Name</p>
-                        <p className="client-inner-p-2">{selectedCso.name}</p>
+                          <div className="client-inner-div">
+                            <p className="client-inner-p-1">Name</p>
+                            <p className="client-inner-p-2">
+                              {selectedCso.name}
+                            </p>
+                          </div>
+                          <div className="client-inner-div">
+                            <p className="client-inner-p-1">Last Name </p>
+                            <p className="client-inner-p-2">
+                              {selectedCso.email}
+                            </p>
+                          </div>
+                          <div className="client-inner-div">
+                            <p className="client-inner-p-1">Address</p>
+                            <p className="client-inner-p-2">
+                              {selectedCso.address}
+                            </p>
+                          </div>
+                          <div className="client-inner-div">
+                            <p className="client-inner-p-1">State</p>
+                            <p className="client-inner-p-2">
+                              {selectedCso.state}
+                            </p>
+                          </div>
+                          <div className="client-inner-div">
+                            <p className="client-inner-p-1">Country</p>
+                            <p className="client-inner-p-2">
+                              {selectedCso.country}
+                            </p>
+                          </div>
+                          <div className="client-inner-div">
+                            <p className="client-inner-p-1">Email</p>
+                            <p className="client-inner-p-2">
+                              {selectedCso.email}
+                            </p>
+                          </div>
+                          <div className="client-inner-div">
+                            <p className="client-inner-p-1">Gender</p>
+                            <p className="client-inner-p-2">
+                              {selectedCso.gender}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="client-info-drop-2">
+                          <h4>Loans</h4>
+                          <div className="client-inner-div">
+                            <p className="client-inner-p-1">Current Laon</p>
+                            <p className="client-inner-p-2">
+                              {selectedCso.currentLoanAmount}
+                            </p>
+                          </div>
+                          <div className="client-inner-div">
+                            <p className="client-inner-p-1">
+                              Loan Effective Date
+                            </p>
+                            <p className="client-inner-p-2">
+                              {selectedCso.effectiveLoanDate}
+                            </p>
+                          </div>
+                          <div className="client-inner-div">
+                            <p className="client-inner-p-1">Loan Type</p>
+                            <p className="client-inner-p-2">
+                              {selectedCso.loanType}
+                            </p>
+                          </div>
+                          <div className="client-inner-div">
+                            <p className="client-inner-p-1">Balance</p>
+                            <p className="client-inner-p-2">
+                              {selectedCso.currentLoanAmount}
+                            </p>
+                          </div>
+
+                          <div className="client-inner-div">
+                            <p className="client-inner-p-1">BVN</p>
+                            <p className="client-inner-p-2">
+                              {selectedCso.bvn}
+                            </p>
+                          </div>
+                          <div className="client-inner-div">
+                            <p className="client-inner-p-1">Guarantor</p>
+                            <p className="client-inner-p-2">
+                              {selectedCso.guaratorName}
+                            </p>
+                          </div>
+                          <div className="client-inner-div">
+                            <p className="client-inner-p-1">
+                              Guarantor's Address
+                            </p>
+                            <p className="client-inner-p-2">
+                              {selectedCso.guaratorAddress}
+                            </p>
+                          </div>
+                          <div className="client-inner-div">
+                            <p className="client-inner-p-1">
+                              Guarantor's Number
+                            </p>
+                            <p className="client-inner-p-2">
+                              {selectedCso.guaratorPhone}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="edi-del-btn">
+                        <Link
+                          onClick={() => setSelectedCso(null)}
+                          className="delete-client"
+                        >
+                          Cancel
+                        </Link>
+                      </div>
                     </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Last Name </p>
-                        <p className="client-inner-p-2">{selectedCso.email}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Address</p>
-                        <p className="client-inner-p-2">{selectedCso.address}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">State</p>
-                        <p className="client-inner-p-2">{selectedCso.state}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Country</p>
-                        <p className="client-inner-p-2">{selectedCso.country}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Email</p>
-                        <p className="client-inner-p-2">{selectedCso.email}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Gender</p>
-                        <p className="client-inner-p-2">{selectedCso.gender}</p>
-                    </div>
-                    
-                   
-                </div>
-                <div className="client-info-drop-2">
-                    <h4>Loans</h4>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Current Laon</p>
-                        <p className="client-inner-p-2">{selectedCso.currentLoanAmount}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Loan Effective Date</p>
-                        <p className="client-inner-p-2">{selectedCso.effectiveLoanDate}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Loan Type</p>
-                        <p className="client-inner-p-2">{selectedCso.loanType}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Balance</p>
-                        <p className="client-inner-p-2">{selectedCso.currentLoanAmount}</p>
-                    </div>
- 
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">BVN</p>
-                        <p className="client-inner-p-2">{selectedCso.bvn}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Guarantor</p>
-                        <p className="client-inner-p-2">{selectedCso.guaratorName}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Guarantor's Address</p>
-                        <p className="client-inner-p-2">{selectedCso.guaratorAddress}</p>
-                    </div>
-                    <div className="client-inner-div">
-                        <p className="client-inner-p-1">Guarantor's Number</p>
-                        <p className="client-inner-p-2">{selectedCso.guaratorPhone}</p>
-                    </div>
-                    
-                  
-                </div>
-            </div>
-           <div className="edi-del-btn">
-             
-              <Link   onClick={() => setSelectedCso(null)} className="delete-client">Cancel</Link>
-           </div>
-          </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
-      )}
-          </div>
-          </>
-        )}
-        </div>
-        
       </div>
     </ClientRap>
   );

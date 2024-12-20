@@ -64,7 +64,7 @@ const Loan = () => {
             </Link>
             </div>
         </div>
-        <div>
+        <div >
             {activeLink === "csoloan" && <CsoLoan />}
             {activeLink=== "customerLoan" && <CustomerLoan />}
         </div>

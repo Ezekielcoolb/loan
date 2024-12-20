@@ -57,6 +57,7 @@ const CustDetailRap = styled.div`
     display: flex;
     justify-content: space-between;
     border: 1px solid #d0d5dd;
+    background: #ffffff;
     border-radius: 14px;
     margin: 20px;
     padding: 20px;

@@ -78,41 +78,7 @@ const ClientRap = styled.div`
     align-items: center;
     justify-content: center;
   }
-  .table-container {
-    margin: 15px auto;
-    width: 1090px;
-    overflow-x: auto;
-    border-top-right-radius: 12px;
-    border-top-left-radius: 12px;
-  }
-  .custom-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-    border: 1px solid #d0d5dd;
-  }
-  table {
-  }
-  .custom-table thead th {
-    padding: 10px;
-    background-color: #f4f4f4;
-    font-weight: bold;
-    font-size: 14px;
-    border: 1px solid #d0d5dd;
-  }
-
-  .custom-table tbody tr {
-    padding: 10px;
-    border: 1px solid #d0d5dd;
-  }
-  .custom-table tbody td {
-    padding: 10px;
-    border: none;
-  }
-
-  .custom-table tbody tr td input[type="checkbox"] {
-    margin: 0;
-  }
+ 
   .no-case {
     height: 300px;
     margin-top: 70px;
@@ -1178,10 +1144,11 @@ const Csos = () => {
             </div>
           </div>
         </div>
-        <div style={{ marginLeft: "15px" }}>
+        <div style={{ margin: "0px 20px" }}>
           {activeLink === "cso" && (
             <>
-              <div className="sub-bill-1">
+           
+              <div className="sub-bill-1 find-lawyer-header">
                 <div className="status-btn" style={{ marginBottom: "20px" }}>
                   {["all", "male", "female"].map((status) => (
                     <Link
@@ -1212,6 +1179,9 @@ const Csos = () => {
                 </div>
               </div>
               <div className="table-container">
+              <div  className="new-table-scroll">
+              <div className="table-div-con">
+
                 <table className="custom-table">
                   <thead>
                     <tr>
@@ -1267,7 +1237,8 @@ const Csos = () => {
                     )}
                   </tbody>
                 </table>
-
+                </div>
+                </div>
                 {/* Pagination Controls */}
                 <div className="pagination-div">
                   <Link

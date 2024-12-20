@@ -59,42 +59,6 @@ const LoanRap = styled.div`
     cursor: pointer;
   }
 
-  .table-container {
-    margin: 15px auto;
-    min-width: 760px;
-    overflow-x: auto;
-    border-top-right-radius: 12px;
-    border-top-left-radius: 12px;
-  }
-
-  .custom-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-    border: 1px solid #d0d5dd;
-  }
-  table {
-  }
-  .custom-table thead th {
-    padding: 10px;
-    background-color: #f4f4f4;
-    font-weight: bold;
-    font-size: 14px;
-    border: 1px solid #d0d5dd;
-  }
-
-  .custom-table tbody tr {
-    padding: 10px;
-    border: 1px solid #d0d5dd;
-  }
-  .custom-table tbody td {
-    padding: 10px;
-    border: none;
-  }
-
-  .custom-table tbody tr td input[type="checkbox"] {
-    margin: 0;
-  }
   .no-case {
     height: 300px;
     margin-top: 70px;
@@ -418,80 +382,85 @@ const BranchCSO = () => {
   return (
     <LoanRap>
       <div className="loan">
-        <header className="loan-header">
-          <h1>Branch A CSO's Transactions</h1>
-        </header>
-        {/* Month and Year Selection */}
-        <div className="all-month-year">
-          <label className="month-label">
-            Select Month:
-            <select
-              className="month-select"
-              value={selectedMonth}
-              onChange={handleMonthChange}
-            >
-              {processedData.map((monthData, index) => (
-                <option key={index} value={monthData.month}>
-                  {monthData.month}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="find-lawyer-header">
+          <header className="loan-header">
+            <h1>Branch A CSO's Transactions</h1>
+          </header>
+          {/* Month and Year Selection */}
+          <div className="all-month-year">
+            <label className="month-label">
+              Select Month:
+              <select
+                className="month-select"
+                value={selectedMonth}
+                onChange={handleMonthChange}
+              >
+                {processedData.map((monthData, index) => (
+                  <option key={index} value={monthData.month}>
+                    {monthData.month}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label className="month-label">
-            Select Year:
-            <select
-              className="month-select"
-              value={selectedYear}
-              onChange={handleYearChange}
-            >
-              {processedData.map((monthData, index) => (
-                <option key={index} value={monthData.month.slice(0, 4)}>
-                  {monthData.month.slice(0, 4)}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+            <label className="month-label">
+              Select Year:
+              <select
+                className="month-select"
+                value={selectedYear}
+                onChange={handleYearChange}
+              >
+                {processedData.map((monthData, index) => (
+                  <option key={index} value={monthData.month.slice(0, 4)}>
+                    {monthData.month.slice(0, 4)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
 
-        {/* Display table for the selected month */}
-        <h4 className="month-h4">
-          Transactions for {selectedMonth} ({selectedYear})
-        </h4>
+          {/* Display table for the selected month */}
+          <h4 className="month-h4">
+            Transactions for {selectedMonth} ({selectedYear})
+          </h4>
 
-        <div className="search-div" style={{ margin: "20px" }}>
-          <div style={{ position: "relative" }}>
-            <input type="text" placeholder="search" />
-            <Icon
-              className="search-position"
-              icon="material-symbols-light:search"
-              width="18"
-              height="18"
-              style={{ color: "#9499AC" }}
-            />
+          <div className="search-div" style={{ margin: "20px" }}>
+            <div style={{ position: "relative" }}>
+              <input type="text" placeholder="search" />
+              <Icon
+                className="search-position"
+                icon="material-symbols-light:search"
+                width="18"
+                height="18"
+                style={{ color: "#9499AC" }}
+              />
+            </div>
           </div>
         </div>
         <main>
           <div className="table-container">
-            <table className="custom-table">
-              <thead>
-                <tr>
-                  <th>CSO Name</th>
-                  <th>New Loan</th>
-                  <th>Amount Disb (P)</th>
-                  <th>Interest</th>
-                  <th>Amount Disb + I (P+I)</th>
-                  <th>Payment</th>
-                  <th>Loan Balance</th>
-                  <th>Cards $ Others</th>
-                  <th>Profit</th>
-                  <th>Monthly Target</th>
-                  <th>Performance (%)</th>
-                </tr>
-              </thead>
-              <tbody>{renderTable()}</tbody>
-            </table>
-
+            <div className="new-table-scroll">
+              <div className="table-div-con">
+                <table className="custom-table">
+                  <thead>
+                    <tr>
+                      <th>CSO Name</th>
+                      <th>New Loan</th>
+                      <th>Amount Disb (P)</th>
+                      <th>Interest</th>
+                      <th>Amount Disb + I (P+I)</th>
+                      <th>Payment</th>
+                      <th>Loan Balance</th>
+                      <th>Cards $ Others</th>
+                      <th>Profit</th>
+                      <th>Monthly Target</th>
+                      <th>Performance (%)</th>
+                    </tr>
+                  </thead>
+                  <tbody>{renderTable()}</tbody>
+                </table>
+              </div>
+            </div>
             {/* Pagination Controls */}
 
             <div className="pagination-div">
