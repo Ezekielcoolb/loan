@@ -1,10 +1,14 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import WeeklySalesChart from "./csoMatrics/WeeklySalesChart";
 import MonthlySalesChart from "./csoMatrics/MonthlySalesChart";
 import YearlySalesChart from "./csoMatrics/YearlySalesChart";
 import { Link } from "react-router-dom";
+import ReactPaginate from "react-paginate";
+import { useDispatch, useSelector } from "react-redux";
+import { createBranch, fetchBranches } from "../redux/slices/branchSlice";
+import toast from "react-hot-toast";
 
 const BranchRap = styled.div`
   width: 100%;
@@ -34,7 +38,6 @@ const BranchRap = styled.div`
     color: #727789;
   }
 
- 
   .loan-details {
     display: flex;
     flex-direction: column;
@@ -345,46 +348,6 @@ const BranchRap = styled.div`
   }
 `;
 
-const branches = [
-  {
-    id: 1,
-    branchName: "Branch A",
-    supervisor: "Jones James",
-    email: "jacob@gmail.com",
-    phone: "(406) 555-0120",
-    address: "21b, Lagon",
-    numberOfCso: "2",
-    loan: [
-      {
-        currentCurrent: "5",
-
-        monthTarget: 200000,
-        interestRate: 0.08,
-        monthDisburst: 300000,
-        monthReturn: 150000,
-      },
-    ],
-  },
-  {
-    id: 2,
-    branchName: "Branch B",
-    supervisor: "Sophia Smith",
-    email: "sophia@gmail.com",
-    phone: "(123) 555-0456",
-    address: "10a, Lekki",
-    numberOfCso: "3",
-    loan: [
-      {
-        currentCurrent: "3",
-        monthTarget: 250000,
-        interestRate: 0.1,
-        monthDisburst: 400000,
-        monthReturn: 200000,
-      },
-    ],
-  },
-];
-
 const LoanBranches = () => {
   const [selectedBranch, setSelectedBranch] = useState(null);
   const [matrixOpen, setMatricOpen] = useState("yearly");
@@ -392,10 +355,10 @@ const LoanBranches = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
   const [formData, setFormData] = useState({
-    branchName: "",
-    supervisor: "",
-    email: "",
-    phone: "",
+    name: "",
+    supervisorName: "",
+    supervisorEmail: "",
+    supervisorPhone: "",
     address: "",
     city: "",
     state: "",
@@ -403,12 +366,27 @@ const LoanBranches = () => {
     country: "",
   });
 
+  const dispatch = useDispatch();
+  const { branches, totalPages, currentPage, status, error } = useSelector(
+    (state) => state.branches
+  );
+  const limit = 10;
+
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchBranches({ page: currentPage, limit }));
+    }
+  }, [dispatch, status, currentPage]);
+
+  if (status === "loading") return <p>Loading branches...</p>;
+  if (status === "failed") return <p>Error: {error}</p>;
+
   const isValid =
-    formData.branchName.trim() !== "" &&
-    formData.supervisor.trim() !== "" &&
-    formData.email.trim() !== "" &&
-    formData.phone.trim() !== "" &&
-    formData.address.trim() !== "";
+    formData.name !== "" &&
+    formData.supervisorName !== "" &&
+    formData.supervisorEmail !== "" &&
+    formData.supervisorPhone !== "" &&
+    formData.address !== "";
 
   const handleChange = (e) => {
     const { name, value } = e.target; // Destructure name and value
@@ -418,12 +396,29 @@ const LoanBranches = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (isValid) {
-      setDropdownVisible(false);
+      try {
+        dispatch(createBranch(formData));
+        setDropdownVisible(!dropdownVisible);
+        setFormData({
+          name: "",
+          supervisorName: "",
+          supervisorEmail: "",
+          supervisorPhone: "",
+          address: "",
+          city: "",
+          state: "",
+          zipcode: "",
+          country: "",
+        });
+      } catch (error) {
+        toast.error("Failed to create branch");
+      }
     }
   };
+
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible);
   };
@@ -438,39 +433,30 @@ const LoanBranches = () => {
     setMatricOpen(links);
   };
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 10;
-
-  // Pagination Logic
-  const totalPages = Math.ceil(branches.length / rowsPerPage);
-  const indexOfLastCase = currentPage * rowsPerPage;
-  const indexOfFirstCase = indexOfLastCase - rowsPerPage;
-  const currentBranch = branches.slice(indexOfFirstCase, indexOfLastCase);
-
-  const handlePageChange = (pageNumber) => {
-    if (pageNumber > 0 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-    }
+  // Handle page change in pagination
+  const handlePageChange = (page) => {
+    if (page < 1 || page > totalPages) return; // Prevent going to invalid pages
+    dispatch(fetchBranches({ page, limit }));
   };
 
   // Calculate loan details and render table
   const renderBranchTable = () => {
-    return currentBranch.map((branch) => {
+    return branches?.map((branch) => {
       // Extract loan data
-      const loan = branch.loan[0];
-      const interest = loan.monthDisburst * loan.interestRate;
-      const balance = loan.monthDisburst - loan.monthReturn;
+      // const loan = branch?.loan[0];
+      // const interest = loan?.monthDisburst * loan?.interestRate;
+      // const balance = loan?.monthDisburst - loan?.monthReturn;
 
       return (
-        <tr key={branch.id} onClick={() => handleRowClick(branch)}>
-          <td>{branch.branchName}</td>
-          <td>{branch.address}</td>
-          <td>{branch.supervisor}</td>
-          <td>{branch.phone}</td>
-          <td>{loan.monthDisburst.toLocaleString()}</td>
+        <tr key={branch?.id} onClick={() => handleRowClick(branch)}>
+          <td>{branch?.name}</td>
+          <td>{branch?.address}</td>
+          <td>{branch?.supervisorName}</td>
+          <td>{branch?.supervisorPhone}</td>
+          {/* <td>{loan?.monthDisburst.toLocaleString()}</td>
           <td>{interest.toFixed(2)}</td>
-          <td>{loan.monthReturn.toLocaleString()}</td>
-          <td>{balance.toLocaleString()}</td>
+          <td>{loan?.monthReturn.toLocaleString()}</td>
+          <td>{balance.toLocaleString()}</td> */}
         </tr>
       );
     });
@@ -520,8 +506,8 @@ const LoanBranches = () => {
                   type="text"
                   placeholder=""
                   onChange={handleChange}
-                  value={formData.branchName}
-                  name="branchName"
+                  value={formData.name}
+                  name="name"
                 />
               </label>
               <label>
@@ -531,8 +517,8 @@ const LoanBranches = () => {
                   type="text"
                   placeholder=""
                   onChange={handleChange}
-                  value={formData.supervisor}
-                  name="supervisor"
+                  value={formData.supervisorName}
+                  name="supervisorName"
                 />
               </label>
               <label>
@@ -542,8 +528,8 @@ const LoanBranches = () => {
                   type="text"
                   placeholder=""
                   onChange={handleChange}
-                  value={formData.email}
-                  name="email"
+                  value={formData.supervisorEmail}
+                  name="supervisorEmail"
                 />
               </label>
 
@@ -554,8 +540,8 @@ const LoanBranches = () => {
                   type="number"
                   placeholder=""
                   onChange={handleChange}
-                  name="PhoneNumber"
-                  value={formData.phone}
+                  name="supervisorPhone"
+                  value={formData.supervisorPhone}
                 />
               </label>
 
@@ -607,8 +593,8 @@ const LoanBranches = () => {
                     type="text"
                     placeholder=""
                     onChange={handleChange}
-                    value={formData.zipCode}
-                    name="city"
+                    value={formData.zipcode}
+                    name="zipcode"
                   />
                 </label>
 
@@ -648,91 +634,95 @@ const LoanBranches = () => {
           </div>
         </div>
       </div>
-      <div style={{margin: "0px 20px"}}>
-      <div className="find-lawyer-header">
-        <div className="search-div" style={{ margin: "20px" }}>
-          <div style={{ position: "relative" }}>
-            <input type="text" placeholder="search" />
-            <Icon
-              className="search-position"
-              icon="material-symbols-light:search"
-              width="18"
-              height="18"
-              style={{ color: "#9499AC" }}
-            />
+      <div style={{ margin: "0px 20px" }}>
+        <div className="find-lawyer-header">
+          <div className="search-div" style={{ margin: "20px" }}>
+            <div style={{ position: "relative" }}>
+              <input type="text" placeholder="search" />
+              <Icon
+                className="search-position"
+                icon="material-symbols-light:search"
+                width="18"
+                height="18"
+                style={{ color: "#9499AC" }}
+              />
+            </div>
           </div>
         </div>
-      </div>
-      <div className="table-container">
-        <div className="new-table-scroll">
-          <div className="table-div-con">
-            <table className="custom-table">
-              <thead>
-                <tr>
-                  <th>Branch Name</th>
-                  <th>Address</th>
-                  <th>Supervisor</th>
-                  <th>Phone</th>
-                  <th>
-                    Current <br /> Disb (P) (₦)
-                  </th>
-                  <th>Interest (₦)</th>
-                  <th>Paid(₦)</th>
-                  <th>
-                    Loan <br />
-                    Balance (₦)
-                  </th>
-                </tr>
-              </thead>
-              <tbody>{renderBranchTable()}</tbody>
-            </table>
+        <div className="table-container">
+          <div className="new-table-scroll">
+            <div className="table-div-con">
+              <table className="custom-table">
+                <thead>
+                  <tr>
+                    <th>Branch Name</th>
+                    <th>Address</th>
+                    <th>Supervisor</th>
+                    <th>Phone</th>
+                    <th>
+                      Current <br /> Disb (P) (₦)
+                    </th>
+                    <th>Interest (₦)</th>
+                    <th>Paid(₦)</th>
+                    <th>
+                      Loan <br />
+                      Balance (₦)
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>{renderBranchTable()}</tbody>
+              </table>
+            </div>
           </div>
-        </div>
-        <div className="pagination-div">
-          <Link
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="next-page-link"
-          >
-            <Icon
-              icon="formkit:arrowleft"
-              width="18"
-              height="18"
-              style={{ color: "#636878" }}
-            />
-            Previous
-          </Link>
-          <div>
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-              (pageNumber) => (
-                <Link
-                  className="paginations"
-                  key={pageNumber}
-                  onClick={() => handlePageChange(pageNumber)}
-                  style={{
-                    color: pageNumber === currentPage ? "#030b26" : "#727789",
-                  }}
-                >
-                  {pageNumber}
-                </Link>
-              )
-            )}
+
+          <div className="pagination-div">
+            <Link
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="next-page-link"
+            >
+              <Icon
+                icon="formkit:arrowleft"
+                width="18"
+                height="18"
+                style={{ color: "#636878" }}
+              />
+              Previous
+            </Link>
+
+            <div>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+                (pageNumber) => (
+                  <Link
+                    className="paginations"
+                    key={pageNumber}
+                    onClick={() => handlePageChange(pageNumber)}
+                    style={{
+                      color: pageNumber === currentPage ? "#030b26" : "#727789",
+                    }}
+                  >
+                    {pageNumber}
+                  </Link>
+                )
+              )}
+            </div>
+
+            <Link
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="next-page-link"
+            >
+              Next
+              <Icon
+                icon="formkit:arrowright"
+                width="18"
+                height="18"
+                style={{ color: "#636878" }}
+              />
+            </Link>
           </div>
-          <Link
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="next-page-link"
-          >
-            Next
-            <Icon
-              icon="formkit:arrowright"
-              width="18"
-              height="18"
-              style={{ color: "#636878" }}
-            />
-          </Link>
-        </div>
-        {selectedBranch && (
+
+          {/* {selectedBranch && (
           <div
             style={{
               position: "fixed",
@@ -902,8 +892,8 @@ const LoanBranches = () => {
               </div>
             </div>
           </div>
-        )}
-      </div>
+        )} */}
+        </div>
       </div>
     </BranchRap>
   );

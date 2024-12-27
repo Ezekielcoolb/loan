@@ -6,6 +6,9 @@ import MonthlySalesChart from "./csoMatrics/MonthlySalesChart";
 import WeeklySalesChart from "./csoMatrics/WeeklySalesChart";
 import DailySalesChart from "./csoMatrics/DailySalesChart";
 import YearlySalesChart from "./csoMatrics/YearlySalesChart";
+import { createCso, fetchCso } from "../redux/slices/csoSlice";
+import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 const ClientRap = styled.div`
   width: 100%;
@@ -78,7 +81,7 @@ const ClientRap = styled.div`
     align-items: center;
     justify-content: center;
   }
- 
+
   .no-case {
     height: 300px;
     margin-top: 70px;
@@ -489,238 +492,12 @@ const ClientRap = styled.div`
 
 const Csos = () => {
   const clientdropdownRef = useRef(null);
-  const cso = [
-    {
-      id: 1,
-      firstName: "Jacob",
-      lastName: "Jones",
-      email: "jacob@gmail.com",
-      phone: "(406) 555-0120",
-      address: "21b, Lagon",
-      workId: "0002",
-      guaratorName: "Segun Adams",
-      guaratorAddress: "Lagos Ng",
-      guaratorPhone: "0902827654",
-      guaratorEmail: "guarant@gmail.com",
-      gender: "Male",
-      profileImg: "JJ",
-      date: "2024-11-01",
-      city: "Lagos",
-      state: "Lagos",
-      zipCode: "00001",
-      country: "Nigeria",
-      status: "male",
-      noCustomer: "5",
-      branch: "Ikeja",
-    },
-    {
-      id: 2,
-      firstName: "Dariene",
-      lastName: "Roberon",
-      email: "dariene@gmail.com",
-      phone: "(207) 555-0120",
-      address: "21b, Lagos",
-      workId: "0002",
-      guaratorName: "Segun Adams",
-      guaratorAddress: "Lagos Ng",
-      guaratorPhone: "0902827654",
-      guaratorEmail: "guarant@gmail.com",
-      gender: "Male",
-      status: "male",
-      profileImg: "DR",
-      date: "2024-11-02",
-      city: "Lagos",
-      state: "Lagos",
-      zipCode: "00001",
-      country: "Nigeria",
-      noCustomer: "5",
-      branch: "Ikeja",
-    },
-    {
-      id: 3,
-      firstName: "Annette",
-      lastName: "Black",
-      email: "black@gmail.com",
-      phone: "(239) 555-0120",
-      address: "8502 Preston Rd...",
-      workId: "0003",
-      guaratorName: "Segun Adams",
-      guaratorAddress: "Lagos Ng",
-      guaratorPhone: "0902827654",
-      guaratorEmail: "guarant@gmail.com",
-      gender: "Female",
-      status: "female",
-      profileImg: "AB",
-      date: "2024-11-01",
-      city: "Lagos",
-      state: "Lagos",
-      zipCode: "00001",
-      country: "Nigeria",
-      noCustomer: "10",
-      branch: "Lekki",
-    },
-    {
-      id: 4,
-      firstName: "Jerome",
-      lastName: "Bel",
-      email: "bel@gmail.com",
-      phone: "(239) 555-0120",
-      address: "8502 Preston Rd...",
-      workId: "0004",
-      guaratorName: "Segun Adams",
-      guaratorAddress: "Lagos Ng",
-      guaratorPhone: "0902827654",
-      guaratorEmail: "guarant@gmail.com",
-      gender: "Male",
-      status: "male",
-      profileImg: "JB",
-      date: "2024-11-04",
-      city: "Lagos",
-      state: "Lagos",
-      zipCode: "00001",
-      country: "Nigeria",
-      noCustomer: "1",
-      branch: "Ikeja",
-    },
-    {
-      id: 5,
-      firstName: "Devon",
-      lastName: "Lane",
-      email: "lane@gmail.com",
-      phone: "(239) 555-0120",
-      address: "8502 Preston Rd...",
-      workId: "0005",
-      guaratorName: "Segun Adams",
-      guaratorAddress: "Lagos Ng",
-      guaratorPhone: "0902827654",
-      guaratorEmail: "guarant@gmail.com",
-      gender: "Male",
-      status: "male",
-      date: "2024-11-05",
-      city: "Lagos",
-      state: "Lagos",
-      zipCode: "00001",
-      country: "Nigeria",
-      profileImg: "DL",
-      noCustomer: "8",
-      branch: "Lekki",
-    },
-    {
-      id: 6,
-      firstName: "Darin",
-      lastName: "Love",
-      email: "jacob@gmail.com",
-      phone: "(406) 555-0120",
-      address: "21b, Lagon",
-      workId: "0006",
-      guaratorName: "Segun Adams",
-      guaratorAddress: "Lagos Ng",
-      guaratorPhone: "0902827654",
-      guaratorEmail: "guarant@gmail.com",
-      gender: "Male",
-      status: "male",
-      date: "2024-10-30",
-      city: "Lagos",
-      state: "Lagos",
-      zipCode: "00001",
-      country: "Nigeria",
-      profileImg: "DL",
-      noCustomer: "4",
-      branch: "Ikeja",
-    },
-    {
-      id: 7,
-      firstName: "Love",
-      lastName: "Faith",
-      email: "dariene@gmail.com",
-      phone: "(207) 555-0120",
-      address: "21b, Lagos",
-      workId: "0007",
-      guaratorName: "Segun Adams",
-      guaratorAddress: "Lagos Ng",
-      guaratorPhone: "0902827654",
-      guaratorEmail: "guarant@gmail.com",
-      gender: "Female",
-      status: "female",
-      date: "2024-10-30",
-      city: "Lagos",
-      state: "Lagos",
-      zipCode: "00001",
-      country: "Nigeria",
-      profileImg: "LF",
-      noCustomer: "2",
-      branch: "Lekki",
-    },
-    {
-      id: 8,
-      firstName: "Anitt",
-      lastName: "Black",
-      email: "black@gmail.com",
-      phone: "(239) 555-0120",
-      address: "8502 Preston Rd...",
-      workId: "0008",
-      guaratorName: "Segun Adams",
-      guaratorAddress: "Lagos Ng",
-      guaratorPhone: "0902827654",
-      guaratorEmail: "guarant@gmail.com",
-      gender: "Male",
-      status: "male",
-      date: "2024-11-01",
-      city: "Lagos",
-      state: "Lagos",
-      zipCode: "00001",
-      country: "Nigeria",
-      profileImg: "AB",
-      noCustomer: "2",
-      branch: "Lekki",
-    },
-    {
-      id: 9,
-      firstName: "Mary",
-      lastName: "Bill",
-      email: "bel@gmail.com",
-      phone: "(239) 555-0120",
-      address: "8502 Preston Rd...",
-      city: "Lagos",
-      state: "Lagos",
-      zipCode: "00001",
-      country: "Nigeria",
-      workId: "0009",
-      guaratorName: "Segun Adams",
-      guaratorAddress: "Lagos Ng",
-      guaratorPhone: "0902827654",
-      guaratorEmail: "guarant@gmail.com",
-      gender: "Female",
-      status: "female",
-      date: "2024-11-01",
-      profileImg: "MB",
-      noCustomer: "5",
-      branch: "Ikeja",
-    },
-    {
-      id: 10,
-      firstName: "Tife",
-      lastName: "Code",
-      email: "lane@gmail.com",
-      phone: "(239) 555-0120",
-      address: "8502 Preston Rd...",
-      workId: "00010",
-      city: "Lagos",
-      state: "Lagos",
-      zipCode: "00001",
-      country: "Nigeria",
-      guaratorName: "Segun Adams",
-      guaratorAddress: "Lagos Ng",
-      guaratorPhone: "0902827654",
-      guaratorEmail: "guarant@gmail.com",
-      date: "2024-11-09",
-      gender: "Male",
-      status: "male",
-      profileImg: "TC",
-      noCustomer: "2",
-      branch: "Ikeja",
-    },
-  ];
+
+  const dispatch = useDispatch();
+  const { cso, totalPages, currentPage, status, error } = useSelector(
+    (state) => state.cso
+  );
+  const limit = 10;
 
   const [filter, setFilter] = useState("all");
   const [activeLink, setActiveLink] = useState("cso");
@@ -747,14 +524,52 @@ const Csos = () => {
     guaratorAddress: "",
     guaratorPhone: "",
     guaratorEmail: "",
-    gender: "",
+    status: "",
     profileImg: "",
     date: "",
     city: "",
+    branch: "",
     state: "",
     zipCode: "",
     country: "",
+   
   });
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        clientdropdownRef.current &&
+        !clientdropdownRef.current.contains(event.target)
+      ) {
+        closeDropdown(); // Close if clicked outside
+      }
+    };
+
+    if (selectedCso) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [selectedCso]);
+
+
+
+
+
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchCso({ page: currentPage, limit }));
+    }
+  }, [dispatch, status, currentPage]);
+
+  if (status === "loading") return <p>Loading branches...</p>;
+  if (status === "failed") return <p>Error: {error}</p>;
+
+
+
+
+
 
   const filteredCso =
     filter === "all" ? cso : cso.filter((c) => c.status === filter);
@@ -805,52 +620,57 @@ const Csos = () => {
     setOpen(!isopen);
   };
 
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (
-        clientdropdownRef.current &&
-        !clientdropdownRef.current.contains(event.target)
-      ) {
-        closeDropdown(); // Close if clicked outside
-      }
-    };
-
-    if (selectedCso) {
-      document.addEventListener("mousedown", handleOutsideClick);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-    };
-  }, [selectedCso]);
-
-  //   pagination
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 5;
-
-  // Pagination Logic
-  const totalPages = Math.ceil(filteredCso.length / rowsPerPage);
-  const indexOfLastCase = currentPage * rowsPerPage;
-  const indexOfFirstCase = indexOfLastCase - rowsPerPage;
-  const currentCso = filteredCso.slice(indexOfFirstCase, indexOfLastCase);
-
-  const handlePageChange = (pageNumber) => {
-    if (pageNumber > 0 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-    }
+  // Handle page change in pagination
+  const handlePageChange = (page) => {
+    if (page < 1 || page > totalPages) return; // Prevent going to invalid pages
+    dispatch(fetchCso({ page, limit }));
   };
 
   const isValid =
-    formData.firstName.trim() !== "" &&
-    formData.lastName.trim() !== "" &&
-    formData.email.trim() !== "" &&
-    formData.phone.trim() !== "";
+    formData.firstName !== "" &&
+    formData.lastName !== "" &&
+    formData.email !== "" &&
+    formData.address !== "" &&
+    formData.workId !== "" &&
+    formData.guaratorName !== "" &&
+    formData.guaratorAddress !== "" &&
+    formData.guaratorPhone !== "" &&
+    formData.date !== "" &&
+    formData.status !== "" &&
+    formData.branch !== "" &&
+    formData.phone !== "";
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isValid) {
-      setDropdownVisible(false);
+      try {
+        dispatch(createCso(formData));
+        setDropdownVisible(false);
+        setFormData({
+          img: null, // Store the file object
+          imgPreview: null,
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          address: "",
+          workId: "",
+          guaratorName: "",
+          guaratorAddress: "",
+          guaratorPhone: "",
+          guaratorEmail: "",
+          status: "",
+          branch: "",
+          profileImg: "",
+          date: "",
+          city: "",
+          state: "",
+          zipCode: "",
+          country: "",
+        });
+      } catch (error) {
+        toast.error("Failed to create branch");
+      }
     }
   };
 
@@ -978,7 +798,7 @@ const Csos = () => {
                     type="number"
                     placeholder=""
                     onChange={handleChange}
-                    name="PhoneNumber"
+                    name="phone"
                     value={formData.phone}
                   />
                 </label>
@@ -1004,6 +824,32 @@ const Csos = () => {
                     value={formData.date}
                   />
                 </label>
+                <div className="client-input-div">
+                  <label>
+                    Branch Assigned
+                    <span className="star">*</span> <br />
+                    <input
+                      className="client-small-input-div"
+                      type="text"
+                      placeholder=""
+                      name="branch"
+                      onChange={handleChange}
+                      value={formData.branch}
+                    />
+                  </label>
+                  <label>
+                    Gender
+                    <span className="star">*</span> <br />
+                    <input
+                      className="client-small-input-div"
+                      type="text"
+                      placeholder=""
+                      name="status"
+                      onChange={handleChange}
+                      value={formData.status}
+                    />
+                  </label>
+                </div>
                 <label>
                   Address
                   <input
@@ -1053,7 +899,7 @@ const Csos = () => {
                       placeholder=""
                       onChange={handleChange}
                       value={formData.zipCode}
-                      name="city"
+                      name="zipCode"
                     />
                   </label>
 
@@ -1147,10 +993,9 @@ const Csos = () => {
         <div style={{ margin: "0px 20px" }}>
           {activeLink === "cso" && (
             <>
-           
               <div className="sub-bill-1 find-lawyer-header">
                 <div className="status-btn" style={{ marginBottom: "20px" }}>
-                  {["all", "male", "female"].map((status) => (
+                  {["all", "Male", "Female"].map((status) => (
                     <Link
                       className="status-link"
                       key={status}
@@ -1179,67 +1024,66 @@ const Csos = () => {
                 </div>
               </div>
               <div className="table-container">
-              <div  className="new-table-scroll">
-              <div className="table-div-con">
-
-                <table className="custom-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: "30px" }}>
-                        <input type="checkbox" />
-                      </th>
-                      <th>Name</th>
-                      <th>Email</th>
-                      <th>Phone Number</th>
-                      <th>Gender</th>
-                      <th>No of customer</th>
-                      <th>Branch</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentCso ? (
-                      currentCso.map((caseItem) => (
-                        <tr
-                          key={caseItem.id}
-                          onClick={() => handleRowClick(caseItem)}
-                          style={{ cursor: "pointer" }}
-                        >
-                          <td>
-                            <input
-                              type="checkbox"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRowClick(caseItem);
-                              }}
-                            />
-                          </td>
-                          <td>
-                            {caseItem.firstName} {caseItem.lastName}
-                          </td>
-                          <td>{caseItem.email}</td>
-                          <td>{caseItem.phone}</td>
-                          <td>{caseItem.gender}</td>
-                          <td>{caseItem.noCustomer}</td>
-                          <td>{caseItem.branch}</td>
+                <div className="new-table-scroll">
+                  <div className="table-div-con">
+                    <table className="custom-table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: "30px" }}>
+                            <input type="checkbox" />
+                          </th>
+                          <th>Name</th>
+                          <th>Email</th>
+                          <th>Phone Number</th>
+                          <th>Gender</th>
+                          <th>No of customer</th>
+                          <th>Branch</th>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="10" className="no-case">
-                          <img src="/images/mask_img.png" alt="" />
-                          <h3>No case found.</h3>
-                          <p style={{}}>
-                            Stay organized by keeping every case detail in one
-                            place.
-                          </p>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-                </div>
+                      </thead>
+                      <tbody>
+                        {filteredCso ? (
+                          filteredCso.map((caseItem) => (
+                            <tr
+                              key={caseItem?.id}
+                              onClick={() => handleRowClick(caseItem)}
+                              style={{ cursor: "pointer" }}
+                            >
+                              <td>
+                                <input
+                                  type="checkbox"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRowClick(caseItem);
+                                  }}
+                                />
+                              </td>
+                              <td>
+                                {caseItem?.firstName} {caseItem?.lastName}
+                              </td>
+                              <td>{caseItem?.email}</td>
+                              <td>{caseItem?.phone}</td>
+                              <td>{caseItem?.status}</td>
+                              <td>{caseItem?.noCustomer}</td>
+                              <td>{caseItem?.branch}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="10" className="no-case">
+                              <img src="/images/mask_img.png" alt="" />
+                              <h3>No cso found.</h3>
+                              <p style={{}}>
+                               
+                              </p>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
                 {/* Pagination Controls */}
+
                 <div className="pagination-div">
                   <Link
                     onClick={() => handlePageChange(currentPage - 1)}
@@ -1254,6 +1098,7 @@ const Csos = () => {
                     />
                     Previous
                   </Link>
+
                   <div>
                     {Array.from(
                       { length: totalPages },
@@ -1272,6 +1117,7 @@ const Csos = () => {
                       </Link>
                     ))}
                   </div>
+
                   <Link
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
@@ -1288,7 +1134,7 @@ const Csos = () => {
                 </div>
 
                 {/* Dropdown */}
-                {selectedCso && (
+                {/* {selectedCso && (
                   <div
                     style={{
                       position: "fixed",
@@ -1459,7 +1305,7 @@ const Csos = () => {
                       </div>
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
             </>
           )}

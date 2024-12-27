@@ -14,7 +14,7 @@ const sidebarConfig = [
   {
     id: 2,
     icon: "fluent:people-edit-16-regular",
-    link: "/cso",
+    link: "/admincso",
     title: "Customer Service Officer",
   },
   {
@@ -53,7 +53,7 @@ const sidebarConfig = [
   {
     id: 8,
     icon: "mdi:comment-account-outline",
-    link: "",
+    link: "/test",
     title: "Account",
   },
   {
@@ -68,7 +68,12 @@ const sidebarConfig = [
     link: "/settings",
     title: "Setting",
   },
- 
+  {
+    id: 11,
+    icon: "lets-icons:setting-line",
+    link: "/test/details",
+    title: "Test",
+  },
 ];
 
 export default function AdminSidebar() {

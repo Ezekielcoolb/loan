@@ -14,10 +14,21 @@ import BranchCustomers from "../Admin/BranchDetails/BranchCustomer";
 import AllCustomerDetail from "../Admin/CustomerDetail/allCustomerDetails";
 import NewLoan from "../Admin/NewLoan";
 import Disbursment from "../Admin/Disburstment";
-import DisbursementRepayment from "../Admin/TransactionDetails/DisbursementDetail";
-import LoanSubmissions from "../Admin/TransactionDetails/LoanApplication";
+
 import AllTransactions from "../Admin/Transaction";
 import Setting from "../Admin/Setting";
+import CsoLogin from "../CsoPages/Login";
+import ProtectedRoute from "../CsoPages/CsoPrivateRoute";
+import CsoHome from "../CsoPages/CsoHome";
+
+
+import LoanDetails from "../Admin/LoanPages/LoanDetails";
+import DisbursementTable from "../Admin/test";
+import CustomerGallery from "../Admin/testDetail";
+
+import CustomerDetailsPage from "../CsoPages/CustomerDetailsPage";
+import CalendarPage from "../CsoPages/CalenderPage";
+
 
 
 
@@ -32,7 +43,7 @@ export default function Routess() {
                     element: <AdminDashboardLayout />,
                     children: [
                         {path: "/dashboard", element: <AdminDashboard />},
-                        {path: "/cso", element: <Csos />},
+                        {path: "/admincso", element: <Csos />},
                         {path: "/csodetails", element: <CsoDetails />},
                         {path: "/csocustomers", element: <Customers />},
                         {path: "/customerdetails", element: <CustomersDetails  />},
@@ -45,11 +56,29 @@ export default function Routess() {
                         {path: "/allcustomers", element: <AllCustomerDetail  />},
                         {path: "/newloan", element: <NewLoan  />},
                         {path: "/disbursement", element: <Disbursment  />},
-                     
+
+                        {path: "/test", element: <DisbursementTable  />},
+                        {path: "/test/details", element: <CustomerGallery  />},
+                        {path: "/calendar/:id", element: <CalendarPage  />},
+
+                        {path: "/loan/:id", element: <LoanDetails  />},
                         {path: "/transactions", element: <AllTransactions  />},
                         {path: "/settings", element: <Setting  />},
                     ]
                 },
+                {
+                    path: "/cso",
+                    element: <ProtectedRoute/>,
+                    children: [
+                        {path: "/cso" , element: <CsoHome />},
+                        {path: "/cso/customer-details/:id" , element: <CustomerDetailsPage />},
+                        {path: "/cso/calendar/:id", element: <CalendarPage  />},
+                    
+                    ]
+                },
+
+
+                { path:'/csoLogin', element: <CsoLogin />} ,
                 
             ]
         )

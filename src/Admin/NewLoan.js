@@ -1,7 +1,9 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchWaitingLoans, setPages } from "../redux/slices/LoanSlice";
 
 const NewLoanRap = styled.div`
   width: 100%;
@@ -169,94 +171,37 @@ const NewLoanRap = styled.div`
   }
 `;
 
-// Initial loan request data
-const initialLoanRequests = [
-  {
-    id: 1,
-    pic: "JD",
-    name: "John Doe",
-    amount: 50000,
-    businessType: "Retail",
-    businessSize: "Small",
-    bvn: "12345678901",
-    accountNumber: "1234567890",
-    phone: "000000000",
-    bank: "XYZ Bank",
-    status: "Waiting Approval",
-    address: "123 Main St, City, Country",
-    guarantor: "Jane Doe",
-    guarantorNo: "07098765432",
-    cso: "Officer A",
-    association: "Iya Alata",
-  },
-  {
-    id: 2,
-    pic: "SS",
-    name: "Sarah Smith",
-    amount: 100000,
-    businessType: "Wholesale",
-    businessSize: "Medium",
-    bvn: "98765432109",
-    phone: "000000000",
-    accountNumber: "0987654321",
-    bank: "ABC Bank",
-    status: "Waiting Approval",
-    address: "456 Elm St, City, Country",
-    guarantor: "Mark Smith ",
-    guarantorNo: "07098765432",
-    cso: "Officer B",
-    association: "Bread committe",
-  },
-  {
-    id: 2,
-    pic: "JS",
-    name: "Johnson Smith",
-    amount: 500000,
-    businessType: "Wholesale",
-    businessSize: "Large",
-    bvn: "00765432109",
-    phone: "000000000",
-    accountNumber: "0987654321",
-    bank: "RTY Bank",
-    status: "Waiting Approval",
-    address: "456 Sol St, City, Country",
-    guarantor: "John Smith",
-    guarantorNo: "07098765432",
-    cso: "Officer B",
-    association: "Bread committe",
-  },
-];
 
 const NewLoan = () => {
-  const [loanRequests, setLoanRequests] = useState(initialLoanRequests);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [takeAction, setTakeAction] = useState(false);
-  const [rejection, setRejection] = useState(false);
-
-  const handleApproveReject = () => {
-    setRejection(true);
+  const dispatch = useDispatch();
+  const { loans, loading, totalPages, currentPage } = useSelector(
+    (state) => state.loan
+  );
+  
+  useEffect(() => {
+    dispatch(fetchWaitingLoans({ page: currentPage }));
+  }, [dispatch, currentPage]);
+  
+  const handlePageChange = (page) => {
+    dispatch(setPages(page));
   };
-  const handleLoanApprove = () => {
-    setTakeAction(true);
+  
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      dispatch(setPages(currentPage - 1));
+    }
   };
-  // Handle approving loan
-  const approveLoan = (id) => {
-    const updatedLoans = loanRequests.map((loan) =>
-      loan.id === id ? { ...loan, status: "Loan Approved" } : loan
-    );
-    setLoanRequests(updatedLoans);
-    setSelectedCustomer(null);
+  
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      dispatch(setPages(currentPage + 1));
+    }
   };
-
-  // Handle rejecting loan
-  const rejectLoan = (id) => {
-    const updatedLoans = loanRequests.map((loan) =>
-      loan.id === id ? { ...loan, status: "Not Approved" } : loan
-    );
-    setLoanRequests(updatedLoans);
-    setSelectedCustomer(null);
-  };
-
+  
+  if (loading === "loading") return <p>Loading...</p>;
+  if (loading === "failed") return <p>Error loading loans</p>;
+  
   return (
     <NewLoanRap>
       <div className="new-loan">
@@ -270,42 +215,28 @@ const NewLoan = () => {
               <table className="custom-table">
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th>Loan Request</th>
-                    <th>Business Type</th>
-                    <th>Business Size</th>
-                    <th>BVN</th>
-                    <th>Account Number</th>
-                    <th>Bank</th>
+                    <th>Customer Name</th>
+                    <th>Loan Requested</th>
+                    <th>Business Name</th>
+                    <th>Estimated Value</th>
+                    <th>CSO in Charged</th>
+                    <th>Branch Associated</th>
                     <th>Status</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {loanRequests.map((loan) => (
-                    <tr
-                      key={loan.id}
-                      style={{ cursor: "pointer" }}
-                      onClick={() => setSelectedCustomer(loan)}
-                    >
-                      <td>{loan.name}</td>
-                      <td>₦{loan.amount.toLocaleString()}</td>
-                      <td>{loan.businessType}</td>
-                      <td>{loan.businessSize}</td>
-                      <td>{loan.bvn}</td>
-                      <td>{loan.accountNumber}</td>
-                      <td>{loan.bank}</td>
-                      <td
-                        style={{
-                          color:
-                            loan.status === "Waiting Approval"
-                              ? "blue"
-                              : loan.status === "Loan Approved"
-                              ? "green"
-                              : "red",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {loan.status}
+                  {loans?.map((loan) => (
+                    <tr key={loan?._id}>
+                      <td>{`${loan?.customerDetails?.firstName} ${loan?.customerDetails?.lastName}`}</td>
+                      <td>{loan?.loanDetails?.amountRequested}</td>
+                      <td>{loan?.businessDetails?.businessName}</td>
+                      <td>{loan?.businessDetails?.estimatedValue}</td>
+                      <td>{loan?.csoName}</td>
+                      <td>{loan?.branch}</td>
+                      <td style={{color: "green"}}>{loan?.status}</td>
+                      <td>
+                        <Link to={`/loan/${loan._id}`}>View Details</Link>
                       </td>
                     </tr>
                   ))}
@@ -313,158 +244,32 @@ const NewLoan = () => {
               </table>
             </div>
           </div>
-          {/* Customer Details Modal */}
-          {selectedCustomer && (
-            <div className="dropdown-container">
-              <div className="all-dropdown-div">
-                <div className="dropdown-header">
-                  <h3>Customer Details</h3>
-                  <Icon
-                    onClick={() => setSelectedCustomer(null)}
-                    icon="uil:times"
-                    width="16"
-                    height="16"
-                    style={{ color: "black", cursor: "pointer" }}
-                  />
-                </div>
-                <div className="dropdown-div">
-                  <div className="left-drop-div">
-                    <div className="customer-pic">{selectedCustomer.pic}</div>
-                    <p>
-                      <span>Name:</span> {selectedCustomer.name}
-                    </p>
-                    <p>
-                      <span>Address:</span> {selectedCustomer.address}
-                    </p>
-                    <p>
-                      <span>Phone Number:</span> {selectedCustomer.phone}
-                    </p>
-                    <p>
-                      <span>Guarantor:</span> {selectedCustomer.guarantor}
-                    </p>
-                    <p>
-                      <span>Guarantor Number:</span>{" "}
-                      {selectedCustomer.guarantorNo}
-                    </p>
-                    <p>
-                      <span>Amount:</span> ₦
-                      {selectedCustomer.amount.toLocaleString()}
-                    </p>
-                    <p>
-                      <span>Business Type:</span>{" "}
-                      {selectedCustomer.businessType}
-                    </p>
-                    <p>
-                      <span>Business Size:</span>{" "}
-                      {selectedCustomer.businessSize}
-                    </p>
-                    <p>
-                      <span>Cso:</span> {selectedCustomer.cso}
-                    </p>
-                  </div>
+           {/* Pagination Controls */}
+     <div>
+        <button onClick={handlePreviousPage} disabled={currentPage === 1}>
+          Previous
+        </button>
 
-                  <div className="right-drop-div">
-                    <h4>Verification</h4>
+        {/* Render Page Numbers */}
+        <div>
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index}
+              onClick={() => handlePageChange(index + 1)}
+              disabled={currentPage === index + 1}
+              style={{
+                fontWeight: currentPage === index + 1 ? 'bold' : 'normal',
+              }}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
 
-                    <div className="flex-verify">
-                      <p>Ask CSO for more information</p>
-                      <Link className="verify-btn">Call</Link>
-                    </div>
-                    <div className="flex-verify">
-                      <p>Verify past loan record for existing customer</p>
-                      <Link className="verify-btn">Verify</Link>
-                    </div>
-
-                    <div className="flex-verify">
-                      <p>Send verification form to guarantor</p>
-                      <Link className="verify-btn">Send</Link>
-                    </div>
-                    <div className="flex-verify">
-                      <p> Enable CSO to change customer information</p>
-                      <Link className="verify-btn">Enable</Link>
-                    </div>
-                    <div className="flex-verify ">
-                      <Link className="verify-btn">Call Customer</Link>
-                      <Link className="verify-btn">Call Guarantor</Link>
-                    </div>
-                    <Link className="verify-btn">Verify BVN</Link>
-                    <div className="flex-verify">
-                      <p> Enable CSO to change customer information</p>
-                      <Link className="verify-btn">Enable</Link>
-                    </div>
-                  </div>
-                </div>
-                <div className="edi-del-btn">
-                  {!takeAction ? (
-                    <>
-                      <Link onClick={handleLoanApprove} className="edit-client">
-                        Approve
-                      </Link>
-                      <Link
-                        onClick={handleApproveReject}
-                        className="edit-client reject-btn"
-                      >
-                        Reject
-                      </Link>
-                      <Link
-                        onClick={() => setSelectedCustomer(null)}
-                        className="delete-client"
-                      >
-                        Cancel
-                      </Link>
-                    </>
-                  ) : (
-                    <div className="amount-approved">
-                      <input
-                        type="number"
-                        placeholder="Input amount approved"
-                      />
-                      <div className="approve-can-btn">
-                        <Link
-                          onClick={() => approveLoan(selectedCustomer.id)}
-                          className="edit-client "
-                        >
-                          Approve
-                        </Link>
-                        <Link
-                          onClick={() => setTakeAction(false)}
-                          className="delete-client"
-                        >
-                          Cancel
-                        </Link>
-                      </div>
-                    </div>
-                  )}
-                  {rejection ? (
-                    <>
-                      <div className="amount-approved">
-                        <input
-                          type="text"
-                          placeholder="Input reason for rejection"
-                        />
-                        <div className="approve-can-btn">
-                          <Link
-                            onClick={() => rejectLoan(selectedCustomer.id)}
-                            className="edit-client reject-btn"
-                          >
-                            Reject
-                          </Link>
-                          <Link
-                            onClick={() => setRejection(false)}
-                            className="delete-client"
-                          >
-                            Cancel
-                          </Link>
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    ""
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+        <button onClick={handleNextPage} disabled={currentPage === totalPages}>
+          Next
+        </button>
+      </div>
         </div>
       </div>
     </NewLoanRap>
