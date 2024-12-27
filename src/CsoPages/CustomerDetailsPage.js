@@ -282,7 +282,7 @@ const CustomerDetailsPage = () => {
                 </div>
               </div>
               <div className="the-current-loan">
-                <p>Current Loan</p>
+                <p>Ammout Disbursed</p>
                 <h4>{loan?.loanDetails?.amountApproved}</h4>
                 <p>Customer Reliability Ratings</p>
                 <p>Default Payment</p>
@@ -311,13 +311,10 @@ const CustomerDetailsPage = () => {
                   <h3>{disbursedDate}</h3>
                 </div>
                 <div className="disbursement-info">
-                  <h6>Amount Disbursed </h6>
+                  <h6>Current Loan (P + I) </h6>
                   <h3>{loan?.loanDetails?.amountToBePaid}</h3>
                 </div>
-                <div className="disbursement-info">
-                  <h6>Interest</h6>
-                  <h3>{loan?.loanDetails?.interest}</h3>
-                </div>
+              
                 <div className="disbursement-info">
                   <h6>Payment Start Date</h6>
                   <h3>{repaymentStartDate}</h3>
