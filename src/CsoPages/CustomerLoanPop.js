@@ -7,6 +7,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { setDropdownVisible } from "../redux/slices/appSlice";
 
 const LoanApplicationRap = styled.div`
+margin-bottom: 100px;
 h3 {
   color: #005e78;
   font-weight: 700px;
@@ -18,12 +19,15 @@ width: 300px;
 height: 40px;
 border-radius: 15px;
 padding: 10px;
-background: #EAEAEA;
+background: #EAEAEA ;
 }
 .cancel-btn {
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
+}
+.all-dropdown-div {
+  padding-bottom: 50px !important;
 }
 button {
   background: #005E78;
