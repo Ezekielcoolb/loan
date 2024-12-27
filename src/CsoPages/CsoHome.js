@@ -138,6 +138,20 @@ const HomeCsoRap = styled.div`
     border-radius: 10px;
     color: #005e78;
   }
+  .page-div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+
+  }
+  .page-btn  {
+    width: 100px;
+    height: 30px;
+    color: #005E78;
+    border-radius: 10px;
+    border: 1px solid #005e78;
+  }
 `;
 
 const CsoHome = () => {
