@@ -53,7 +53,7 @@ const sidebarConfig = [
   {
     id: 8,
     icon: "mdi:comment-account-outline",
-    link: "/test",
+    link: "/test/details",
     title: "Account",
   },
   {

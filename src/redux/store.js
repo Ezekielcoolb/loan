@@ -4,6 +4,7 @@ import csoReducer from './slices/csoSlice'
 import authReducer from './slices/authSlice'
 import loanReducer from './slices/LoanSlice'
 import appReducer from './slices/appSlice'
+import branchLoanReducer from './slices/branchLoanSlice'
 
 const store = configureStore({
     reducer: {
@@ -12,6 +13,7 @@ const store = configureStore({
         auth: authReducer,
         loan: loanReducer,
         app: appReducer,
+        loanBranches: branchLoanReducer,
     },
 });
 

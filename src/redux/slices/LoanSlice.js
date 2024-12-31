@@ -21,9 +21,9 @@ export const submitLoanApplication = createAsyncThunk(
 );
 export const fetchLoans = createAsyncThunk(
   'loans/fetchLoans',
-  async ({ page = 1, limit = 9 }, thunkAPI) => {
+  async ({ page = 1, limit = 12 }, thunkAPI) => {
     try {
-      const response = await axios.get(`${API_URL}/loans?page=${page}&limit=${limit}`);
+      const response = await axios.get(`http://localhost:5000/api/loan/loans?page=${page}&limit=${limit}`);
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response.data);
@@ -49,16 +49,24 @@ export const fetchWaitingLoans = createAsyncThunk('loans/fetchWaitingLoans', asy
 export const fetchWaitingDisbursementLoans = createAsyncThunk(
   'loan/fetchWaitingDisbursementLoans',
   async () => {
+    try {
     const response = await axios.get(`${API_URL}/loans/waiting-disbursement`);
     return response.data;
+    } catch (err) {
+      console.log(err);
+    }
   }
 );
 
 export const fetchActiveCustomers = createAsyncThunk(
   'loan/fetchActiveCustomers',
   async () => {
+    try {
     const response = await axios.get(`${API_URL}/loans/active-customers`);
     return response.data;
+    } catch (err) {
+      console.log(err);
+    }
   }
 );
 
@@ -66,16 +74,48 @@ export const fetchActiveCustomers = createAsyncThunk(
 export const fetchRepaymentSchedule = createAsyncThunk(
   'loan/fetchRepaymentSchedule',
   async (id) => {
+    try {
     const response = await axios.get(`${API_URL}/loans/${id}/repayment-schedule`);
     return response.data;
+    } catch (err) {
+      console.log(err);
+    }
   }
 );
+
+export const fetchLoanById = createAsyncThunk('loans/fetchLoanById', async (id) => {
+  try {
+  const response = await axios.get(`http://localhost:5000/api/loan/loans/${id}`);
+  return response.data;
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+export const makePayment = createAsyncThunk('loans/makePayment', async ({ id, amount, imageLink }) => {
+  try  {
+  const response = await axios.post(`http://localhost:5000/api/loan/loans/${id}/payment`, { amount, imageLink });
+  console.log(response);
+console.log(response.data);
+  
+  return response.data;
+  }  catch (err) {
+    console.log(err);
+  }
+});
+
 
 export const disburseLoan = createAsyncThunk(
   'loan/disburseLoan',
   async (id) => {
-    const response = await axios.post(`${API_URL}/loans/disburse/${id}`);
+    try {
+    const response = await axios.post(`http://localhost:5000/api/loan/loans/disburse/${id}`);
+    console.log(response, response.data);
+    
     return response.data;
+    } catch (err) {
+      console.log(err);
+    }
   }
 );
 
@@ -125,7 +165,7 @@ const loanSlice = createSlice({
     totalPages: 0,
     activeCustomers: [],
     repaymentSchedule: [],
-    totalLoans: 0,
+    selectedLoan: null,
     currentPage: 1,
     loading: 'idle',
     error: null,
@@ -194,11 +234,21 @@ const loanSlice = createSlice({
       .addCase(fetchActiveCustomers.fulfilled, (state, action) => {
         state.activeCustomers = action.payload;
       })
+
+      .addCase(fetchRepaymentSchedule.pending, (state) => {
+        state.loading = 'loading';
+      })
       .addCase(fetchRepaymentSchedule.fulfilled, (state, action) => {
         state.repaymentSchedule = action.payload.repaymentSchedule || [];
+        state.loading = 'idle';
       })
 
-
+      .addCase(fetchLoanById.fulfilled, (state, action) => {
+        state.selectedLoan = action.payload;
+      })
+      .addCase(makePayment.fulfilled, (state, action) => {
+        state.selectedLoan = action.payload;
+      })
 
       .addCase(approveLoan.fulfilled, (state, action) => {
         const index = state.loans.findIndex((loan) => loan._id === action.payload._id);

@@ -28,6 +28,11 @@ import CustomerGallery from "../Admin/testDetail";
 
 import CustomerDetailsPage from "../CsoPages/CustomerDetailsPage";
 import CalendarPage from "../CsoPages/CalenderPage";
+import MyCalendarPage from "../Admin/TestCalendar";
+
+import LoanCalendar from "../Admin/TestCalendar";
+import PaymentPage from "../CsoPages/PaymentPage";
+
 
 
 
@@ -50,14 +55,15 @@ export default function Routess() {
                         {path: "/loan", element: <Loan  />},
                         {path: "/branches", element: <LoanBranches  />},
                         {path: "/branchtransaction", element: <BranchTransaction  />},
-                        {path: "/branchdetails", element: <BranchDetails  />},
+                        {path: "/branchdetails/:id", element: <BranchDetails  />},
                         {path: "/branchcso", element: <BranchCSO  />},
                         {path: "/branchcustomers", element: <BranchCustomers  />},
                         {path: "/allcustomers", element: <AllCustomerDetail  />},
                         {path: "/newloan", element: <NewLoan  />},
                         {path: "/disbursement", element: <Disbursment  />},
 
-                        {path: "/test", element: <DisbursementTable  />},
+                        // {path: "/loans/:id/payment", element: <PaymentPage  />},
+                        {path: "/calendar/test/:id", element: <LoanCalendar  />},
                         {path: "/test/details", element: <CustomerGallery  />},
                         {path: "/calendar/:id", element: <CalendarPage  />},
 
@@ -73,7 +79,7 @@ export default function Routess() {
                         {path: "/cso" , element: <CsoHome />},
                         {path: "/cso/customer-details/:id" , element: <CustomerDetailsPage />},
                         {path: "/cso/calendar/:id", element: <CalendarPage  />},
-                    
+                        {path: "/cso/loans/:id/payment", element: <PaymentPage />},
                     ]
                 },
 

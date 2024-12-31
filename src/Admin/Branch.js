@@ -9,6 +9,7 @@ import ReactPaginate from "react-paginate";
 import { useDispatch, useSelector } from "react-redux";
 import { createBranch, fetchBranches } from "../redux/slices/branchSlice";
 import toast from "react-hot-toast";
+import { fetchBranchLoanData } from "../redux/slices/branchLoanSlice";
 
 const BranchRap = styled.div`
   width: 100%;
@@ -367,19 +368,17 @@ const LoanBranches = () => {
   });
 
   const dispatch = useDispatch();
-  const { branches, totalPages, currentPage, status, error } = useSelector(
-    (state) => state.branches
-  );
-  const limit = 10;
+  const { branchData, status, error } = useSelector((state) => state.loanBranches);
 
   useEffect(() => {
-    if (status === "idle") {
-      dispatch(fetchBranches({ page: currentPage, limit }));
+    if (status === 'idle') {
+      dispatch(fetchBranchLoanData());
     }
-  }, [dispatch, status, currentPage]);
+  }, [status, dispatch]);
 
-  if (status === "loading") return <p>Loading branches...</p>;
-  if (status === "failed") return <p>Error: {error}</p>;
+  if (status === 'loading') return <p>Loading...</p>;
+  if (status === 'failed') return <p>Error: {error}</p>;
+console.log(branchData);
 
   const isValid =
     formData.name !== "" &&
@@ -433,30 +432,27 @@ const LoanBranches = () => {
     setMatricOpen(links);
   };
 
-  // Handle page change in pagination
-  const handlePageChange = (page) => {
-    if (page < 1 || page > totalPages) return; // Prevent going to invalid pages
-    dispatch(fetchBranches({ page, limit }));
-  };
+ 
 
   // Calculate loan details and render table
   const renderBranchTable = () => {
-    return branches?.map((branch) => {
+    return branchData?.map((branch) => {
       // Extract loan data
       // const loan = branch?.loan[0];
       // const interest = loan?.monthDisburst * loan?.interestRate;
       // const balance = loan?.monthDisburst - loan?.monthReturn;
 
       return (
-        <tr key={branch?.id} onClick={() => handleRowClick(branch)}>
-          <td>{branch?.name}</td>
-          <td>{branch?.address}</td>
-          <td>{branch?.supervisorName}</td>
-          <td>{branch?.supervisorPhone}</td>
-          {/* <td>{loan?.monthDisburst.toLocaleString()}</td>
-          <td>{interest.toFixed(2)}</td>
-          <td>{loan?.monthReturn.toLocaleString()}</td>
-          <td>{balance.toLocaleString()}</td> */}
+        <tr key={branch?._id} onClick={() => handleRowClick(branch)}>
+          <td>{branch.branchName}</td>
+            <td>{branch.address}</td>
+            <td>{branch.supervisorName}</td>
+            <td>{branch.supervisorPhone}</td>
+            <td>{branch.totalAmountDisbursed}</td>
+            <td>{branch.totalAmountToBePaid}</td>
+            <td>{branch.totalAmountPaidSoFar}</td>
+            <td>{branch.loanBalance}</td>
+            {/* <td><Link to={`/branchdetails/${branch._id}`}>View Details</Link></td> */}
         </tr>
       );
     });
@@ -655,19 +651,15 @@ const LoanBranches = () => {
               <table className="custom-table">
                 <thead>
                   <tr>
-                    <th>Branch Name</th>
-                    <th>Address</th>
-                    <th>Supervisor</th>
-                    <th>Phone</th>
-                    <th>
-                      Current <br /> Disb (P) (₦)
-                    </th>
-                    <th>Interest (₦)</th>
-                    <th>Paid(₦)</th>
-                    <th>
-                      Loan <br />
-                      Balance (₦)
-                    </th>
+                  <th>Branch Name</th>
+          <th>Address</th>
+          <th>Supervisor Name</th>
+          <th>Supervisor Phone</th>
+          <th>Total Amount Disbursed (₦)</th>
+          <th>Amount disb + Interest (₦)</th>
+          <th>Collections (₦)</th>
+          <th>Loan <br /> Balance (₦)</th>
+          {/* <th>Action</th> */}
                   </tr>
                 </thead>
                 <tbody>{renderBranchTable()}</tbody>
@@ -675,52 +667,7 @@ const LoanBranches = () => {
             </div>
           </div>
 
-          <div className="pagination-div">
-            <Link
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="next-page-link"
-            >
-              <Icon
-                icon="formkit:arrowleft"
-                width="18"
-                height="18"
-                style={{ color: "#636878" }}
-              />
-              Previous
-            </Link>
-
-            <div>
-              {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-                (pageNumber) => (
-                  <Link
-                    className="paginations"
-                    key={pageNumber}
-                    onClick={() => handlePageChange(pageNumber)}
-                    style={{
-                      color: pageNumber === currentPage ? "#030b26" : "#727789",
-                    }}
-                  >
-                    {pageNumber}
-                  </Link>
-                )
-              )}
-            </div>
-
-            <Link
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="next-page-link"
-            >
-              Next
-              <Icon
-                icon="formkit:arrowright"
-                width="18"
-                height="18"
-                style={{ color: "#636878" }}
-              />
-            </Link>
-          </div>
+        
 
           {/* {selectedBranch && (
           <div

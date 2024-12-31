@@ -15,12 +15,16 @@ const CustomerGallery = () => {
   return (
     <div>
       {activeCustomers.map((customer) => (
+        <>
         <img
           key={customer._id}
           src={customer.pictures.customer}
           alt={customer.customerDetails.firstName}
           onClick={() => navigate(`/calendar/${customer._id}`)}
         />
+        <button onClick={() => navigate(`/loans/${customer._id}/payment`)}>Go to Payment</button>
+        <button onClick={() => navigate(`/calendar/test/${customer._id}`)}>Go to Calendar</button>
+        </>
       ))}
     </div>
   );

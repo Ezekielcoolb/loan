@@ -1,43 +1,43 @@
-import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchWaitingDisbursementLoans, disburseLoan } from '../redux/slices/LoanSlice';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-const DisbursementTable = () => {
+import { useParams } from 'react-router-dom';
+import { fetchLoanById, makePayment } from '../redux/slices/LoanSlice';
+
+const PaymentPage = () => {
+  const { id } = useParams();
   const dispatch = useDispatch();
-  const { loans, loading } = useSelector((state) => state.loan);
+  const loan = useSelector((state) => state.loan.selectedLoan);
+  const [amount, setAmount] = useState(null);
+
 
   useEffect(() => {
-    dispatch(fetchWaitingDisbursementLoans());
-  }, [dispatch]);
+    dispatch(fetchLoanById(id)); // Fetch loan data when the component loads
+  }, [dispatch, id]);
 
-  const handleDisburse = (id) => {
-    dispatch(disburseLoan(id));
+  const handlePayment = () => {
+    dispatch(makePayment({ id, amount }));
+    setAmount(0);
   };
-
-  if (loading === 'loading') return <p>Loading...</p>;
+  console.log(loan);
+  
 
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Customer Name</th>
-          <th>Amount Approved</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {loans.map((loan) => (
-          <tr key={loan._id}>
-            <td>{`${loan.customerDetails.firstName} ${loan.customerDetails.lastName}`}</td>
-            <td>{loan.loanDetails.amountApproved}</td>
-            <td>
-              <button onClick={() => handleDisburse(loan._id)}>Disburse</button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div>
+      <h1>Payment Page</h1>
+      {loan && (
+        <>
+          <p>Amount Remaining: {loan?.loanDetails?.amountToBePaid}</p>
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(Number(e.target.value))}
+          />
+          <button onClick={handlePayment}>Make Payment</button>
+        </>
+      )}
+    </div>
   );
 };
 
-export default DisbursementTable;
+export default PaymentPage;

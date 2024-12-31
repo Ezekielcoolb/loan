@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate, Link } from "react-router-dom"; // For routing
-import { fetchWaitingLoans } from "../redux/slices/LoanSlice";
+import { fetchLoanById, fetchWaitingLoans } from "../redux/slices/LoanSlice";
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
 
@@ -180,6 +180,7 @@ const CustomerDetailsPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const loans = useSelector((state) => state.loan.loans);
+   
   const loan = loans.find((loan) => loan._id === id);
   const navigate = useNavigate();
 
@@ -189,9 +190,27 @@ const CustomerDetailsPage = () => {
     }
   }, [loan, dispatch]);
 
+  
+
   const handleGoToCalendar = () => {
     navigate(`/cso/calendar/${id}`);
   };
+
+ // Get today's amountPaid
+ const today = new Date().toISOString().split('T')[0]; // Format as YYYY-MM-DD
+ const todayRepayment = loan?.repaymentSchedule.find(
+   (schedule) => schedule.date.split('T')[0] === today
+ );
+
+const dailyAmount = loan?.loanDetails?.amountToBePaid / 30
+
+const AmountDue = dailyAmount - todayRepayment?.amountPaid
+
+
+  const LoanBalance =
+  loan?.loanDetails?.amountToBePaid - loan?.loanDetails?.amountPaidSoFar;
+
+
   if (!loan) return <p>Loading loan details...</p>;
 
 
@@ -225,7 +244,7 @@ const CustomerDetailsPage = () => {
   // Dates logic
   const currentDate = formatDateWithOrdinal(new Date()); // Current date
   const disbursedDate = loan?.disbursedAt
-    ? formatDateWithOrdinal(loan.disbursedAt)
+    ? formatDateWithOrdinal(loan?.disbursedAt)
     : "Not Disbursed Yet";
   const repaymentStartDate = loan?.disbursedAt
     ? formatDateWithOrdinal(
@@ -297,13 +316,14 @@ const CustomerDetailsPage = () => {
               <div className="loan-take-action">
                 <div className="loan-balances">
                   <h6>Amount Due</h6>
-                  <h1>₦550,000</h1>
+                  <h1>{AmountDue}</h1>
+                
                 </div>
                 <div className="loan-balances">
                   <h6>Loan Balance</h6>
-                  <h1>₦55,000</h1>
+                  <h1>{LoanBalance}</h1>
                 </div>
-                <Link className="pay-now-button">PAY NOW</Link>
+                <Link to={`/cso/loans/${id}/payment`} className="pay-now-button">PAY NOW</Link>
               </div>
               <div className="disbursement-info-divs">
                 <div className="disbursement-info">
