@@ -23,7 +23,7 @@ export const fetchLoans = createAsyncThunk(
   'loans/fetchLoans',
   async ({ page = 1, limit = 12 }, thunkAPI) => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/loan/loans?page=${page}&limit=${limit}`);
+      const response = await axios.get(`${API_URL}/loans?page=${page}&limit=${limit}`);
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response.data);
@@ -85,7 +85,7 @@ export const fetchRepaymentSchedule = createAsyncThunk(
 
 export const fetchLoanById = createAsyncThunk('loans/fetchLoanById', async (id) => {
   try {
-  const response = await axios.get(`http://localhost:5000/api/loan/loans/${id}`);
+  const response = await axios.get(`${API_URL}/loans/${id}`);
   return response.data;
   } catch (err) {
     console.log(err);
@@ -94,7 +94,7 @@ export const fetchLoanById = createAsyncThunk('loans/fetchLoanById', async (id) 
 
 export const makePayment = createAsyncThunk('loans/makePayment', async ({ id, amount, imageLink }) => {
   try  {
-  const response = await axios.post(`http://localhost:5000/api/loan/loans/${id}/payment`, { amount, imageLink });
+  const response = await axios.post(`${API_URL}/${id}/payment`, { amount, imageLink });
   console.log(response);
 console.log(response.data);
   
@@ -109,7 +109,7 @@ export const disburseLoan = createAsyncThunk(
   'loan/disburseLoan',
   async (id) => {
     try {
-    const response = await axios.post(`http://localhost:5000/api/loan/loans/disburse/${id}`);
+    const response = await axios.post(`${API_URL}/loans/disburse/${id}`);
     console.log(response, response.data);
     
     return response.data;

@@ -1,12 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+
+const API_URL = "https://sever-qvw1.onrender.com/api/loanBranch";
 // Async action to fetch data
 export const fetchBranchLoanData = createAsyncThunk('branches/fetchBranchLoanData', async () => {
     try {
 
   
-  const response = await axios.get('http://localhost:5000/api/loanBranch/branches-with-loans'); // Adjust API endpoint as necessary
+  const response = await axios.get(`${API_URL}/branches-with-loans`); // Adjust API endpoint as necessary
   return response.data;
     } catch (err) {
         console.log(err);
