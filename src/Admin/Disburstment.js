@@ -46,7 +46,10 @@ const NewLoanRap = styled.div`
     cursor: pointer;
     border-radius: 10px;
   }
-  
+  .find-lawyer-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+  }
 `;
 
 

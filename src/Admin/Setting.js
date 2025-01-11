@@ -1,7 +1,9 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
+import { fetchAllBranches, setBranchTargets, setYearlyTargets } from "../redux/slices/branchSlice";
 
 const SettingRap = styled.div`
   font-family: "Onest";
@@ -462,7 +464,35 @@ const Setting = () => {
   const [repay, setRepay] = useState(true);
   const [repayment, setRepayment] = useState(true);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [yearlyLoanTarget, setYearlyLoanTarget] = useState('');
+  const [yearlyDisbursementTarget, setYearlyDisbursementTarget] = useState('');
+  const [selectedBranch, setSelectedBranch] = useState('');   
+   const [loanTarget, setLoanTarget] = useState('');
+  const [disbursementTarget, setDisbursementTarget] = useState('');
+  const dispatch = useDispatch();
+  const { branches, status, error } = useSelector(state => state.branches);
+  
 
+
+  const isValid = yearlyLoanTarget !=="" || yearlyDisbursementTarget !== ""
+  const valid = selectedBranch !== "" && loanTarget !== "" || disbursementTarget !== ""
+
+   useEffect(() => {
+      dispatch(fetchAllBranches());
+  }, [dispatch]);
+
+
+    const handleYearlySubmit = () => {
+        dispatch(setYearlyTargets({ yearlyLoanTarget, yearlyDisbursementTarget }));
+    };
+
+
+ 
+
+  const handleBranchSubmit = () => {
+      if (!selectedBranch) return alert('Please select a branch.');
+      dispatch(setBranchTargets({ name: selectedBranch, loanTarget, disbursementTarget }));
+  };
   const handleLinkClick = (link) => {
     setActiveLink(link);
   };
@@ -788,63 +818,60 @@ const Setting = () => {
 
         {activeLink === "target" && (
           <div className="notify notice">
-            <h4>Set yearly target</h4>
+            <h4>Set yearly target for all branches</h4>
             <div className="target-loan">
-              <div>
-                <h5> Set Loan target for all branch</h5>
-                <input type="number" />
-              </div>
-              <div>
-                <h5>Set laon target for a specific branch</h5>
-                <label>
-                  Pick a branch <br />
-                  <select>
-                    <option>Select a branch</option>
-                    <option>Branch A</option>
-                    <option>Branch B</option>
-                    <option>Branch C</option>
-                    <option>Branch D</option>
-                    <option>Branch E</option>
-                  </select>
-                </label>
-                <label>
-                  Target <br />
-                  <input type="number" placeholder="input the target" />
-                </label>
-              </div>
+            <input
+                type="number"
+                placeholder="Yearly Loan Target"
+                value={yearlyLoanTarget}
+                onChange={e => setYearlyLoanTarget(e.target.value)}
+            />
+            <input
+                type="number"
+                placeholder="Yearly Disbursement Target"
+                value={yearlyDisbursementTarget}
+                onChange={e => setYearlyDisbursementTarget(e.target.value)}
+            />
+            <Link className="pro-save-btn"
+                  style={{ 
+                    backgroundColor: isValid ? "#030b26" : "#727789",
+                  }} onClick={handleYearlySubmit}>Save</Link>
+
+
             </div>
             <div className="target-loan">
-              <div>
-                <h5> Set Disbursement target for all branch</h5>
-                <input type="number" />
-              </div>
-              <div>
-                <h5>Set Disbursement target for a specific branch</h5>
-                <label>
-                  Pick a branch <br />
-                  <select>
-                    <option>Select a branch</option>
-                    <option>Branch A</option>
-                    <option>Branch B</option>
-                    <option>Branch C</option>
-                    <option>Branch D</option>
-                    <option>Branch E</option>
-                  </select>
-                </label>
-                <label>
-                  Target <br />
-                  <input type="number" placeholder="input the target" />
-                </label>
-              </div>
-            </div>
-            <Link
-                  className="pro-save-btn"
+            <h4>Set yearly target for a specific branch</h4>
+            {status === 'failed' && <p>Error: {error}</p>}
+            <select
+                value={selectedBranch}
+                onChange={e => setSelectedBranch(e.target.value)}
+            >
+                <option value="">Select Branch</option>
+                {branches.map(branch => (
+                    <option key={branch.name} value={branch.name}>
+                        {branch.name}
+                    </option>
+                ))}
+            </select>
+            <input
+                type="number"
+                placeholder="Loan Target"
+                value={loanTarget}
+                onChange={e => setLoanTarget(e.target.value)}
+            />
+            <input
+                type="number"
+                placeholder="Disbursement Target"
+                value={disbursementTarget}
+                onChange={e => setDisbursementTarget(e.target.value)}
+            />
+            <Link className="pro-save-btn"
                   style={{
-                    backgroundColor: "#727789",
-                  }}
-                >
-                  Save
-                </Link>
+                    backgroundColor: valid ? "#030b26" : "#727789",
+                  }} onClick={handleBranchSubmit}>Save</Link>
+        
+            </div>
+          
           </div>
         )}
 

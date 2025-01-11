@@ -1,270 +1,206 @@
-import React, { useState } from "react";
-import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
-import moment from "moment";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { allLaonfTransactions } from "../../redux/slices/LoanSlice";
 import styled from "styled-components";
-import { Icon } from "@iconify/react/dist/iconify.js";
 
-const LoanSubmissionsWrapper = styled.div`
-  width: 100%;
-  padding: 20px;
 
-  .react-calendar {
-    width: 100%;
-    max-width: 350px; /* Reduce width */
-    background-color: #f9f9f9; /* Light background */
-    border: 1px solid #ddd; /* Custom border */
-    border-radius: 8px; /* Rounded corners */
-    font-family: Arial, sans-serif;
-    font-size: 14px; /* Default font size */
-    padding: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-  }
-  /* Styling for calendar and table */
-  .calendar-container {
-    margin-bottom: 20px;
-  }
- 
-  .filter-buttons {
-    margin-bottom: 20px;
-  }
-  .filter-buttons button {
-    padding: 10px 15px;
-    margin-right: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  .filter-approved {
-    background-color: #28a745;
-    color: white;
-  }
-  .filter-declined {
-    background-color: #dc3545;
-    color: white;
-  }
-  .filter-all {
-    background-color: #007bff;
-    color: white;
-  }
-  .calendar-bust {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .numberOfLoan {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    font-size: 14px;
-    font-weight: 500;
-    padding: 20px;
-    color: #727789
-  }
-  .numberOfLoan span {
-    height: 80px;
-    width: 80px;
-    color: #030b26;
-    font-size: 20px;
-    font-weight: 800;
-    border: 3px solid #727789 ;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .search-div {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-.loan-counts {
-    display: flex;
-    gap: 10px;
+const TableRap = styled.div`
+.loan-sum h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
 }
-.search-position {
-  position: absolute;
-  right: 250px;
-  top: 10px;
+.loan-sum p {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
 }
-`;
+.inner-sum span {
+  width: 80px;
+  height: 80px;
+  border: 2px solid black;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+font-size: 20px;
+font-weight: 500;
+  justify-content: center;
+}
 
-const loanApplications = [
-  {
-    id: 1,
-    customerName: "John Doe",
-    csoName: "Jane Smith",
-    dateSubmitted: "2024-12-01",
-    status: "approved",
-    amountRequested: 50000,
-    amountDisbursed: 45000,
-    reason: "Approved",
-  },
-  {
-    id: 2,
-    customerName: "Mary Johnson",
-    csoName: "David Brown",
-    dateSubmitted: "2024-12-03",
-    status: "declined",
-    amountRequested: 60000,
-    amountDisbursed: null,
-    reason: "Insufficient credit history",
-  },
-  {
-    id: 3,
-    customerName: "Alex White",
-    csoName: "Sophia Lee",
-    dateSubmitted: "2024-12-05",
-    status: "waiting approval",
-    amountRequested: 75000,
-    amountDisbursed: null,
-    reason: "Waiting for approval",
-  },
-];
+button {
+  padding: 8px 15px;
+  margin: 20px 0px;
+}
+.inner-sum {
+  display: flex;
+  gap: 20px;
+}
+.loan-sum {
+  background: #ffffff;
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+  padding: 30px 20px;
+  margin: 30px;
+}
+@media (max-width: 678px) {
+.inner-sum {
+  flex-wrap: wrap;
+}
+}
+`
 
-const LoanSubmissions = () => {
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [filteredStatus, setFilteredStatus] = useState("all");
+const AllCustomerTable = () => {
+  const dispatch = useDispatch();
+  const { allLoans, loading, error } = useSelector((state) => state.loan);
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 15;
+  const [filteredLoans, setFilteredLoans] = useState([]);
 
+  useEffect(() => {
+    dispatch(allLaonfTransactions());
+  }, [dispatch]);
 
-   // Counts for loans
-   const totalLoans = loanApplications.length;
-   const approvedLoans = loanApplications.filter(
-     (loan) => loan.status === "approved"
-   ).length;
-   const declinedLoans = loanApplications.filter(
-     (loan) => loan.status === "declined"
-   ).length;
- 
+  useEffect(() => {
+    setFilteredLoans(allLoans); // Initially show all loans
+  }, [allLoans]);
+
   const handleFilter = (status) => {
-    setFilteredStatus(status);
+    if (status === "all") {
+      setFilteredLoans(allLoans);
+    } else if (status === "approved") {
+      setFilteredLoans(
+        allLoans.filter((loan) => loan.status === "active loan")
+      );
+    } else if (status === "pending") {
+      setFilteredLoans(
+        allLoans.filter(
+          (loan) =>
+            loan.status === "waiting for approval" ||
+            loan.status === "waiting for disbursement"
+        )
+      );
+    } else if (status === "rejected") {
+      setFilteredLoans(allLoans.filter((loan) => loan.status === "rejected"));
+    }
+    setCurrentPage(1);
   };
 
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-  };
+  // Pagination logic
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = filteredLoans.slice(indexOfFirstRow, indexOfLastRow);
+  const totalPages = Math.ceil(filteredLoans.length / rowsPerPage);
 
-  const filteredLoans = loanApplications.filter((loan) => {
-    if (filteredStatus !== "all" && loan.status !== filteredStatus) {
-      return false;
-    }
-    if (
-      selectedDate &&
-      moment(loan.dateSubmitted).format("YYYY-MM-DD") !==
-        moment(selectedDate).format("YYYY-MM-DD")
-    ) {
-      return false;
-    }
-    return true;
-  });
+  const nextPage = () =>
+    setCurrentPage((prev) => (prev < totalPages ? prev + 1 : prev));
+  const prevPage = () => setCurrentPage((prev) => (prev > 1 ? prev - 1 : prev));
+
+  // ✅ Loan statistics
+  const totalLoans = allLoans.length;
+  const activeLoansCount = allLoans.filter(
+    (loan) => loan.status === "active loan"
+  ).length;
+  const pendingLoansCount = allLoans.filter(
+    (loan) =>
+      loan.status === "waiting for approval" ||
+      loan.status === "waiting for disbursement"
+  ).length;
+  const rejectedLoansCount = allLoans.filter(
+    (loan) => loan.status === "rejected"
+  ).length;
 
   return (
-    <LoanSubmissionsWrapper>
-      <h2>Loan Applications</h2>
+    <TableRap>
+    <div className="loan-sum">
+      {/* Loan Summary Section */}
+      <h3>Loan Application Summary</h3>
+      <div className="inner-sum">
+      <p>Total Loans Submitted: 
+        
+        <span>{totalLoans}</span>
 
-      <div className="calendar-bust" style={{ marginBottom: "20px" }}>
-        <div className="search-div" style={{ margin: "20px" }}>
-             {/* Loan counts */}
-      <div className="loan-counts" >
-        <p className="numberOfLoan">Total Loans Submitted: 
-            
-            <span>{totalLoans}</span></p>
-        <p  className="numberOfLoan">Approved Loans: 
-            <span>{approvedLoans}</span>
-
-        </p>
-        <p  className="numberOfLoan">Declined Loans: 
-           <span> {declinedLoans}</span></p>
+      </p>
+      <p>Number of Active Loans:
+        <span> {activeLoansCount} </span>
+         </p>
+      <p>Number of Pending Loans:
+        <span> {pendingLoansCount} </span>
+         </p>
+      <p>Number of Rejected Loans: 
+        <span>{rejectedLoansCount}
+        </span></p>
+        </div>
+      {/* Filter Buttons */}
+      <div>
+        <button onClick={() => handleFilter("all")}>All</button>
+        <button onClick={() => handleFilter("approved")}>Approved</button>
+        <button onClick={() => handleFilter("pending")}>Pending</button>
+        <button onClick={() => handleFilter("rejected")}>Declined</button>
       </div>
-          <div style={{ position: "relative" }}>
-            <input type="text" placeholder="search" />
-            <Icon
-              className="search-position"
-              icon="material-symbols-light:search"
-              width="18"
-              height="18"
-              style={{ color: "#9499AC" }}
-            />
+
+      {/* Loan Table */}
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p>Error: {error}</p>
+      ) : (
+        <>
+          <div className="table-container">
+            <div className="new-table-scroll">
+              <div className="table-div-con">
+                <table className="custom-table" border="1">
+                  <thead>
+                    <tr>
+                      <th>Customer Name</th>
+                      <th>Amount Requested</th>
+                      <th>Amount Approved</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentRows.map((loan, index) => (
+                      <tr key={index}>
+                        <td>
+                          {loan.customerDetails.firstName}{" "}
+                          {loan.customerDetails.lastName}
+                        </td>
+                        <td>
+                          ₦{loan.loanDetails.amountRequested.toLocaleString()}
+                        </td>
+                        <td>
+                          ₦
+                          {loan.loanDetails.amountDisbursed?.toLocaleString() ||
+                            "N/A"}
+                        </td>
+                        <td>{loan.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="calendar-container">
-          <Calendar onChange={handleDateChange} />
-        </div>
-      </div>
-      {/* Filter buttons */}
-      <div className="filter-buttons">
-        <button className="filter-all" onClick={() => handleFilter("all")}>
-          All
-        </button>
-        <button
-          className="filter-approved"
-          onClick={() => handleFilter("approved")}
-        >
-          Approved
-        </button>
-        <button
-          className="filter-declined"
-          onClick={() => handleFilter("declined")}
-        >
-          Declined
-        </button>
-      </div>
 
-      <div className="table-container">
-        <table className="custom-table">
-          <thead>
-            <tr>
-              <th>Customer Name</th>
-              <th>CSO Name</th>
-              <th>Date Submitted</th>
-              <th>Status</th>
-              <th>Amount Requested</th>
-              <th>Amount Disbursed</th>
-              <th>Reason</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredLoans.length > 0 ? (
-              filteredLoans.map((loan) => (
-                <tr key={loan.id}>
-                  <td>{loan.customerName}</td>
-                  <td>{loan.csoName}</td>
-                  <td>{moment(loan.dateSubmitted).format("MMM DD, YYYY")}</td>
-                  <td
-                    style={{
-                      color:
-                        loan.status === "approved"
-                          ? "green"
-                          : loan.status === "declined"
-                          ? "red"
-                          : "orange",
-                    }}
-                  >
-                    {loan.status}
-                  </td>
-                  <td>₦{loan.amountRequested.toLocaleString()}</td>
-                  <td>
-                    {loan.status === "approved"
-                      ? `₦${loan.amountDisbursed.toLocaleString()}`
-                      : loan.status}
-                  </td>
-                  <td>{loan.reason}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="7" style={{ textAlign: "center" }}>
-                  {selectedDate
-                    ? "No applications submitted on this date"
-                    : "No applications available"}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </LoanSubmissionsWrapper>
+          {/* Pagination Controls */}
+          <div>
+            <button onClick={prevPage} disabled={currentPage === 1}>
+              Previous
+            </button>
+            <span className="noboder"> 
+              {" "}
+              Page {currentPage} of {totalPages}{" "}
+            </span>
+            <button onClick={nextPage} disabled={currentPage === totalPages}>
+              Next
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+    </TableRap>
   );
 };
 
-export default LoanSubmissions;
+export default AllCustomerTable;

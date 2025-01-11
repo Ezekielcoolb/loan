@@ -25,6 +25,52 @@ export const createBranch = createAsyncThunk('branches/createBranch', async (bra
         console.log(e)
     }
 });
+export const fetchAllBranches = createAsyncThunk(
+    'branches/fetchAllBranches',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axios.get('http://localhost:5000/api/branches/get-branches');
+         
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
+export const setYearlyTargets = createAsyncThunk(
+    'branches/setYearlyTargets',
+    async ({ yearlyLoanTarget, yearlyDisbursementTarget }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put('http://localhost:5000/api/branches/branches/targets/yearly', {
+                yearlyLoanTarget,
+                yearlyDisbursementTarget,
+            });
+            console.log(response.data);
+            toast.success(response.data.message)
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
+export const setBranchTargets = createAsyncThunk(
+    'branches/setBranchTargets',
+    async ({ name, loanTarget, disbursementTarget }, { rejectWithValue }) => {
+        try {
+            const response = await axios.put(`http://localhost:5000/api/branches/branches/targets/${name}`, {
+                loanTarget,
+                disbursementTarget,
+            });
+            console.log(response.data);
+            toast.success(response.data.message)
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
 
 const branchSlice = createSlice({
     name: 'branches',
@@ -57,6 +103,34 @@ const branchSlice = createSlice({
             // Handle createBranch
             .addCase(createBranch.fulfilled, (state, action) => {
                 state.branches.push(action.payload);
+            })
+
+            builder
+            .addCase(setYearlyTargets.fulfilled, (state, action) => {
+                state.status = 'success';
+                state.error = null;
+            })
+            .addCase(setYearlyTargets.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.payload;
+            })
+            .addCase(setBranchTargets.fulfilled, (state, action) => {
+                state.status = 'success';
+                state.error = null;
+            })
+            .addCase(setBranchTargets.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.payload;
+            })
+            builder
+            .addCase(fetchAllBranches.fulfilled, (state, action) => {
+                state.branches = action.payload;
+                state.status = 'success';
+                state.error = null;
+            })
+            .addCase(fetchAllBranches.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.payload;
             });
     },
 });

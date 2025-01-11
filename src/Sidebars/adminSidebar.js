@@ -4,11 +4,12 @@ import { Icon } from "@iconify/react";
 import { useNavigate } from 'react-router-dom';
 import { Link } from "react-router-dom";
 import { useAppContext } from "../Context/Context";
+import { useSelector } from "react-redux";
 const sidebarConfig = [
   {
     id: 1,
     icon: "ic:round-dashboard",
-    link: "/dashboard",
+    link: "/",
     title: "Dashboard",
   },
   {
@@ -71,7 +72,7 @@ const sidebarConfig = [
   {
     id: 11,
     icon: "lets-icons:setting-line",
-    link: "/test/details",
+    link: "/test",
     title: "Test",
   },
 ];
@@ -87,12 +88,12 @@ export default function AdminSidebar() {
     setIsProfileOpen(false);
   }
  
-
+  const {openSideBar} = useSelector((state)=> state.app)
 
   return (
-    <SIDEBAR>
-      <div
-        className={`containers  ${
+    <SIDEBAR className={ openSideBar ? "open" : "close"}>
+      <div 
+        className={`containers ${
           isSidebarOpen ? "opened" : "closed"
         }`}
       >
@@ -109,7 +110,7 @@ export default function AdminSidebar() {
                   key={index}
                   onClick={() => handleNavClick(title)}
                 >
-                  <Icon icon={icon} />
+                 <Icon icon={icon} />
                   {title}
                 </Link>
               ))}
@@ -117,7 +118,7 @@ export default function AdminSidebar() {
           </div>
           
           <div className="help-center">
-              <img src="/images/loan_logo.jpg" alt="..."/>
+              <img src="/images/help_center.png" alt="..."/>
           </div>
         </div>
         <Closer
@@ -133,18 +134,25 @@ export default function AdminSidebar() {
 const SIDEBAR = styled.div`
   background-color: #ffffff;
   border-right: 1px solid #DBE0EE;
-
+  height: auto !important;
   padding: 20px;
   padding-top: 40px;
-  width: 20%;
-  height: 100vh !important;
+  width: 15%;
   position: relative;
-  z-index: 9999;
-  .containers {
+  z-index: 999;
+  margin-top: 45px !important;
+  @media (max-width: 1024px) {
+    
+     width: 300px;
+  height: 100vh;
+  position: fixed;
+
+}
+  .container {
     display: flex;
     flex-direction: row;
-    width:14%;
-  
+    width: 15%;
+   
     align-items: center;
     position: fixed;
     background-color: #ffffff;
@@ -157,6 +165,8 @@ const SIDEBAR = styled.div`
     justify-content: space-between;
     gap: 100px;
     align-items: center;
+  padding-top: 30px;
+
   }
   .wrapper {
     display: flex;
@@ -207,7 +217,7 @@ const SIDEBAR = styled.div`
   @media screen and (max-width: 1100px) {
    
     .container {
-      background: black;
+      background: white;
     }
     /* .closed {
       margin-left: -1000px;
@@ -222,7 +232,7 @@ const SIDEBAR = styled.div`
       z-index: 2;
     } */
   }
-  @media screen and (max-width: 550px) {
+  @media screen and (max-width: 678px) {
     .container {
       padding-right: 0 !important;
       padding-left: 0 !important;
@@ -234,7 +244,7 @@ const SIDEBAR = styled.div`
     }
     .nav-container {
       width: 250px;
-      background-color: black;
+      background-color: white;
     }
   }
 `;

@@ -1,8 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import moment from "moment";
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchCustomersSummary,
+  fetchPendingLoans,
+  fetchRejectedCustomers,
+} from "../redux/slices/LoanSlice";
 
 const BranchCustomerRap = styled.div`
   width: 100%;
@@ -155,6 +161,22 @@ const BranchCustomerRap = styled.div`
     align-items: center;
     justify-content: center;
   }
+  .link {
+    width: 78px;
+    height: 36px;
+    text-decoration: none;
+    display: flex;
+    border-radius: 8px;
+    justify-content: center;
+    align-items: center;
+    color: #030b26;
+    font-size: 14px;
+    font-weight: 450;
+    border-right: 1px solid #d0d5dd;
+  }
+  .link.active {
+    background: #d0d5dd;
+  }
   .edit-client {
     height: 30px;
     width: 76px;
@@ -216,213 +238,45 @@ const BranchCustomerRap = styled.div`
     flex-wrap: wrap;
     gap: 15px;
   }
+  .find-lawyer-header h4 {
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .custom-1 {
+    margin: 20px;
+  }
 `;
 
-const customers = [
-  {
-    id: 1,
-    branchName: "Branch A",
-    status: "active",
-    customers: [
-      {
-        id: 101,
-        name: "John Doe",
-        status: "active",
-        loans: [
-          {
-            loanAmount: 100000,
-            interestRate: 0.1,
-            amountPaid: 50000,
-            startDate: "2024-11-10", // Loan passed deadline, unpaid
-            cso: "Officer A",
-          },
-          {
-            loanAmount: 150000,
-            interestRate: 0.08,
-            amountPaid: 162000,
-            startDate: "2024-08-01",
-            cso: "Officer A",
-          },
-          {
-            loanAmount: 200000,
-            interestRate: 0.09,
-            amountPaid: 180000,
-            startDate: "2024-10-01",
-            cso: "Officer B",
-          },
-        ],
-      },
-      {
-        id: 102,
-        name: "Jane Smith",
-        status: "active",
-        loans: [
-          {
-            loanAmount: 150000,
-            interestRate: 0.08,
-            amountPaid: 162000,
-            startDate: "2024-11-15", // Fully paid
-            cso: "Officer B",
-          },
-        ],
-      },
-      {
-        id: 103,
-        name: "Alice Johnson",
-        status: "active",
-        loans: [
-          {
-            loanAmount: 200000,
-            interestRate: 0.09,
-            amountPaid: 0,
-            startDate: "2024-12-02", // Loan not reached deadline
-            cso: "Officer C",
-          },
-        ],
-      },
-      {
-        id: 104,
-        name: "Pack Johnson",
-        status: "inactive",
-        loans: [
-          {
-            loanAmount: 0,
-            interestRate: 0.09,
-            amountPaid: 0,
-            startDate: "2024-12-02", // Loan not reached deadline
-            cso: "Officer C",
-          },
-        ],
-      },
-    ],
-  },
-];
-
 const CustomersDetails = () => {
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [showModal, setShowModal] = useState(false);
   const [activeLink, setActiveLink] = useState("customer");
-  const [filter, setFilter] = useState("all");
+  const [activatedLink, setActivatedLink] = useState("active");
+
+  const dispatch = useDispatch();
+  const { rejectedCustomers, pendingLoans, summaries, loading, error } =
+    useSelector((state) => state.loan);
+
+  useEffect(() => {
+    dispatch(fetchCustomersSummary());
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(fetchPendingLoans());
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(fetchRejectedCustomers());
+  }, [dispatch]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error loading customers: {error}</p>;
+  console.log(rejectedCustomers);
 
   const handleLinkClick = (link) => {
     setActiveLink(link);
   };
 
-  const calculateCustomerDetails = (customer) => {
-    const today = moment();
-    let defaults = 0;
-
-    const loanDetails = customer.loans.map((loan) => {
-      const interest = loan.loanAmount * loan.interestRate;
-      const totalAmount = loan.loanAmount + interest;
-      const balance = totalAmount - loan.amountPaid;
-      const endDate = moment(loan.startDate).add(1, "month");
-
-      let status;
-      if (balance === 0) {
-        status = "No Open Loan";
-      } else if (today.isAfter(endDate) && balance > 0) {
-        status = "Defaulting";
-        defaults += 1; // Count this loan as a default
-      } else {
-        status = "Not Defaulting Yet";
-      }
-
-      return {
-        ...loan,
-        interest,
-        balance,
-        totalAmount,
-        endDate,
-        status,
-      };
-    });
-
-    const performance =
-      customer.loans.length > 0
-        ? ((customer.loans.length - defaults) / customer.loans.length) * 100
-        : 0;
-
-    return { loanDetails, defaults, performance };
-  };
-  const handleRowClick = (customer) => {
-    const customerDetails = calculateCustomerDetails(customer);
-    setSelectedCustomer({ ...customer, ...customerDetails });
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setSelectedCustomer(null);
-    setShowModal(false);
-  };
-
-  const filteredCustomers = customers.map((branch) => {
-    const filteredBranchCustomers = branch.customers.filter((customer) => {
-      return filter === "all" || customer.status === filter;
-    });
-    return { ...branch, customers: filteredBranchCustomers };
-  });
-
-  const renderCustomerTable = (branch) => {
-    return branch.customers.map((customer) => {
-      const { loanDetails, performance } = calculateCustomerDetails(customer);
-      const currentLoan = loanDetails[loanDetails.length - 1]; // Latest loan
-
-      return (
-        <tr
-          key={customer.id}
-          onClick={() => handleRowClick(customer)}
-          style={{ cursor: "pointer" }}
-        >
-          <td>{customer.name}</td>
-          <td>{customer.loans.length}</td>
-          <td>
-            {loanDetails.filter((loan) => loan.status === "Defaulting").length}
-          </td>
-          <td>{currentLoan.loanAmount.toLocaleString()}</td>
-          <td>{currentLoan.interest.toLocaleString()}</td>
-          <td>{currentLoan.amountPaid.toLocaleString()}</td>
-          <td>{currentLoan.balance.toLocaleString()}</td>
-          <td>{moment(currentLoan.startDate).format("YYYY-MM-DD")}</td>
-          <td>{moment(currentLoan.endDate).format("YYYY-MM-DD")}</td>
-          <td
-            style={{
-              color:
-                currentLoan.status === "Defaulting"
-                  ? "red"
-                  : currentLoan.status === "Not Defaulting Yet"
-                  ? "blue"
-                  : "green",
-              fontWeight: "bold",
-            }}
-          >
-            {currentLoan.status}
-          </td>
-          <td style={{ color: "#030b26", fontWeight: "700" }}>
-            {performance.toFixed(2)}%
-          </td>
-        </tr>
-      );
-    });
-  };
-  //   pagination
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 10;
-
-  // Pagination Logic
-  const totalPages = Math.ceil(filteredCustomers.length / rowsPerPage);
-  const indexOfLastCase = currentPage * rowsPerPage;
-  const indexOfFirstCase = indexOfLastCase - rowsPerPage;
-  const currentCustomers = filteredCustomers.slice(
-    indexOfFirstCase,
-    indexOfLastCase
-  );
-
-  const handlePageChange = (pageNumber) => {
-    if (pageNumber > 0 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-    }
+  const handleActivatedLink = (links) => {
+    setActivatedLink(links);
   };
 
   return (
@@ -439,204 +293,205 @@ const CustomersDetails = () => {
           </Link>
         </div>
       </div>
-
-      {activeLink === "customer" && (
-        <div style={{ padding: "20px" }}>
-          {currentCustomers.map((branch) => (
-            <div key={branch.id}>
-              <div className="find-lawyer-header">
-              <h4 style={{ marginBottom: "15px" }}> List of Customers</h4>
-              <div className="sub-bill-1">
-                <div className="status-btn" style={{ marginBottom: "20px" }}>
-                  {["all", "active", "inactive"].map((status) => (
-                    <Link
-                      className="status-link"
-                      key={status}
-                      onClick={() => setFilter(status)}
-                      style={{
-                        backgroundColor:
-                          filter === status ? "#030B260D" : "#ffffff",
-                        color: filter === status ? "#030b26" : "#727789",
-                      }}
-                    >
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Link>
-                  ))}
-                </div>
-                <div className="search-div" style={{ marginBottom: "20px" }}>
-                  <div style={{ position: "relative" }}>
-                    <input type="text" placeholder="search" />
-                    <Icon
-                      className="search-position"
-                      icon="material-symbols-light:search"
-                      width="18"
-                      height="18"
-                      style={{ color: "#9499AC" }}
-                    />
-                  </div>
-
-                </div>
-              </div>
-</div>
-              <div className="table-container">
-              <div  className="new-table-scroll">
-              <div className="table-div-con">
-                <table className="custom-table">
-                  <thead>
-                    <tr>
-                      <th>Customer Name</th>
-                      <th>Loans</th>
-                      <th>
-                        No of <br /> Defaults
-                      </th>
-                      <th>
-                        Current <br />
-                        Laon (₦)
-                      </th>
-                      <th>Interest (₦)</th>
-                      <th>
-                        Amount <br /> Paid (₦)
-                      </th>
-                      <th>
-                        Loan <br /> Balance (₦)
-                      </th>
-                      <th>
-                        Start <br /> Date
-                      </th>
-                      <th>
-                        End <br /> Date
-                      </th>
-                      <th>
-                        Loan <br /> Status
-                      </th>
-                      <th>Performance (%)</th>
-                    </tr>
-                  </thead>
-                  <tbody>{renderCustomerTable(branch)}</tbody>
-                </table>
-                </div>
-                </div>
-                <div className="pagination-div">
-                  <Link
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="next-page-link"
-                  >
-                    <Icon
-                      icon="formkit:arrowleft"
-                      width="18"
-                      height="18"
-                      style={{ color: "#636878" }}
-                    />
-                    Previous
-                  </Link>
-                  <div>
-                    {Array.from(
-                      { length: totalPages },
-                      (_, index) => index + 1
-                    ).map((pageNumber) => (
-                      <Link
-                        className="paginations"
-                        key={pageNumber}
-                        onClick={() => handlePageChange(pageNumber)}
-                        style={{
-                          color:
-                            pageNumber === currentPage ? "#030b26" : "#727789",
-                        }}
-                      >
-                        {pageNumber}
-                      </Link>
-                    ))}
-                  </div>
-                  <Link
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="next-page-link"
-                  >
-                    Next
-                    <Icon
-                      icon="formkit:arrowright"
-                      width="18"
-                      height="18"
-                      style={{ color: "#636878" }}
-                    />
-                  </Link>
-                </div>
-
-                {showModal && selectedCustomer && (
-                  <div className="modal">
-                    <div className="modal-content">
-                      <div className="client-drop-header">
-                        <h2>Details for {selectedCustomer.name}</h2>
-                        <Icon
-                          onClick={closeModal}
-                          icon="uil:times"
-                          width="16"
-                          height="16"
-                          style={{ color: "black", cursor: "pointer" }}
-                        />
-                      </div>
-                      <div style={{ padding: "20px" }}>
-                        <table>
-                          <thead>
-                            <tr>
-                              <th>Loan Amount (₦)</th>
-                              <th>Start Date</th>
-                              <th>End Date</th>
-                              <th>CSO</th>
-                              <th>Default Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {selectedCustomer.loanDetails.map((loan, index) => (
-                              <tr key={index}>
-                                <td style={{ fontSize: "16px" }}>
-                                  {loan.loanAmount.toLocaleString()}
-                                </td>
-                                <td>
-                                  {moment(loan.startDate).format("YYYY-MM-DD")}
-                                </td>
-                                <td>
-                                  {moment(loan.endDate).format("YYYY-MM-DD")}
-                                </td>
-                                <td>{loan.cso}</td>
-                                <td style={{ color: "blue" }}>{loan.status}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                        <p>
-                          <strong>Performance:</strong>{" "}
-                          <span
-                            style={{
-                              fontSize: "20px",
-                              fontWeight: "600",
-                              color: "green",
-                            }}
-                          >
-                            {selectedCustomer.performance.toFixed(2)}%
-                          </span>
-                        </p>
-                        <div className="edi-del-btn">
-                          <Link to="/allcustomers" className="edit-client">
-                            See Details
-                          </Link>
-                          <button
-                            className="delete-client"
-                            onClick={closeModal}
-                          >
-                            Close
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+      <div className="custom-1">
+        <div className="find-lawyer-header">
+          <h4 style={{ marginBottom: "15px" }}> List of Customers</h4>
+          <div className="sub-bill-1">
+            <div className="status-btn" style={{ marginBottom: "20px" }}>
+              <Link
+                className={`link ${activatedLink === "active" ? "active" : ""}`}
+                onClick={() => handleActivatedLink("active")}
+              >
+                Active
+              </Link>
+              <Link
+                className={`link ${
+                  activatedLink === "pending" ? "active" : ""
+                }`}
+                onClick={() => handleActivatedLink("pending")}
+              >
+                Pending
+              </Link>
+              <Link
+                className={`link ${
+                  activatedLink === "decline" ? "active" : ""
+                }`}
+                onClick={() => handleActivatedLink("decline")}
+              >
+                Decline
+              </Link>
+            </div>
+            <div className="search-div" style={{ marginBottom: "20px" }}>
+              <div style={{ position: "relative" }}>
+                <input type="text" placeholder="search" />
+                <Icon
+                  className="search-position"
+                  icon="material-symbols-light:search"
+                  width="18"
+                  height="18"
+                  style={{ color: "#9499AC" }}
+                />
               </div>
             </div>
-          ))}
+          </div>
         </div>
-      )}
+        <div>
+          {activatedLink === "active" && (
+            <div className="table-container">
+              <div className="new-table-scroll">
+                <div className="table-div-con">
+                  <table className="custom-table" border="1">
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>No. of Loans</th>
+                        <th>Defaults</th>
+                        <th>Current Loan</th>
+                        <th>
+                          Loan + <br /> Interest
+                        </th>
+                        <th>Amount Paid</th>
+                        <th>Loan Balance</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th> Loan Status</th>
+                        <th>Performance</th>
+                        <th>Action</th>
+                        
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {summaries.map((summary, index) => (
+                        <tr key={index}>
+                          <td>{summary.name}</td>
+                          <td>{summary.noOfLoansCollected}</td>
+                          <td>{summary.noOfDefaults}</td>
+
+                          <td>{summary.currentLoan?.amountDisbursed}</td>
+                          <td>{summary.currentLoan?.amountToBePaid}</td>
+                          <td>{summary.currentLoan?.amountPaidSoFar}</td>
+                          <td>
+                            {summary.currentLoan?.amountToBePaid -
+                              summary.currentLoan?.amountPaidSoFar}
+                          </td>
+                          <td>{summary.currentLoan?.startDate}</td>
+                          <td>{summary.currentLoan?.endDate}</td>
+                          <td
+                            style={{
+                              color:
+                                summary.currentLoan?.currentLoanStatus ===
+                                "Not defaulting yet"
+                                  ? "green"
+                                  : summary.currentLoan?.currentLoanStatus ===
+                                    "Defaulting"
+                                  ? "red"
+                                  : "blue",
+                            }}
+                          >
+                            {summary.currentLoan?.currentLoanStatus}
+                          </td>
+                          <td
+                            style={{
+                              color: "#030b26",
+                              fontWeight: "700",
+                            }}
+                          >
+                            {summary.performance}%
+                          </td>
+                          <td>
+                            <Link to={`/customer/${summary.bvn}`}>
+                              View Details
+                            </Link>
+                          </td>
+     
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+          {activatedLink === "pending" && (
+            <div style={{ background: "white" }}>
+              <h4>Pending Loans</h4>
+              <div className="table-container">
+                <div className="new-table-scroll">
+                  <div className="table-div-con">
+                    <table className="custom-table" border="1">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Amount Requested</th>
+                          <th>Amount Approved</th>
+                          <th>Date Requested</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pendingLoans.map((loan, index) => (
+                          <tr key={index}>
+                            <td>{loan.name}</td>
+                            <td>{loan.amountRequested}</td>
+                            <td>{loan.amountApproved}</td>
+                            <td>{loan.dateRequested}</td>
+                            <td>{loan.status}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {activatedLink === "decline" && (
+            <div style={{ background: "white" }}>
+              <h4>Declined Loans</h4>
+              <div className="table-container">
+                <div className="new-table-scroll">
+                  <div className="table-div-con">
+                    <table className="custom-table" border="1">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Amount Requested</th>
+                          <th>Date Created</th>
+                          <th>Reason for Rejection</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rejectedCustomers.map((customer, index) => (
+                          <tr key={index}>
+                            <td>
+                              {customer.customerDetails.firstName}{" "}
+                              {customer.customerDetails.lastName}
+                            </td>
+                            <td>{customer.loanDetails.amountRequested}</td>
+                            <td>
+                              {new Date(customer.createdAt).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                }
+                              )}
+                            </td>
+                            <td style={{ color: "red" }}>
+                              {customer.rejectionReason}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </BranchCustomerRap>
   );
 };

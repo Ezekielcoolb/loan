@@ -23,15 +23,22 @@ import CsoHome from "../CsoPages/CsoHome";
 
 
 import LoanDetails from "../Admin/LoanPages/LoanDetails";
-import DisbursementTable from "../Admin/test";
-import CustomerGallery from "../Admin/testDetail";
+
 
 import CustomerDetailsPage from "../CsoPages/CustomerDetailsPage";
 import CalendarPage from "../CsoPages/CalenderPage";
-import MyCalendarPage from "../Admin/TestCalendar";
+
 
 import LoanCalendar from "../Admin/TestCalendar";
 import PaymentPage from "../CsoPages/PaymentPage";
+
+
+
+
+import CustomerDetailsInfo from "../Admin/CustomerDetail/allCustomerDetails";
+import AdminCalendarPage from "../Admin/CustomerDetail/CustomerDailyTrans";
+
+
 
 
 
@@ -47,24 +54,28 @@ export default function Routess() {
                     path: "/",
                     element: <AdminDashboardLayout />,
                     children: [
-                        {path: "/dashboard", element: <AdminDashboard />},
+                        {path: "/", element: <AdminDashboard />},
                         {path: "/admincso", element: <Csos />},
                         {path: "/csodetails", element: <CsoDetails />},
                         {path: "/csocustomers", element: <Customers />},
                         {path: "/customerdetails", element: <CustomersDetails  />},
                         {path: "/loan", element: <Loan  />},
                         {path: "/branches", element: <LoanBranches  />},
-                        {path: "/branchtransaction", element: <BranchTransaction  />},
+                        {path: "/branches/:id", element: <BranchTransaction  />},
                         {path: "/branchdetails/:id", element: <BranchDetails  />},
                         {path: "/branchcso", element: <BranchCSO  />},
-                        {path: "/branchcustomers", element: <BranchCustomers  />},
+                       
                         {path: "/allcustomers", element: <AllCustomerDetail  />},
                         {path: "/newloan", element: <NewLoan  />},
                         {path: "/disbursement", element: <Disbursment  />},
 
                         // {path: "/loans/:id/payment", element: <PaymentPage  />},
                         {path: "/calendar/test/:id", element: <LoanCalendar  />},
-                        {path: "/test/details", element: <CustomerGallery  />},
+                        // {path: "/branches/:id", element: <CsoDetail  />},
+                        // {path: "/test/details", element: <LoanDoughnutChart  />},
+                        // {path: "/test", element: <DisbursementChart  />},
+                        {path: "/customer/:bvn", element: <CustomerDetailsInfo />},
+                        {path: "/customer/calender/:bvn", element: <AdminCalendarPage />},
                         {path: "/calendar/:id", element: <CalendarPage  />},
 
                         {path: "/loan/:id", element: <LoanDetails  />},

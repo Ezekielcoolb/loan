@@ -77,7 +77,7 @@ const LoanApplicationForm = () => {
   const [formData, setFormData] = useState({
     csoId: user.workId,
     branch: user.branch,
-    csoName: `${user.firstName} ${user.firstName}`,
+    csoName: `${user.firstName} ${user.lastName}`,
     customerDetails: {
       firstName: "",
       lastName: "",

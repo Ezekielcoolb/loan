@@ -6,8 +6,16 @@ import { useSelector, useDispatch } from "react-redux";
 import { fetchWaitingLoans, setPages } from "../redux/slices/LoanSlice";
 
 const NewLoanRap = styled.div`
-  width: 100%;
-  padding: 20px;
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0px;
+  padding-bottom: 20px;
+}
+  
   h4 {
     font-size: 16px;
     font-weight: 600;
@@ -169,6 +177,13 @@ const NewLoanRap = styled.div`
     display: flex;
     gap: 20px;
   }
+  .new-loan {
+    margin: 20px;
+  }
+  .new-loan h2 {
+    font-size: 20px;
+    font-weight: 700;
+  }
 `;
 
 
@@ -245,7 +260,7 @@ const NewLoan = () => {
             </div>
           </div>
            {/* Pagination Controls */}
-     <div>
+     <div className="pagination">
         <button onClick={handlePreviousPage} disabled={currentPage === 1}>
           Previous
         </button>

@@ -3,6 +3,7 @@ import styled from "styled-components";
 import DisbursementRepayment from "./TransactionDetails/DisbursementDetail";
 import LoanSubmissions from "./TransactionDetails/LoanApplication";
 import { Link } from "react-router-dom";
+import AllCustomerTable from "./TransactionDetails/LoanApplication";
 
 const TransactionRap = styled.div`
   .client-1 {
@@ -68,7 +69,7 @@ const AllTransactions = () => {
         </div>
       </div>
       <div>{activeLink === "disbursement" && <DisbursementRepayment />}</div>
-      <div>{activeLink === "application" && <LoanSubmissions />}</div>
+      <div>{activeLink === "application" && <AllCustomerTable />}</div>
     </TransactionRap>
   );
 };

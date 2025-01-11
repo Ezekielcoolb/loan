@@ -3,6 +3,7 @@ import {Toaster, toast} from "react-hot-toast"
 import axios from "axios";
 
 // Async Thunks for API Calls
+
 const API_URL = "https://sever-qvw1.onrender.com/api/loan";
 
 export const submitLoanApplication = createAsyncThunk(
@@ -19,6 +20,34 @@ export const submitLoanApplication = createAsyncThunk(
     }
   }
 );
+
+export const fetchCustomersSummary = createAsyncThunk('customer/fetchSummaries', async () => {
+  try {
+
+    const response = await fetch(`${API_URL}/customers/summary`);
+    console.log(response);
+    
+    return await response.json();
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+
+export const fetchCustomerDetails = createAsyncThunk('customer/fetchDetails', async (bvn) => {
+  try {
+
+    const response = await fetch(`${API_URL}/get-customers/details/${bvn}`);
+    console.log(response);
+    
+    return await response.json();
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+
+
 export const fetchLoans = createAsyncThunk(
   'loans/fetchLoans',
   async ({ page = 1, limit = 12 }, thunkAPI) => {
@@ -31,26 +60,24 @@ export const fetchLoans = createAsyncThunk(
   }
 );
 
-// Fetch waiting loans 
 export const fetchWaitingLoans = createAsyncThunk('loans/fetchWaitingLoans', async ({ page = 1, limit = 10 }) => {
-  try{
-
-    const response = await fetch(`${API_URL}/loans/pending-approval?page=${page}&limit=${limit}`);
-    console.log(response);
-    return response.json();
-    
-    
-  }  catch (err) {
+  try {
+    const response = await fetch(`${API_URL}/loaner/pending-approval?page=${page}&limit=${limit}`);
+    const data = await response.json();
+    console.log('Fetched Data:', data);
+    return data;
+  } catch (err) {
     console.log(err);
   }
 });
+
 
 
 export const fetchWaitingDisbursementLoans = createAsyncThunk(
   'loan/fetchWaitingDisbursementLoans',
   async () => {
     try {
-    const response = await axios.get(`${API_URL}/loans/waiting-disbursement`);
+    const response = await axios.get(`${API_URL}/loaner/waiting-disbursement`);
     return response.data;
     } catch (err) {
       console.log(err);
@@ -91,6 +118,32 @@ export const fetchLoanById = createAsyncThunk('loans/fetchLoanById', async (id) 
     console.log(err);
   }
 });
+export const fetchLoanByBvn = createAsyncThunk('loans/fetchLoanByBvn', async (bvn) => {
+  try {
+  const response = await axios.get(`${API_URL}/customers/loans/${bvn}`);
+  console.log(response.data);
+  
+  return response.data;
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+export const fetchPendingLoans = createAsyncThunk(
+  'loan/fetchPendingLoans',
+  async () => {
+      const response = await axios.get(`${API_URL}/customers/pending-loans`);
+      return response.data;
+  }
+);
+
+export const fetchRejectedCustomers = createAsyncThunk(
+  'loans/fetchRejectedCustomers',
+  async () => {
+      const response = await axios.get(`${API_URL}/customers-loan/rejected`);
+      return response.data;
+  }
+);
 
 export const makePayment = createAsyncThunk('loans/makePayment', async ({ id, amount, imageLink }) => {
   try  {
@@ -109,7 +162,7 @@ export const disburseLoan = createAsyncThunk(
   'loan/disburseLoan',
   async (id) => {
     try {
-    const response = await axios.post(`${API_URL}/loans/disburse/${id}`);
+    const response = await axios.post(`${API_URL}/loaner/disburse/${id}`);
     console.log(response, response.data);
     
     return response.data;
@@ -124,7 +177,7 @@ export const disburseLoan = createAsyncThunk(
 export const approveLoan = createAsyncThunk('loans/approveLoan', async ({ id, amountApproved }) => {
   try {
 
-    const response = await fetch(`${API_URL}/loans/${id}/approve`, {
+    const response = await fetch(`${API_URL}/loaner/${id}/approve`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amountApproved }),
@@ -154,7 +207,53 @@ export const rejectLoan = createAsyncThunk('loans/rejectLoan', async ({ id, reje
   }
 });
 
+// Fetch active loans from backend
+export const fetchCustomerActiveLoans = createAsyncThunk(
+  'loans/fetchCustomersActiveLoans',
+  async () => {
+    try {
+      const response = await axios.get(`${API_URL}/allcustomers/loans/active-loans`);
+      return response.data;
+    }  catch (err) {
+      console.log(err);
+    }
+  }
+);
+export const allLaonfTransactions = createAsyncThunk('loans/fetchallLoanTransactions', async () => {
+  try  {
+  const response = await axios.get(`${API_URL}/fetchallLoanTransactions`);
+  console.log(response.data);
+  
+  return response.data;
+  }  catch (err) {
+    console.log(err);
+  }
+});
 
+export const fetchLoansByMonth = createAsyncThunk(
+  'loans/fetchLoansByMonth',
+  async ({ year, month }) => {
+    try {
+
+    
+    const response = await axios.get(`${API_URL}/allLoanTransactions/${year}/${month}`);
+    return response.data;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+);
+
+export const fetchDisbursementDataChart = createAsyncThunk(
+  'disbursement/fetchDisbursementDataChart',
+  async () => {
+      const response = await fetch(`${API_URL}/loans-chart/loans`);
+      const data = await response.json();
+      console.log(data);
+      
+      return data;
+  }
+);
 // Slice
 const loanSlice = createSlice({
   name: "loans",
@@ -165,10 +264,23 @@ const loanSlice = createSlice({
     totalPages: 0,
     activeCustomers: [],
     repaymentSchedule: [],
+    summaries: [],
+    details: [],
+    pendingLoans: [],
+    rejectedCustomers: [],
     selectedLoan: null,
     currentPage: 1,
     loading: 'idle',
     error: null,
+    filter: 'all',
+    currentWeekStart: new Date(),
+    month: new Date().getMonth() + 1, // January is 1, not 0
+    year: new Date().getFullYear(),
+    totalDisbursed: 0,
+    totalToBePaid: 0,
+    totalPaid: 0,
+    allLoans: [],
+    monthlyData: [],
   },
   reducers: {
     setPage: (state, action) => {
@@ -177,6 +289,23 @@ const loanSlice = createSlice({
     setPages(state, action) {
       state.currentPage = action.payload;
     },
+    setFilter: (state, action) => {
+      state.filter = action.payload;
+    },
+    nextWeek: (state) => {
+      state.currentWeekStart = new Date(state.currentWeekStart);
+      state.currentWeekStart.setDate(state.currentWeekStart.getDate() + 7);
+  },
+  previousWeek: (state) => {
+      state.currentWeekStart = new Date(state.currentWeekStart);
+      state.currentWeekStart.setDate(state.currentWeekStart.getDate() - 7);
+  },
+  setMonth: (state, action) => {
+    state.month = action.payload;
+  },
+  setYear: (state, action) => {
+    state.year = action.payload;
+  }
   },
   extraReducers: (builder) => {
     // Handle loading and data fetching for submitting loan
@@ -193,6 +322,27 @@ const loanSlice = createSlice({
         state.error = action.error.message;
       });
 
+      builder
+      .addCase(fetchCustomersSummary.pending, (state) => { 
+        state.loading = true; 
+      })
+      .addCase(fetchCustomersSummary.fulfilled, (state, action) => {
+          state.summaries = action.payload;
+          state.loading = false;
+      })
+      .addCase(fetchCustomersSummary.rejected, (state) => { 
+        state.loading = false;
+       })
+       .addCase(fetchCustomerDetails.pending, (state) => { 
+        state.loading = true; 
+      })
+
+       .addCase(fetchCustomerDetails.fulfilled, (state, action) => { 
+        state.details = action.payload; })
+
+        .addCase(fetchCustomerDetails.rejected, (state) => { 
+          state.loading = false;
+         });
 
       builder
       .addCase(fetchLoans.pending, (state) => {
@@ -207,6 +357,19 @@ const loanSlice = createSlice({
       .addCase(fetchLoans.rejected, (state, action) => {
         state.loading = 'failed';
         state.error = action.payload;
+      });
+
+      builder
+      .addCase(fetchPendingLoans.pending, (state) => {
+          state.loading = true;
+      })
+      .addCase(fetchPendingLoans.fulfilled, (state, action) => {
+          state.loading = false;
+          state.pendingLoans = action.payload;
+      })
+      .addCase(fetchPendingLoans.rejected, (state, action) => {
+          state.loading = false;
+          state.error = action.error.message;
       });
 
       builder
@@ -246,6 +409,9 @@ const loanSlice = createSlice({
       .addCase(fetchLoanById.fulfilled, (state, action) => {
         state.selectedLoan = action.payload;
       })
+      .addCase(fetchLoanByBvn.fulfilled, (state, action) => {
+        state.selectedLoan = action.payload;
+      })
       .addCase(makePayment.fulfilled, (state, action) => {
         state.selectedLoan = action.payload;
       })
@@ -262,7 +428,61 @@ const loanSlice = createSlice({
           state.loans[index] = action.payload;
         }
       });
+      builder
+      .addCase(fetchRejectedCustomers.pending, (state) => {
+          state.loading = true;
+      })
+      .addCase(fetchRejectedCustomers.fulfilled, (state, action) => {
+          state.loading = false;
+          state.rejectedCustomers = action.payload;
+      })
+      .addCase(fetchRejectedCustomers.rejected, (state, action) => {
+          state.loading = false;
+          state.error = action.error.message;
+      });
+
+
+      builder
+      .addCase(fetchCustomerActiveLoans.pending, (state) => {
+          state.loading = true;
+      })
+      .addCase(fetchCustomerActiveLoans.fulfilled, (state, action) => {
+          state.loading = false;
+          state.loans = action.payload;
+      })
+      .addCase(fetchCustomerActiveLoans.rejected, (state, action) => {
+          state.loading = false;
+          state.error = action.error.message;
+      });
+    
+    builder
+      .addCase(fetchLoansByMonth.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchLoansByMonth.fulfilled, (state, action) => {
+        state.loans = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchLoansByMonth.rejected, (state, action) => {
+        state.error = action.error.message;
+        state.loading = false;
+      })
+      .addCase(allLaonfTransactions.fulfilled, (state, action) => {
+        state.allLoans = action.payload;
+    });
+    builder
+    .addCase(fetchDisbursementDataChart.pending, (state) => {
+        state.status = 'loading';
+    })
+    .addCase(fetchDisbursementDataChart.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.monthlyData = action.payload;
+    })
+    .addCase(fetchDisbursementDataChart.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
+    });
   },
 });
-export const { setPage, setPages} = loanSlice.actions;
+export const { setPage, setPages, setFilter, nextWeek, previousWeek, setMonth, setYear } = loanSlice.actions;
 export default loanSlice.reducer;

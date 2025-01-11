@@ -28,6 +28,15 @@ export const createCso = createAsyncThunk('cso/createCso', async (csoData) => {
     }
 });
 
+// Fetch CSO Transactions
+export const fetchCsoTransactions = createAsyncThunk(
+    'csoTransactions/fetchCsoTransactions',
+    async ({ month, year }) => {
+        const response = await axios.get(`http://localhost:5000/api/cso/cso-transactions?month=${month}&year=${year}`);
+        return response.data.csoTransactions;
+    }
+);
+
 const csoSlice = createSlice({
     name: 'cso',
     initialState: {
@@ -35,6 +44,7 @@ const csoSlice = createSlice({
     totalPages: 1,
     currentPage: 1,
         cso: [],
+        transactions: [],
         status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
         error: null,
     },
@@ -59,6 +69,19 @@ const csoSlice = createSlice({
             // Handle createCso
             .addCase(createCso.fulfilled, (state, action) => {
                 state.cso.push(action.payload);
+            });
+        
+       builder
+            .addCase(fetchCsoTransactions.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchCsoTransactions.fulfilled, (state, action) => {
+                state.loading = false;
+                state.transactions = action.payload;
+            })
+            .addCase(fetchCsoTransactions.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
             });
     },
 });
