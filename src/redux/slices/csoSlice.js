@@ -32,7 +32,7 @@ export const createCso = createAsyncThunk('cso/createCso', async (csoData) => {
 export const fetchCsoTransactions = createAsyncThunk(
     'csoTransactions/fetchCsoTransactions',
     async ({ month, year }) => {
-        const response = await axios.get(`http://localhost:5000/api/cso/cso-transactions?month=${month}&year=${year}`);
+        const response = await axios.get(`${API_URL}/cso-transactions?month=${month}&year=${year}`);
         return response.data.csoTransactions;
     }
 );
