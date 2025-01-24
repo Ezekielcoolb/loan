@@ -8,6 +8,7 @@ import styled from "styled-components";
 import axios from "axios";
 
 const PaymentRap = styled.div`
+height: 100vh !important;
 padding-top: 30px;
   background: #ffffff;
   .select-payment {
@@ -106,7 +107,7 @@ const PaymentPage = () => {
   const [amount, setAmount] = useState(null);
   const [isManual, setIsManual] = useState(false);
   const [visible, setVisible] = useState(false);
-  const [image, setImage] = useState("");
+ 
 
   // Get today's amountPaid
   const today = new Date().toISOString().split("T")[0]; // Format as YYYY-MM-DD
@@ -114,7 +115,7 @@ const PaymentPage = () => {
     (schedule) => schedule.date.split("T")[0] === today
   );
 
-  const isValid = amount !== "" && image !== "";
+  const isValid = amount !== "";
 
   const dailyAmount = loan?.loanDetails?.amountToBePaid / 30;
 
@@ -145,21 +146,6 @@ const PaymentPage = () => {
     }
   };
 
-  const handleFirstImage = async (e) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", e[0]);
-      formData.append("upload_preset", "ml_default");
-      const imageUrl = await axios.post(
-        `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
-        formData
-      );
-      console.log(imageUrl);
-      setImage(imageUrl.data.secure_url);
-    } catch (err) {
-      console.log(err);
-    }
-  };
 
   useEffect(() => {
     dispatch(fetchLoanById(id)); // Fetch loan data when the component loads
@@ -167,9 +153,9 @@ const PaymentPage = () => {
 
   const handlePayment = () => {
     if (isValid) {
-      dispatch(makePayment({ id, amount, imageLink: image }));
+      dispatch(makePayment({ id, amount}));
       setAmount(null);
-      setImage("");
+     
     }
   };
 
@@ -226,15 +212,7 @@ const PaymentPage = () => {
               placeholder="Enter Amount"
               required
             />
-            <label>
-              {" "}
-              Upload Proof of Payment:
-              <input
-                type="file"
-                onChange={(e) => handleFirstImage(e.target.files)}
-                required
-              />
-            </label>
+          
             <button className="make-pay-btn" onClick={handlePayment} disabled={!isValid}>
               Make Payment
             </button>

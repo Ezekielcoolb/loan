@@ -145,9 +145,9 @@ export const fetchRejectedCustomers = createAsyncThunk(
   }
 );
 
-export const makePayment = createAsyncThunk('loans/makePayment', async ({ id, amount, imageLink }) => {
+export const makePayment = createAsyncThunk('loans/makePayment', async ({ id, amount }) => {
   try  {
-  const response = await axios.post(`${API_URL}/${id}/payment`, { amount, imageLink });
+  const response = await axios.post(`http://localhost:5000/api/loan/loans/${id}/payment`, { amount });
   console.log(response);
 console.log(response.data);
   
@@ -254,6 +254,52 @@ export const fetchDisbursementDataChart = createAsyncThunk(
       return data;
   }
 );
+export const fetchAllLoansByCsoId = createAsyncThunk(
+  'loans/fetchAllLoansByCsoId',
+  async ({ csoId, page = 1, limit = 20 }) => {
+      const response = await axios.get(`http://localhost:5000/api/loan/getLoansByCsoId?csoId=${csoId}&page=${page}&limit=${limit}`);
+      return response.data;
+  }
+);
+
+export const fetchCsoActiveLoans = createAsyncThunk(
+  'loan/fetchCsoActiveLoans',
+  async ({ csoId, date }) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/loan/fetchCsoActiveLoans/${csoId}`,
+        { params: { date } } // Pass the date as a query parameter
+      );
+      return response.data;
+    } catch (err) {
+      console.error('Error fetching active loans:', err);
+      throw err;
+    }
+  }
+);
+
+
+export const fetchPieRepaymentData = createAsyncThunk('repayment/fetchPieRepaymentData', async ({csoId}) => {
+  try {
+  const response = await axios.get(`http://localhost:5000/api/loan/repayment-pie-chart-data/${csoId}`); // Adjust API endpoint if necessary
+  return response.data;
+  }  catch (err) {
+    console.error(err);
+    throw err;
+  }
+});
+
+
+// Async thunk to fetch loan counts
+export const fetchLoanAllTimeCounts = createAsyncThunk('loans/fetchLoanAllTimeCounts', async ({csoId}) => {
+  try {
+    const response = await axios.get(`http://localhost:5000/api/loan/today-yes-month-loans/${csoId}`);
+    return response.data;  // returns { todayCount, yesterdayCount, monthCount }
+  } catch (error) {
+    throw new Error('Error fetching loan counts');
+  }
+});
+
 // Slice
 const loanSlice = createSlice({
   name: "loans",
@@ -269,10 +315,7 @@ const loanSlice = createSlice({
     pendingLoans: [],
     rejectedCustomers: [],
     selectedLoan: null,
-    currentPage: 1,
-    loading: 'idle',
-    error: null,
-    filter: 'all',
+    currentPage: 1, 
     currentWeekStart: new Date(),
     month: new Date().getMonth() + 1, // January is 1, not 0
     year: new Date().getFullYear(),
@@ -281,6 +324,21 @@ const loanSlice = createSlice({
     totalPaid: 0,
     allLoans: [],
     monthlyData: [],
+    totalLoans: 0,
+    activeLoans: 0,
+    pendingLoans: 0,
+    rejectedLoans: 0,
+    noPaymentYesterday: [],
+    defaultingCustomers: [],
+    customers: [],
+    loading: 'idle',
+    error: null,
+    filter: 'all',
+    promptPayments: 0,
+    overduePayments: 0,
+    todayCount: 0,
+    yesterdayCount: 0,
+    monthCount: 0,
   },
   reducers: {
     setPage: (state, action) => {
@@ -305,7 +363,81 @@ const loanSlice = createSlice({
   },
   setYear: (state, action) => {
     state.year = action.payload;
-  }
+  },
+  calculateLoanStats: (state) => {
+    state.totalLoans = state.loans.length;
+    state.activeLoans = state.loans.filter(loan => loan.status === 'active loan').length;
+    state.pendingLoans = state.loans.filter(loan => 
+        loan.status === 'waiting for approval' || loan.status === 'waiting for disbursement'
+    ).length;
+    state.rejectedLoans = state.loans.filter(loan => loan.status === 'rejected').length;
+},
+calculateDefaultingCustomers: (state) => {
+  state.defaultingCustomers = state.loans.filter(loan => {
+      // Check if repaymentSchedule exists and is not empty
+      const repaymentSchedule = loan?.repaymentSchedule;
+      if (!repaymentSchedule || repaymentSchedule.length === 0) {
+          return false; // If no repayment schedule, skip this loan
+      }
+
+      // Get the last repayment date (ensure it's in the right format)
+      const lastRepaymentDateStr = repaymentSchedule[repaymentSchedule.length - 1]?.date;
+      console.log('Last Repayment Date:', lastRepaymentDateStr); // Debugging log
+
+      // Convert it to Date if it's a string
+      const lastRepaymentDate = new Date(lastRepaymentDateStr);
+
+      if (isNaN(lastRepaymentDate)) {
+          console.error('Invalid date format:', lastRepaymentDateStr); // Error logging for invalid date
+          return false;
+      }
+
+      // Check if the loan is overdue and not fully paid
+      const isOverdue = lastRepaymentDate < new Date();
+      const isNotFullyPaid = loan.loanDetails.amountToBePaid > loan.loanDetails.amountPaidSoFar;
+
+      return isOverdue && isNotFullyPaid;
+  });
+},
+calculateNoPaymentYesterday: (state) => {
+  state.noPaymentYesterday = state.loans
+      .map(loan => {
+          if (!loan.repaymentSchedule || loan.repaymentSchedule.length === 0) {
+              return null; // Skip loans without a repayment schedule
+          }
+
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const yesterdayDateString = yesterday.toISOString().split('T')[0];
+
+          const repaymentsDueUntilYesterday = loan.repaymentSchedule.filter(repayment => {
+              const repaymentDate = new Date(repayment.date).toISOString().split('T')[0];
+              return repaymentDate <= yesterdayDateString;
+          });
+
+          const totalDueUntilYesterday = repaymentsDueUntilYesterday.reduce(
+              (total, repayment) => total + repayment.amountPaid, 0
+          );
+
+          const totalPaidUntilYesterday = repaymentsDueUntilYesterday
+              .filter(repayment => repayment.status === 'paid')
+              .reduce((total, repayment) => total + repayment.amountPaid, 0);
+
+          const amountOwing = totalDueUntilYesterday - totalPaidUntilYesterday;
+
+          if (amountOwing > 0) {
+              return {
+                  customerName: `${loan.customerDetails.firstName} ${loan.customerDetails.lastName}`,
+                  amountOwingUntilYesterday: amountOwing
+              };
+          }
+          return null; 
+      })
+      .filter(Boolean); // Remove null values
+}
+
+
+
   },
   extraReducers: (builder) => {
     // Handle loading and data fetching for submitting loan
@@ -320,6 +452,68 @@ const loanSlice = createSlice({
       .addCase(submitLoanApplication.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+      });
+
+
+      builder
+      .addCase(fetchLoanAllTimeCounts.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchLoanAllTimeCounts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.todayCount = action.payload.todayCount;
+        state.yesterdayCount = action.payload.yesterdayCount;
+        state.monthCount = action.payload.monthCount;
+      })
+      .addCase(fetchLoanAllTimeCounts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+
+      builder
+      .addCase(fetchCsoActiveLoans.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCsoActiveLoans.fulfilled, (state, action) => {
+        state.loading = false;
+        state.customers = action.payload;
+      })
+      .addCase(fetchCsoActiveLoans.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+
+      builder
+      .addCase(fetchPieRepaymentData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPieRepaymentData.fulfilled, (state, action) => {
+        state.promptPayments = action.payload.promptPayments;
+        state.overduePayments = action.payload.overduePayments;
+        state.loading = false;
+      })
+      .addCase(fetchPieRepaymentData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+
+      builder
+      .addCase(fetchAllLoansByCsoId.pending, (state) => {
+          state.loading = "loading";
+          state.error = null;
+      })
+      .addCase(fetchAllLoansByCsoId.fulfilled, (state, action) => {
+          state.loans = action.payload.loans;
+          state.total = action.payload.total;
+          loanSlice.caseReducers.calculateLoanStats(state);
+          state.loading = "succeeded";
+      })
+      .addCase(fetchAllLoansByCsoId.rejected, (state, action) => {
+          state.loading = "failed";
+          state.error = action.error.message;
       });
 
       builder
@@ -484,5 +678,5 @@ const loanSlice = createSlice({
     });
   },
 });
-export const { setPage, setPages, setFilter, nextWeek, previousWeek, setMonth, setYear } = loanSlice.actions;
+export const { setPage, setPages, setFilter, nextWeek, previousWeek, setMonth, setYear, calculateLoanStats, calculateDefaultingCustomers, calculateNoPaymentYesterday } = loanSlice.actions;
 export default loanSlice.reducer;

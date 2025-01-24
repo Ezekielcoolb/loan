@@ -37,6 +37,57 @@ export const fetchCsoTransactions = createAsyncThunk(
     }
 );
 
+// Thunk to upload remittance with an image URL
+export const uploadRemittance = createAsyncThunk(
+    "remittance/uploadRemittance",
+    async ({ workId, imageUrl }, { rejectWithValue }) => {
+      try {
+        const response = await axios.post(`http://localhost:5000/api/cso/add-remittance/${workId}`, { imageUrl });
+        console.log(response, imageUrl);
+        
+        return response.data;
+      } catch (error) {
+        return rejectWithValue(error.response.data);
+      }
+    }
+  );
+
+  export const fetchLoanProgress = createAsyncThunk(
+    "loanProgress/fetchLoanProgress",
+    async (workId) => {
+      const response = await axios.get(`http://localhost:5000/api/cso/loan-progress/${workId}`);
+      console.log(response.data, workId);
+      
+      return response.data;
+    }
+  );
+  export const fetchLoanProgressChart = createAsyncThunk(
+    'loanProgress/fetchLoanProgressChart',
+    async (workId, { rejectWithValue }) => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/cso/loan-progress-chart/${workId}`);
+        console.log(response.data);
+        
+        return response.data;
+      } catch (error) {
+        return rejectWithValue(error.response.data);
+      }
+    }
+  );
+  export const fetchRemittanceProgress = createAsyncThunk(
+    'loans/fetchRemittanceProgress',
+    async (workId) => {
+      try {
+      const response = await axios.get(`http://localhost:5000/api/cso/remittance-progress/${workId}`);
+      console.log(response.data.progress)
+      return response.data.progress;
+      }  catch (err) {
+        console.error(err);
+        throw err;
+      }
+    }
+  );
+
 const csoSlice = createSlice({
     name: 'cso',
     initialState: {
@@ -47,8 +98,22 @@ const csoSlice = createSlice({
         transactions: [],
         status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
         error: null,
+        isUploading: false,
+        uploaded: false,
+        progressData: null,
+        monthlyTarget: 0,
+        payments: [],
+        monthlyLoanTarget: 0,
+        monthlyLoanCounts: [],
+        remittanceProgress: 0,
     },
-    reducers: {},
+    reducers: {
+        resetUploadState: (state) => {
+            state.isUploading = false;
+            state.error = null;
+            state.uploaded = false;
+          },
+    },
     extraReducers: (builder) => {
         builder
             // Handle fetchCso
@@ -71,6 +136,61 @@ const csoSlice = createSlice({
                 state.cso.push(action.payload);
             });
         
+            builder
+            .addCase(fetchRemittanceProgress.pending, (state) => {
+              state.loading = true;
+            })
+            .addCase(fetchRemittanceProgress.fulfilled, (state, action) => {
+              state.loading = false;
+              state.remittanceProgress = action.payload;
+            })
+            .addCase(fetchRemittanceProgress.rejected, (state, action) => {
+              state.loading = false;
+              state.error = action.error.message;
+            });
+
+            builder
+            .addCase(fetchLoanProgressChart.pending, (state) => {
+              state.status = 'loading';
+            })
+            .addCase(fetchLoanProgressChart.fulfilled, (state, action) => {
+              state.status = 'succeeded';
+              state.monthlyLoanTarget = action.payload.monthlyLoanTarget;
+              state.monthlyLoanCounts = action.payload.monthlyLoanCounts;
+            })
+            .addCase(fetchLoanProgressChart.rejected, (state, action) => {
+              state.status = 'failed';
+              state.error = action.payload;
+            });
+
+
+            builder
+            .addCase(fetchLoanProgress.pending, (state) => {
+              state.loading = true;
+              state.error = null;
+            })
+            .addCase(fetchLoanProgress.fulfilled, (state, action) => {
+              state.loading = false;
+              state.progressData = action.payload;
+            })
+            .addCase(fetchLoanProgress.rejected, (state, action) => {
+              state.loading = false;
+              state.error = action.error.message;
+            });
+
+            builder
+            .addCase(uploadRemittance.pending, (state) => {
+              state.isUploading = true;
+            })
+            .addCase(uploadRemittance.fulfilled, (state) => {
+              state.isUploading = false;
+              state.uploaded = true;
+            })
+            .addCase(uploadRemittance.rejected, (state, action) => {
+              state.isUploading = false;
+              state.error = action.payload;
+            });
+
        builder
             .addCase(fetchCsoTransactions.pending, (state) => {
                 state.loading = true;
@@ -85,5 +205,5 @@ const csoSlice = createSlice({
             });
     },
 });
-
+export const { resetUploadState } = csoSlice.actions;
 export default csoSlice.reducer;

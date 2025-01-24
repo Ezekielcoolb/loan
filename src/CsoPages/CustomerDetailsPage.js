@@ -6,7 +6,7 @@ import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
 
 const CustomerPageDetailRap = styled.div`
- 
+ height: 100vh;
     font-family: 'Roboto';
   
   .customer-details-div {

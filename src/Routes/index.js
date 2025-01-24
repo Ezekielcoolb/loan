@@ -37,6 +37,11 @@ import PaymentPage from "../CsoPages/PaymentPage";
 
 import CustomerDetailsInfo from "../Admin/CustomerDetail/allCustomerDetails";
 import AdminCalendarPage from "../Admin/CustomerDetail/CustomerDailyTrans";
+import LoanCsoDashboard from "../CsoPages/CsoLoanDashboard";
+import LoanCollections from "../CsoPages/csoCollections";
+import RemittanceUpload from "../CsoPages/csoDashboard";
+import CsoProfile from "../CsoPages/CsoProfile";
+import CsoLoanCollection from "../Admin/csoPages/csoLoanCollection";
 
 
 
@@ -77,7 +82,7 @@ export default function Routess() {
                         {path: "/customer/:bvn", element: <CustomerDetailsInfo />},
                         {path: "/customer/calender/:bvn", element: <AdminCalendarPage />},
                         {path: "/calendar/:id", element: <CalendarPage  />},
-
+                        {path: "/csoDetails/:id", element: <CsoLoanCollection  />},
                         {path: "/loan/:id", element: <LoanDetails  />},
                         {path: "/transactions", element: <AllTransactions  />},
                         {path: "/settings", element: <Setting  />},
@@ -91,6 +96,10 @@ export default function Routess() {
                         {path: "/cso/customer-details/:id" , element: <CustomerDetailsPage />},
                         {path: "/cso/calendar/:id", element: <CalendarPage  />},
                         {path: "/cso/loans/:id/payment", element: <PaymentPage />},
+                        {path: "/cso/loans-dashboard", element: <LoanCsoDashboard />},
+                        {path: "/cso/loans-collections", element: <LoanCollections />},
+                        {path: "/cso/csos-dashboard", element: <RemittanceUpload />},
+                        {path: "/cso/csos-profile", element: <CsoProfile />},
                     ]
                 },
 

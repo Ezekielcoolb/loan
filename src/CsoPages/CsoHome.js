@@ -4,42 +4,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { setDropdownVisible } from "../redux/slices/appSlice";
 import LoanApplicationForm from "./CustomerLoanPop";
-import { fetchLoans, setPage } from "../redux/slices/LoanSlice";
+import { fetchAllLoansByCsoId, setPage } from "../redux/slices/LoanSlice";
 import { useNavigate } from "react-router-dom";
 
 const HomeCsoRap = styled.div`
   color: #005e78;
-  height: 100vh;
 
-  .home-header h3 {
-    font-size: 16px;
-    font-weight: 700;
-    line-height: 18px;
-    color: #ffffff;
-  }
-  .home-header p {
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 18px;
-    color: #ffffff;
-  }
-  .home-header-text {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-  }
-  .home-header {
-    display: flex;
-    align-items: center;
-    background: #005e78;
-    justify-content: space-between;
-    width: 100%;
-    padding: 20px 30px;
-    padding-top: 50px;
-    position: fixed;
-    top: 0px;
-    z-index: 9999;
-  }
+
+  
   input {
     background: #daf7ff;
     padding: 20px 40px;
@@ -64,6 +36,8 @@ const HomeCsoRap = styled.div`
   }
   .home-customers h2 {
     color: #005e78;
+    font-size: 24px;
+    font-weight: 500;
   }
   .home-first-div {
     display: flex;
@@ -75,7 +49,7 @@ const HomeCsoRap = styled.div`
   .homes {
     margin: auto;
     color: #005e78;
-    margin-top: 100px;
+    
     padding-top: 20px;
   }
   .images-container {
@@ -169,11 +143,18 @@ const CsoHome = () => {
     (state) => state.loan
   );
 
+
+const csoId = user.workId
+
+console.log(csoId);
+
+
+
   const [popupMessage, setPopupMessage] = useState(null);
   const [popupColor, setPopupColor] = useState("#005e78")
 
   useEffect(() => {
-    dispatch(fetchLoans({ page }));
+    dispatch(fetchAllLoansByCsoId({ csoId, page }));
   }, [dispatch, page]);
 
   const handleNextPage = () => {
@@ -212,27 +193,12 @@ const handleCustomerClick = (loan) => {
   setPopupColor(color); // Store the color based on status
 };
 
-  
+ 
+
   return (
     <HomeCsoRap>
       <div>
-        {user && (
-          <div className="home-header">
-            <div className="home-header-text">
-              <h3>Hi, {user.firstName}</h3>
-              <p>{user.email}</p>
-            </div>
-            <div>
-              <Icon
-                className="notify"
-                icon="ion:notifications-outline"
-                width="24"
-                height="24"
-                style={{ color: "white" }}
-              />
-            </div>
-          </div>
-        )}
+       
         <div className="homes">
           <div className="home-first-div">
             <div className="home-customers">

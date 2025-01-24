@@ -234,6 +234,15 @@ table {
 .custom-table tbody tr td input[type="checkbox"] {
   margin: 0;
 }
+
+.input-div {
+  position: relative;
+}
+.search-input-icon {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}
 .dropdown-container {
   position: fixed;
   width: 100vw;

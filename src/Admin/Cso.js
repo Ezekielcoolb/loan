@@ -532,7 +532,6 @@ const Csos = () => {
     state: "",
     zipCode: "",
     country: "",
-   
   });
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -553,10 +552,6 @@ const Csos = () => {
     };
   }, [selectedCso]);
 
-
-
-
-
   useEffect(() => {
     if (status === "idle") {
       dispatch(fetchCso({ page: currentPage, limit }));
@@ -565,11 +560,6 @@ const Csos = () => {
 
   if (status === "loading") return <p>Loading branches...</p>;
   if (status === "failed") return <p>Error: {error}</p>;
-
-
-
-
-
 
   const filteredCso =
     filter === "all" ? cso : cso.filter((c) => c.status === filter);
@@ -1038,6 +1028,7 @@ const Csos = () => {
                           <th>Gender</th>
                           <th>No of customer</th>
                           <th>Branch</th>
+                          <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1065,6 +1056,12 @@ const Csos = () => {
                               <td>{caseItem?.status}</td>
                               <td>{caseItem?.noCustomer}</td>
                               <td>{caseItem?.branch}</td>
+                              <td>
+                                {" "}
+                                <Link to={`/csoDetails/${caseItem.workId}`}>
+                                  View Details
+                                </Link>
+                              </td>
                             </tr>
                           ))
                         ) : (
@@ -1072,9 +1069,7 @@ const Csos = () => {
                             <td colSpan="10" className="no-case">
                               <img src="/images/mask_img.png" alt="" />
                               <h3>No cso found.</h3>
-                              <p style={{}}>
-                               
-                              </p>
+                              <p style={{}}></p>
                             </td>
                           </tr>
                         )}
@@ -1133,179 +1128,7 @@ const Csos = () => {
                   </Link>
                 </div>
 
-                {/* Dropdown */}
-                {/* {selectedCso && (
-                  <div
-                    style={{
-                      position: "fixed",
-                      top: 0,
-                      left: 0,
-                      width: "100vw",
-                      height: "100vh",
-                      background: "rgba(0, 0, 0, 0.5)",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      zIndex: 9999,
-                    }}
-                  >
-                    <div
-                      ref={clientdropdownRef}
-                      style={{
-                        background: "white",
-                        borderRadius: "8px",
-
-                        width: "700px",
-
-                        overflowY: "auto",
-                      }}
-                    >
-                      <div className="client-drop-header">
-                        <div className="client-show-head">
-                          <h4>
-                            {selectedCso.firstName} {selectedCso.lastName}
-                          </h4>
-                          <p>{selectedCso.date}</p>
-                        </div>
-                        <div>
-                          <Icon
-                            onClick={() => setSelectedCso(null)}
-                            icon="uil:times"
-                            width="16"
-                            height="16"
-                            style={{ color: "black", cursor: "pointer" }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="client-drop-div">
-                        <div className="client-info-drop-1">
-                          <div className="year-trans">
-                            <h4>Monthly Transaction</h4>
-                            <div className="year-sub">
-                              <h3>Target</h3>
-                              <p>300000</p>
-                            </div>
-                            <div className="year-sub">
-                              <h3>Amount Made</h3>
-                              <p>250000</p>
-                            </div>
-                            <div className="year-sub">
-                              <h3>Evaluation</h3>
-                              <p className="target-red">Target Not Met</p>
-                            </div>
-                          </div>
-                          <div className="year-trans">
-                            <h4>Weekly Transaction</h4>
-                            <div className="year-sub">
-                              <h3>Target</h3>
-                              <p>100000</p>
-                            </div>
-                            <div className="year-sub">
-                              <h3>Amount Made</h3>
-                              <p>150000</p>
-                            </div>
-                            <div className="year-sub">
-                              <h3>Evaluation</h3>
-                              <p className="target">Target Met</p>
-                            </div>
-                          </div>
-                          <div className="year-trans">
-                            <h4>Daily Transaction</h4>
-                            <div className="year-sub">
-                              <h3>Target</h3>
-                              <p>50000</p>
-                            </div>
-                            <div className="year-sub">
-                              <h3>Amount Made</h3>
-                              <p>70000</p>
-                            </div>
-                            <div className="year-sub">
-                              <h3>Evaluation</h3>
-                              <p className="target">Target Met</p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="client-info-drop-2">
-                          <div className="financial-matric">
-                            <h4>Financial Matrics</h4>
-                            <div className="year-month-div">
-                              <Link
-                                className={`year-month-link ${
-                                  matrixOpen === "yearly" ? "active" : ""
-                                }`}
-                                onClick={() => handleMatricOpen("yearly")}
-                              >
-                                Yearly
-                              </Link>
-                              <Link
-                                className={`year-month-link ${
-                                  matrixOpen === "monthly" ? "active" : ""
-                                }`}
-                                onClick={() => handleMatricOpen("monthly")}
-                              >
-                                Monthly
-                              </Link>
-                              <Link
-                                className={`year-month-link ${
-                                  matrixOpen === "weekly" ? "active" : ""
-                                }`}
-                                onClick={() => handleMatricOpen("weekly")}
-                              >
-                                Weekly
-                              </Link>
-                              <Link
-                                className={`year-month-link ${
-                                  matrixOpen === "daily" ? "active" : ""
-                                }`}
-                                onClick={() => handleMatricOpen("daily")}
-                              >
-                                Daily
-                              </Link>
-                            </div>
-                            <div>
-                              {matrixOpen === "yearly" && (
-                                <div>
-                                  <h5>Yearly Matrics</h5>
-                                  <YearlySalesChart />
-                                </div>
-                              )}
-                              {matrixOpen === "monthly" && (
-                                <div>
-                                  <h5>Monthly Matrics</h5>
-                                  <MonthlySalesChart />
-                                </div>
-                              )}
-                              {matrixOpen === "weekly" && (
-                                <div>
-                                  <h5>Weekly Matrics</h5>
-                                  <WeeklySalesChart />
-                                </div>
-                              )}
-                              {matrixOpen === "daily" && (
-                                <div>
-                                  <h5>Daily Matrics</h5>
-                                  <DailySalesChart />
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="edi-del-btn">
-                        <Link to="/csodetails" className="edit-client">
-                          See Details
-                        </Link>
-                        <Link
-                          onClick={() => setSelectedCso(null)}
-                          className="delete-client"
-                        >
-                          Cancel
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                )} */}
+                
               </div>
             </>
           )}
