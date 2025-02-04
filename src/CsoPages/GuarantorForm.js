@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchGuarantorResponse, submitGuarantorResponse } from '../redux/slices/guarantorSlice';
 import { fetchWaitingLoans } from '../redux/slices/LoanSlice';
+import { useParams } from 'react-router-dom'; // Import useParams if getting loanId from URL
 import styled from 'styled-components';
-
 
 const GuarantorRap = styled.div`
 background: #ffffff;
@@ -56,40 +56,39 @@ button {
   font-weight: 500;
 }
 `
-
 const GuarantorForm = () => {
   const dispatch = useDispatch();
   const { response, status } = useSelector((state) => state.guarantor);
-
-  const id = "67a2648d82aabb6f3f83a4c4"
-    const loans = useSelector((state) => state.loan.loans);
+  const { id } = useParams(); // Get loanId from URL if applicable
   
-  const loan = loans.find((loan) => loan._id === id); // Find the loan in the Redux store
-
+  const loans = useSelector((state) => state.loan.loans);
+  const loan = loans.find((loan) => loan._id === id); // Find the loan in Redux store
+  
   const [formData, setFormData] = useState({
-    loanId: id,
+    loanId: id || "", // Ensure loanId is dynamic
     known: "",
-    guarantorName: '',
-    knownDuration: '',
-    relationshipConfirmed: '',
+    guarantorName: "",
+    knownDuration: "",
+    relationshipConfirmed: "",
     consentGiven: false,
   });
-console.log(formData);
-console.log(loans);
-console.log(loan);
 
   useEffect(() => {
-    dispatch(fetchGuarantorResponse({loanId: id}));
-  }, [dispatch]);
-   useEffect(() => {
-      if (!loan) {
-        dispatch(fetchWaitingLoans());
-      }
-    }, [loan, dispatch]);
+    if (!loan) {
+      dispatch(fetchWaitingLoans());
+    }
+  }, [loan, dispatch]);
+
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchGuarantorResponse(id));
+      setFormData((prev) => ({ ...prev, loanId: id })); // Ensure loanId updates dynamically
+    }
+  }, [dispatch, id]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+    setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
   };
 
   const handleSubmit = (e) => {
@@ -97,23 +96,23 @@ console.log(loan);
     dispatch(submitGuarantorResponse(formData));
   };
 
-  if (status === 'loading') return <p>Loading...</p>;
+  if (status === "loading") return <p>Loading...</p>;
   if (response) return <p>✅ You've already submitted your response.</p>;
 
   return (
     <GuarantorRap>
-      <div className='upper-grand'>
-        <h2>Guarantor Form for  {loan?.customerDetails.firstName} {loan?.customerDetails.lastName}</h2>
-        <p> {loan?.customerDetails.firstName} {loan?.customerDetails.lastName} claimed to have known you for {loan?.guarantorDetails.yearsKnown} years as {loan?.guarantorDetails.relationship}
-        </p>
-      </div>
+    <div className='upper-grand'>
+      <h2>Guarantor Form for  {loan?.customerDetails.firstName} {loan?.customerDetails.lastName}</h2>
+      <p> {loan?.customerDetails.firstName} {loan?.customerDetails.lastName} claimed to have known you for {loan?.guarantorDetails.yearsKnown} years as {loan?.guarantorDetails.relationship}
+      </p>
+    </div>
     <form onSubmit={handleSubmit}>
       <label>
-        Are you {loan?.guarantorDetails.name}? <br />
+        Are you {loan?.guarantorDetails?.name}? <br />
         <input type="text" name="guarantorName" onChange={handleChange} required />
       </label>
       <label>
-        Do you Know {loan?.customerDetails.firstName} {loan?.customerDetails.lastName}? <br />
+        Do you know {loan?.customerDetails?.firstName} {loan?.customerDetails?.lastName}? <br />
         <input type="text" name="known" onChange={handleChange} required />
       </label>
       <label>
@@ -125,8 +124,8 @@ console.log(loan);
         <input type="text" name="relationshipConfirmed" onChange={handleChange} required />
       </label>
       <label>
-        Do you consent to be the guarantor?
-        <input className='checkbox' type="checkbox" name="consentGiven" onChange={handleChange} required />
+        Do you consent to be the guarantor? <br />
+        <input type="checkbox" name="consentGiven" onChange={handleChange} required />
       </label>
       <button type="submit">Submit</button>
     </form>

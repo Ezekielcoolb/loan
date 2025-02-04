@@ -16,7 +16,7 @@ export const createBranch = createAsyncThunk('branches/createBranch', async (bra
     try{
        
         
-        const response = await axios.post(API_URL, branchData);
+        const response = await axios.post(`${API_URL}/createbranch`, branchData);
       
         toast.success(response.data.message)
         return response.data;
@@ -29,7 +29,7 @@ export const fetchAllBranches = createAsyncThunk(
     'branches/fetchAllBranches',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get('http://localhost:5000/api/branches/get-branches');
+            const response = await axios.get(`${API_URL}/get-branches`);
          
             return response.data;
         } catch (error) {
@@ -42,7 +42,7 @@ export const setYearlyTargets = createAsyncThunk(
     'branches/setYearlyTargets',
     async ({ yearlyLoanTarget, yearlyDisbursementTarget }, { rejectWithValue }) => {
         try {
-            const response = await axios.put('http://localhost:5000/api/branches/branches/targets/yearly', {
+            const response = await axios.put(`${API_URL}/branches/targets/yearly`, {
                 yearlyLoanTarget,
                 yearlyDisbursementTarget,
             });
@@ -59,7 +59,7 @@ export const setBranchTargets = createAsyncThunk(
     'branches/setBranchTargets',
     async ({ name, loanTarget, disbursementTarget }, { rejectWithValue }) => {
         try {
-            const response = await axios.put(`http://localhost:5000/api/branches/branches/targets/${name}`, {
+            const response = await axios.put(`${API_URL}/branches/targets/${name}`, {
                 loanTarget,
                 disbursementTarget,
             });

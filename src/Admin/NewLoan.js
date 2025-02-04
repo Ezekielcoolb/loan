@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchWaitingLoans, setPages } from "../redux/slices/LoanSlice";
+import { MoonLoader } from "react-spinners";
 
 const NewLoanRap = styled.div`
 .pagination {
@@ -214,7 +215,11 @@ const NewLoan = () => {
     }
   };
   
-  if (loading === "loading") return <p>Loading...</p>;
+  if (loading === "loading") return <p style={{display: "flex", 
+    flexDirection: "column", 
+    height: "90vh",
+    justifyContent: "center",
+   alignItems: "center"}} > <MoonLoader /></p>;;
   if (loading === "failed") return <p>Error loading loans</p>;
   
   return (

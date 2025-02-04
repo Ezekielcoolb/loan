@@ -4,6 +4,7 @@ import DisbursementRepayment from "./TransactionDetails/DisbursementDetail";
 import LoanSubmissions from "./TransactionDetails/LoanApplication";
 import { Link } from "react-router-dom";
 import AllCustomerTable from "./TransactionDetails/LoanApplication";
+import RemittanceTable from "./TransactionDetails/AllRemittance";
 
 const TransactionRap = styled.div`
   .client-1 {
@@ -66,10 +67,19 @@ const AllTransactions = () => {
           >
             Loan Applications
           </Link>
+          <Link
+            className={`client-link ${
+              activeLink === "application" ? "active" : ""
+            }`}
+            onClick={() => handleLinkClick("collection")}
+          >
+            Collection $ Remmittance
+          </Link>
         </div>
       </div>
       <div>{activeLink === "disbursement" && <DisbursementRepayment />}</div>
       <div>{activeLink === "application" && <AllCustomerTable />}</div>
+      <div>{activeLink === "collection" && <RemittanceTable />}</div>
     </TransactionRap>
   );
 };

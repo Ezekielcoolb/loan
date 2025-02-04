@@ -42,6 +42,10 @@ import LoanCollections from "../CsoPages/csoCollections";
 import RemittanceUpload from "../CsoPages/csoDashboard";
 import CsoProfile from "../CsoPages/CsoProfile";
 import CsoLoanCollection from "../Admin/csoPages/csoLoanCollection";
+import Notifications from "../Admin/Notification";
+import CallButtonComponent from "../Admin/test";
+import GuarantorForm from "../CsoPages/GuarantorForm";
+
 
 
 
@@ -74,11 +78,11 @@ export default function Routess() {
                         {path: "/newloan", element: <NewLoan  />},
                         {path: "/disbursement", element: <Disbursment  />},
 
-                        // {path: "/loans/:id/payment", element: <PaymentPage  />},
-                        {path: "/calendar/test/:id", element: <LoanCalendar  />},
+                        // {path: "/testDetails", element: <TargetForm  />},
+                        // {path: "/calendar/test/:id", element: <LoanCalendar  />},
                         // {path: "/branches/:id", element: <CsoDetail  />},
-                        // {path: "/test/details", element: <LoanDoughnutChart  />},
-                        // {path: "/test", element: <DisbursementChart  />},
+                        {path: "/test", element: <CallButtonComponent  />},
+                        // {path: "/test", element: <Notifications  />},
                         {path: "/customer/:bvn", element: <CustomerDetailsInfo />},
                         {path: "/customer/calender/:bvn", element: <AdminCalendarPage />},
                         {path: "/calendar/:id", element: <CalendarPage  />},
@@ -105,6 +109,7 @@ export default function Routess() {
 
 
                 { path:'/csoLogin', element: <CsoLogin />} ,
+                { path:'/guarantor/:id', element: <GuarantorForm />} ,
                 
             ]
         )

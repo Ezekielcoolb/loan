@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { disburseLoan, fetchWaitingDisbursementLoans } from "../redux/slices/LoanSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { MoonLoader } from "react-spinners";
 
 const NewLoanRap = styled.div`
   width: 100%;
@@ -66,7 +67,11 @@ const Disbursment = () => {
     dispatch(disburseLoan(id));
   };
 
-  if (loading === 'loading') return <p>Loading...</p>;
+  if (loading === 'loading') return <p style={{display: "flex", 
+    flexDirection: "column", 
+    height: "90vh",
+    justifyContent: "center",
+   alignItems: "center"}} > <MoonLoader /></p>;;
   return (
     <NewLoanRap>
       <div>

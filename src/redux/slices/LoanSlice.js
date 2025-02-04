@@ -5,6 +5,7 @@ import axios from "axios";
 // Async Thunks for API Calls
 
 const API_URL = "https://sever-qvw1.onrender.com/api/loan";
+// const API_URL = "http://localhost:5000/api/loan"
 
 export const submitLoanApplication = createAsyncThunk(
   "loans/submitApplication",
@@ -147,7 +148,7 @@ export const fetchRejectedCustomers = createAsyncThunk(
 
 export const makePayment = createAsyncThunk('loans/makePayment', async ({ id, amount }) => {
   try  {
-  const response = await axios.post(`http://localhost:5000/api/loan/loans/${id}/payment`, { amount });
+  const response = await axios.post(`${API_URL}/loans/${id}/payment`, { amount });
   console.log(response);
 console.log(response.data);
   
@@ -257,7 +258,7 @@ export const fetchDisbursementDataChart = createAsyncThunk(
 export const fetchAllLoansByCsoId = createAsyncThunk(
   'loans/fetchAllLoansByCsoId',
   async ({ csoId, page = 1, limit = 20 }) => {
-      const response = await axios.get(`http://localhost:5000/api/loan/getLoansByCsoId?csoId=${csoId}&page=${page}&limit=${limit}`);
+      const response = await axios.get(`${API_URL}/getLoansByCsoId?csoId=${csoId}&page=${page}&limit=${limit}`);
       return response.data;
   }
 );
@@ -267,7 +268,7 @@ export const fetchCsoActiveLoans = createAsyncThunk(
   async ({ csoId, date }) => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/loan/fetchCsoActiveLoans/${csoId}`,
+        `${API_URL}/fetchCsoActiveLoans/${csoId}`,
         { params: { date } } // Pass the date as a query parameter
       );
       return response.data;
@@ -281,7 +282,7 @@ export const fetchCsoActiveLoans = createAsyncThunk(
 
 export const fetchPieRepaymentData = createAsyncThunk('repayment/fetchPieRepaymentData', async ({csoId}) => {
   try {
-  const response = await axios.get(`http://localhost:5000/api/loan/repayment-pie-chart-data/${csoId}`); // Adjust API endpoint if necessary
+  const response = await axios.get(`${API_URL}/repayment-pie-chart-data/${csoId}`); // Adjust API endpoint if necessary
   return response.data;
   }  catch (err) {
     console.error(err);
@@ -293,12 +294,28 @@ export const fetchPieRepaymentData = createAsyncThunk('repayment/fetchPieRepayme
 // Async thunk to fetch loan counts
 export const fetchLoanAllTimeCounts = createAsyncThunk('loans/fetchLoanAllTimeCounts', async ({csoId}) => {
   try {
-    const response = await axios.get(`http://localhost:5000/api/loan/today-yes-month-loans/${csoId}`);
+    const response = await axios.get(`${API_URL}/today-yes-month-loans/${csoId}`);
     return response.data;  // returns { todayCount, yesterdayCount, monthCount }
   } catch (error) {
     throw new Error('Error fetching loan counts');
   }
 });
+
+
+// Async thunk to update call status
+export const updateCallStatus = createAsyncThunk(
+  'loan/updateCallStatus',
+  async ({ loanId, field }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`${API_URL}/update-call-status`, { loanId, field });
+      return { field, loan: response.data.loan };
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+
 
 // Slice
 const loanSlice = createSlice({
@@ -339,6 +356,10 @@ const loanSlice = createSlice({
     todayCount: 0,
     yesterdayCount: 0,
     monthCount: 0,
+    callCso: false,
+    callGuarantor: false,
+    callCustomer: false,
+    verifyCustomer: false,
   },
   reducers: {
     setPage: (state, action) => {
@@ -434,6 +455,9 @@ calculateNoPaymentYesterday: (state) => {
           return null; 
       })
       .filter(Boolean); // Remove null values
+},
+setLoan: (state, action) => {
+  state.loanUpdate = action.payload;
 }
 
 
@@ -454,6 +478,18 @@ calculateNoPaymentYesterday: (state) => {
         state.error = action.error.message;
       });
 
+      builder
+      .addCase(updateCallStatus.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateCallStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        state[action.payload.field] = true;
+      })
+      .addCase(updateCallStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload.message;
+      });
 
       builder
       .addCase(fetchLoanAllTimeCounts.pending, (state) => {
@@ -678,5 +714,5 @@ calculateNoPaymentYesterday: (state) => {
     });
   },
 });
-export const { setPage, setPages, setFilter, nextWeek, previousWeek, setMonth, setYear, calculateLoanStats, calculateDefaultingCustomers, calculateNoPaymentYesterday } = loanSlice.actions;
+export const { setPage, setPages, setFilter, nextWeek, previousWeek, setMonth, setYear, calculateLoanStats, calculateDefaultingCustomers, calculateNoPaymentYesterday, setLoan  } = loanSlice.actions;
 export default loanSlice.reducer;

@@ -176,12 +176,12 @@ const DisbursementRepayment = () => {
                ₦{monthlyAmountDisbursed.toLocaleString()}
                </span>
                </p>
-            <p>Amount to be Paid: 
+            <p>Principal + <br />: 
               <span>
                 ₦{monthlyAmountToBePaid.toLocaleString()}
             </span>
             </p>
-            <p>Amount Paid: 
+            <p>Actual Paid: 
               <span>
                 ₦{monthlyAmountPaid.toLocaleString()}
             </span>
@@ -203,12 +203,12 @@ const DisbursementRepayment = () => {
               </span>
             </p>
             <p>
-              Total Amount to be Paid: 
+              Total Principal + Interest: 
               <span>
                 ₦{totalAmountToBePaid.toLocaleString()}
               </span>
             </p>
-            <p>Total Amount Paid: 
+            <p>Total Actual Paid: 
               <span>
                 ₦{totalAmountPaid.toLocaleString()}
             </span>
@@ -257,8 +257,8 @@ const DisbursementRepayment = () => {
                       <th>Branch</th>
                       <th>Amount Disbursed</th>
                       <th>Date Disbursed</th>
-                      <th>Amount to be Paid</th>
-                      <th>Amount Paid</th>
+                      <th>Principal + <br /> Interest</th>
+                      <th>Actual Paid</th>
                       <th>Loan Balance</th>
                       <th>Loan End Date</th>
                     </tr>

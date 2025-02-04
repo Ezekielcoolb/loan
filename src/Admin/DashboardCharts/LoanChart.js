@@ -22,7 +22,7 @@ const LoanDoughnutChart = () => {
     const completionRate = ((totalActiveLoan / totalLoanTarget) * 100).toFixed(2);
 
     const data = {
-        labels: ['Active Loans', 'Remaining'],
+        labels: ['Actual Loans', 'Estimated'],
         datasets: [{
             data: [totalActiveLoan, totalLoanTarget - totalActiveLoan],
             backgroundColor: ['#10B981', '#E5E7EB'],

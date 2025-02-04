@@ -5,6 +5,9 @@ import authReducer from './slices/authSlice'
 import loanReducer from './slices/LoanSlice'
 import appReducer from './slices/appSlice'
 import branchLoanReducer from './slices/branchLoanSlice'
+import notificationReducer from './slices/notificationSlice'
+import targetReducer from './slices/targetSlice'
+import guarantorReducer from './slices/guarantorSlice'
 
 const store = configureStore({
     reducer: {
@@ -14,6 +17,9 @@ const store = configureStore({
         loan: loanReducer,
         app: appReducer,
         loanBranches: branchLoanReducer,
+        notifications: notificationReducer,
+        target: targetReducer,
+        guarantor: guarantorReducer,
     },
 });
 

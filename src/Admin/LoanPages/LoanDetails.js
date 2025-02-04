@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
   approveLoan,
   fetchWaitingLoans,
   rejectLoan,
+  updateCallStatus,
 } from "../../redux/slices/LoanSlice";
 import styled from "styled-components";
+import { Icon } from "@iconify/react/dist/iconify.js";
 
 const LoanDetailRap = styled.div`
   width: 100%;
@@ -34,7 +36,7 @@ const LoanDetailRap = styled.div`
   .change-size {
     font-size: 18px;
     font-weight: 900;
-    color:rgb(5, 154, 50);
+    color: rgb(5, 154, 50);
   }
   span {
     font-size: 14px;
@@ -93,8 +95,13 @@ const LoanDetailRap = styled.div`
     color: #ffffff;
     font-size: 12px;
     font-weight: 500;
+    border-style: none;
     text-decoration: none;
     background: #0c1d55;
+  }
+  .call-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
   }
   .right-loan-detail p {
     color: #727789;
@@ -107,6 +114,7 @@ const LoanDetailRap = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
   }
   .inner-verify p {
     max-width: 280px;
@@ -151,18 +159,174 @@ const LoanDetailRap = styled.div`
     display: flex;
     gap: 15px;
   }
+  .popup {
+    position: absolute;
+    
+   z-index: 1000;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+    h3 {
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .popup-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+
+      button {
+        padding: 8px 16px;
+        font-size: 14px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+
+        &.yes {
+          background-color: #28a745;
+          color: white;
+        }
+
+        &.no {
+          background-color: #dc3545;
+          color: white;
+        }
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+    }
+  }
+  .approved-div {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 15px;
+
+  }
+  .approved-div  p {
+    font-size: 14px;
+    font-weight: 600;
+    color: #030b26;
+  }
+  .approved-div button {
+    border: 1px solid #dbe0ee;
+    width: 150px;
+    height: 38px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #030b26;
+    background: white;
+    margin-top: 15px;
+  }
+`;
+
+const Button = styled.button`
+  padding: 10px 16px;
+  margin: 8px;
+  border-radius: 8px;
+  color: white;
+  background-color: ${({ active }) => (active ? '#16A34A' : '#3B82F6')}; // Green if true, Blue if false
+  border: none;
+  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  transition: background 0.3s ease;
+  opacity: ${({ disabled }) => (disabled ? '0.6' : '1')};
+
+  &:hover {
+    background-color: ${({ active, disabled }) => 
+      disabled ? '#16A34A' : active ? '#15803D' : '#2563EB'};
+  }
+`;
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+`;
+
+const ModalButton = styled.button`
+  padding: 8px 16px;
+  margin: 10px;
+  border-radius: 6px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: background 0.3s ease;
+
+  &:first-child {
+    background-color: #EF4444;
+    &:hover {
+      background-color: #DC2626;
+    }
+  }
+
+  &:last-child {
+    background-color: #22C55E;
+    &:hover {
+      background-color: #16A34A;
+    }
+  }
 `;
 
 const LoanDetails = () => {
   const { id } = useParams(); // Get loan ID from URL
   const dispatch = useDispatch();
+  const navigate = useNavigate()
   const loans = useSelector((state) => state.loan.loans);
   const loan = loans.find((loan) => loan._id === id); // Find the loan in the Redux store
-
   const [amountApproved, setAmountApproved] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
   const [approveOpen, setApproveOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [isCalled, setIsCalled] = useState(false);
+  const { callCso, callGuarantor, callCustomer, verifyCustomer } = useSelector(state => state.loan);
+  const [popup, setPopup] = useState(null); // Track which popup is open
+const [approveLoading, setApprovedLoading] = useState(false)
+const [rejectLoading, setRejectLoading] = useState(false)
+
+
+  const handleApprovedPop = () => {
+    setApprovedLoading(false)
+    navigate('/newloan')
+  };
+  const handleRejectPop = () => {
+    setRejectLoading(false)
+    navigate('/newloan')
+  };
+
+  const handlePopupResponse = (response) => {
+    if (response === "yes") {
+      setIsCalled(true); // Mark as called
+    }
+    setShowPopup(false); // Close the pop-up
+  };
+
+
+  const handleUpdate = () => {
+    if(popup) {
+    dispatch(updateCallStatus({ loanId: id, field: popup }));
+    setPopup(null); // Close popup after update
+    }
+  };
   // Fetch loans if not already in the Redux store
   useEffect(() => {
     if (!loan) {
@@ -172,25 +336,43 @@ const LoanDetails = () => {
 
   const handleOpenApprove = () => {
     setApproveOpen(!approveOpen);
+    setRejectOpen(false);
   };
   const handleOpenReject = () => {
     setRejectOpen(!rejectOpen);
+    setApproveOpen(false);
   };
   // Approve loan handler
   const handleApprove = () => {
     dispatch(approveLoan({ id, amountApproved }));
+    setApprovedLoading(true)
   };
 
   // Reject loan handler
   const handleReject = () => {
     dispatch(rejectLoan({ id, rejectionReason }));
+    setRejectLoading(true)
   };
 
   if (!loan) return <p>Loading loan details...</p>; // Show a loader until the loan is found
 
   return (
     <LoanDetailRap>
+      <div style={{display: "flex", alignItems:"center"}}>
+<Link
+              style={{ marginLeft: "-50px" }}
+              className="cso-link"
+              to="/newloan"
+            >
+              <Icon
+                icon="formkit:arrowleft"
+                width="90"
+                height="16"
+                style={{ color: "black", cursor: "pointer" }}
+              />
+            </Link>
       <h2>Loan Details</h2>
+      </div>
       <div className="loan-details">
         <div className="left-loan-detail">
           <div className="inner-details">
@@ -233,7 +415,7 @@ const LoanDetails = () => {
           <div className="inner-details">
             <h4>Loan Details</h4>
             <p className="change-size">
-              <span>Loan Requested:</span> 
+              <span>Loan Requested:</span>
               {loan?.loanDetails?.amountRequested}
             </p>
             <p>
@@ -308,20 +490,20 @@ const LoanDetails = () => {
                 Ask Cso <span className="span"> {loan?.csoName} </span>for more
                 information
               </p>
-              <Link className="call-btn">Call</Link>
+              <Button onClick={() => setPopup('callCso')} active={callCso} disabled={callCso}>Call</Button>
             </div>
             <div className="inner-verify">
               <p>Call customer for extra information or confirmation</p>
-              <Link className="call-btn">Call</Link>
-            </div>
+              <Button onClick={() => setPopup('callCustomer')} active={callCustomer} disabled={callCustomer}>Call </Button>
+              </div>
             <div className="inner-verify">
               <p>Call Guarantor for his/her consent</p>
-              <Link className="call-btn">Call</Link>
-            </div>
+              <Button onClick={() => setPopup('callGuarantor')} active={callGuarantor} disabled={callGuarantor}>Call </Button>
+              </div>
             <div className="inner-verify">
               <p>Verify past loan performanse</p>
-              <Link className="call-btn">Verify</Link>
-            </div>
+              <Button onClick={() => setPopup('verifyCustomer')} active={verifyCustomer} disabled={verifyCustomer}>Verify </Button>
+              </div>
             <p>
               Click <Link>here</Link> to confirm if guarantor fill the guarantor
               form
@@ -370,9 +552,50 @@ const LoanDetails = () => {
             ) : (
               ""
             )}
+            {approveLoading? (
+              <div className="dropdown-container ">
+                <div className="approved-div">
+              <p>You have approved the loan of<span style={{
+                fontWeight: "900",
+                fontSize: "18px",
+                color: "#030b26"
+              }}> {amountApproved}</span> </p>
+              <button onClick={handleApprovedPop}>Cancel</button>
+              </div>
+              </div>
+            ): ""}
+             {rejectLoading? (
+              <div className="dropdown-container ">
+                <div className="approved-div">
+              <p>You have rejected the loan due to<span style={{
+                fontWeight: "900",
+                fontSize: "18px",
+                color: "red"
+              }}> {rejectionReason}</span> </p>
+              <button onClick={handleRejectPop}>Cancel</button>
+              </div>
+              </div>
+            ): ""}
           </div>
         </div>
       </div>
+
+
+      <div>
+
+      {/* Popup Modal */}
+      {popup && (
+        <ModalOverlay>
+          <ModalContent>
+            <p>Have you called the {popup.replace('call', '').replace('verifyCustomer', 'Customer')}?</p>
+            <div>
+              <ModalButton onClick={() => setPopup(null)}>No</ModalButton>
+              <ModalButton onClick={handleUpdate}>Yes</ModalButton>
+            </div>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+    </div>
     </LoanDetailRap>
   );
 };

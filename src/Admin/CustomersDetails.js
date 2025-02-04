@@ -9,6 +9,7 @@ import {
   fetchPendingLoans,
   fetchRejectedCustomers,
 } from "../redux/slices/LoanSlice";
+import { MoonLoader } from "react-spinners";
 
 const BranchCustomerRap = styled.div`
   width: 100%;
@@ -267,7 +268,11 @@ const CustomersDetails = () => {
     dispatch(fetchRejectedCustomers());
   }, [dispatch]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p style={{display: "flex", 
+    flexDirection: "column", 
+    height: "90vh",
+    justifyContent: "center",
+   alignItems: "center"}} > <MoonLoader /></p>;;
   if (error) return <p>Error loading customers: {error}</p>;
   console.log(rejectedCustomers);
 
@@ -348,9 +353,9 @@ const CustomersDetails = () => {
                         <th>Defaults</th>
                         <th>Current Loan</th>
                         <th>
-                          Loan + <br /> Interest
+                          Principal + <br /> Interest
                         </th>
-                        <th>Amount Paid</th>
+                        <th>Actual Paid</th>
                         <th>Loan Balance</th>
                         <th>Start Date</th>
                         <th>End Date</th>

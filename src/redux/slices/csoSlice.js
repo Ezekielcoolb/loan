@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {Toaster, toast} from "react-hot-toast"
 import axios from 'axios';
+import { format } from "date-fns";
 
 const API_URL = 'https://sever-qvw1.onrender.com/api/cso'; // Backend API URL
 
@@ -40,9 +41,9 @@ export const fetchCsoTransactions = createAsyncThunk(
 // Thunk to upload remittance with an image URL
 export const uploadRemittance = createAsyncThunk(
     "remittance/uploadRemittance",
-    async ({ workId, imageUrl }, { rejectWithValue }) => {
+    async ({amount, workId, imageUrl }, { rejectWithValue }) => {
       try {
-        const response = await axios.post(`http://localhost:5000/api/cso/add-remittance/${workId}`, { imageUrl });
+        const response = await axios.post(`${API_URL}/add-remittance/${workId}`, {amount, imageUrl });
         console.log(response, imageUrl);
         
         return response.data;
@@ -52,10 +53,19 @@ export const uploadRemittance = createAsyncThunk(
     }
   );
 
+  export const fetchallgetRemittances = createAsyncThunk(
+    "remittance/fetchallgetRemittances",
+    async ({ workId, date }) => {
+        const response = await axios.get(`${API_URL}/get-all-remittance/${workId}?date=${date}`);
+        return response.data;
+    }
+);
+
+
   export const fetchLoanProgress = createAsyncThunk(
     "loanProgress/fetchLoanProgress",
     async (workId) => {
-      const response = await axios.get(`http://localhost:5000/api/cso/loan-progress/${workId}`);
+      const response = await axios.get(`${API_URL}/loan-progress/${workId}`);
       console.log(response.data, workId);
       
       return response.data;
@@ -65,7 +75,7 @@ export const uploadRemittance = createAsyncThunk(
     'loanProgress/fetchLoanProgressChart',
     async (workId, { rejectWithValue }) => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/cso/loan-progress-chart/${workId}`);
+        const response = await axios.get(`${API_URL}/loan-progress-chart/${workId}`);
         console.log(response.data);
         
         return response.data;
@@ -78,7 +88,7 @@ export const uploadRemittance = createAsyncThunk(
     'loans/fetchRemittanceProgress',
     async (workId) => {
       try {
-      const response = await axios.get(`http://localhost:5000/api/cso/remittance-progress/${workId}`);
+      const response = await axios.get(`${API_URL}/remittance-progress/${workId}`);
       console.log(response.data.progress)
       return response.data.progress;
       }  catch (err) {
@@ -87,6 +97,12 @@ export const uploadRemittance = createAsyncThunk(
       }
     }
   );
+// Async action to fetch remittances
+export const fetchRemittancesForAllcso = createAsyncThunk("remittance/fetchRemittancesForAllcso", async (date) => {
+  const response = await axios.get(`${API_URL}/remittances-for-all-cso?date=${date}`);
+  return response.data;
+});
+
 
 const csoSlice = createSlice({
     name: 'cso',
@@ -105,7 +121,11 @@ const csoSlice = createSlice({
         payments: [],
         monthlyLoanTarget: 0,
         monthlyLoanCounts: [],
+        remmitdata: [],
         remittanceProgress: 0,
+        selectedCSO: null,
+        remmitCsoData: [],
+        selectedRemiteDate: format(new Date(), "yyyy-MM-dd"),
     },
     reducers: {
         resetUploadState: (state) => {
@@ -113,6 +133,12 @@ const csoSlice = createSlice({
             state.error = null;
             state.uploaded = false;
           },
+          setSelectedRemmitDate: (state, action) => {
+            state.selectedRemiteDate = action.payload;
+        },
+        setSelectedCSO: (state, action) => {
+          state.selectedCSO = action.payload;
+      }
     },
     extraReducers: (builder) => {
         builder
@@ -135,7 +161,20 @@ const csoSlice = createSlice({
             .addCase(createCso.fulfilled, (state, action) => {
                 state.cso.push(action.payload);
             });
-        
+
+            builder
+            .addCase(fetchRemittancesForAllcso.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchRemittancesForAllcso.fulfilled, (state, action) => {
+                state.loading = false;
+                state.remmitCsoData = action.payload;
+            })
+            .addCase(fetchRemittancesForAllcso.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            });
             builder
             .addCase(fetchRemittanceProgress.pending, (state) => {
               state.loading = true;
@@ -191,6 +230,22 @@ const csoSlice = createSlice({
               state.error = action.payload;
             });
 
+            builder
+            .addCase(fetchallgetRemittances.pending, (state) => {
+                state.status = "loading";
+            })
+            .addCase(fetchallgetRemittances.fulfilled, (state, action) => {
+                state.status = "succeeded";
+                state.remmitdata = action.payload;
+            })
+            .addCase(fetchallgetRemittances.rejected, (state, action) => {
+                state.status = "failed";
+                state.error = action.error.message;
+            });
+
+
+
+
        builder
             .addCase(fetchCsoTransactions.pending, (state) => {
                 state.loading = true;
@@ -205,5 +260,5 @@ const csoSlice = createSlice({
             });
     },
 });
-export const { resetUploadState } = csoSlice.actions;
+export const { resetUploadState, setSelectedRemmitDate, setSelectedCSO } = csoSlice.actions;
 export default csoSlice.reducer;

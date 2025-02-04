@@ -13,9 +13,11 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale,
  } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import {
+  fetchallgetRemittances,
   fetchLoanProgress,
   fetchLoanProgressChart,
   fetchRemittanceProgress,
+  setSelectedRemmitDate,
 } from "../../redux/slices/csoSlice";
 import {
   calculateDefaultingCustomers,
@@ -27,6 +29,7 @@ import {
   setPage,
 } from "../../redux/slices/LoanSlice";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { MoonLoader } from "react-spinners";
 
 
 ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, LineElement, Title, Tooltip, Legend, ChartDataLabels);
@@ -254,6 +257,36 @@ const CollectRap = styled.div`
     background: #000000;
     color: #ffffff;
   }
+  .remmit {
+    padding: 20px;
+  }
+  .remmit  h2 {
+    font-size: 20px;
+    color: #030b26;
+    font-weight: 700;
+  }
+  .date-input {
+    border: 1px solid #d0d5dd;
+    height: 38px;
+    border-radius: 100px;
+    padding: 0px 15px;
+    margin-top: 20px;
+  }
+  .remmittance-div p {
+    font-size: 16px;
+    color: #030b26;
+    font-weight: 450;
+    margin-top: 20px;
+  }
+  .remmittance-div span {
+    font-size: 16px;
+    color: #030b26;
+    font-weight: 600;
+  }
+  .remmittance-div img  {
+    width: 500px;
+    margin-top: 20px
+  }
 `;
 
 const CsoLoanCollection = () => {
@@ -292,17 +325,19 @@ const CsoLoanCollection = () => {
     error,
   } = useSelector((state) => state.loan);
 
-  const { remittanceProgress, progressData, monthlyLoanCounts, loading } = useSelector(
+  const {remmitdata, selectedRemiteDate, remittanceProgress, progressData, monthlyLoanCounts, loading } = useSelector(
     (state) => state.cso);
-
-
-  console.log(progressData, remittanceProgress);
-  
-  // useEffect(() => {
-  
-  //     dispatch(fetchLoanProgress(workId));
     
-  // }, [dispatch, workId]);
+
+
+
+  
+ useEffect(() => {
+        dispatch(fetchallgetRemittances({ workId, date: selectedRemiteDate }));
+    }, [dispatch, workId, selectedRemiteDate]);
+
+
+
 
   useEffect(() => {
     dispatch(fetchLoanProgress(workId));
@@ -519,7 +554,11 @@ useEffect(() => {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
-  if (!progressData) return <p>No data available.</p>;
+  if (!progressData) return  <p style={{display: "flex", 
+    flexDirection: "column", 
+    height: "90vh",
+    justifyContent: "center",
+   alignItems: "center"}} > <MoonLoader /></p>;
   return (
     <CollectRap>
       <div className="cso-1">
@@ -551,6 +590,12 @@ useEffect(() => {
             onClick={() => handleLinkClick("dashboard")}
           >
             Dashboard
+          </Link>
+          <Link
+            className={`cso-link ${activeLink === "remmitance" ? "active" : ""}`}
+            onClick={() => handleLinkClick("remmitance")}
+          >
+            Remmitance
           </Link>
         </div>
       </div>
@@ -1039,6 +1084,40 @@ useEffect(() => {
               <div><Bar data={data} options={options} /></div>
 
             </div>
+          </>
+        )}
+        {activeLink === "remmitance" && (
+          <>
+            <div className="remmit">
+                      <h2 className="text-xl font-bold mb-4">Remittances</h2>
+          
+                      {/* Date Picker */}
+                      <input 
+                          type="date"
+                          value={selectedRemiteDate}
+                          onChange={(e) => dispatch(setSelectedRemmitDate(e.target.value))}
+                          className="date-input"
+                      />
+          
+                      {/* Display Remittances */}
+                      {status === "loading" && 
+                       <p style={{display: "flex", 
+                        flexDirection: "column", 
+                        height: "90vh",
+                        justifyContent: "center",
+                       alignItems: "center"}} > <MoonLoader /></p>}
+                      {status === "failed" && <p className="text-red-500">{error}</p>}
+                      {status === "succeeded" && remmitdata.length === 0 && <p>No remittances for this date.</p>}
+          
+                      <div className="grid gap-4">
+                          {remmitdata.map((remit, index) => (
+                              <div key={index} className="remmittance-div">
+                                  <p className="font-semibold">Amount: <span> {remit.amount}</span></p>
+                                  {remit.image && <img src={remit.image} alt="Remittance" className="w-40 mt-2" />}
+                              </div>
+                          ))}
+                      </div>
+                  </div>
           </>
         )}
       </div>

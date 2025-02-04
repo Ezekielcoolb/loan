@@ -8,6 +8,7 @@ import {
   previousWeek,
 } from "../../redux/slices/LoanSlice";
 import styled from "styled-components";
+import { MoonLoader } from "react-spinners";
 
 const CustLoanRap = styled.div`
 .cust-loan-1 h1 {
@@ -96,7 +97,11 @@ const CustomerLoan = () => {
         </div>
 
         {/* Loading and Error Handling */}
-        {loading && <p>Loading...</p>}
+        {loading && <p style={{display: "flex", 
+                                             flexDirection: "column", 
+                                             height: "60vh",
+                                             justifyContent: "center",
+                                            alignItems: "center"}} > <MoonLoader /></p>}
         {error && <p>{error}</p>}
 
         {/* Loan Table */}
@@ -108,7 +113,7 @@ const CustomerLoan = () => {
                   <tr>
                     <th className="border p-2">Customer Name</th>
                     <th className="border p-2">Amount Disbursed</th>
-                    <th className="border p-2">Amount to be Paid</th>
+                    <th className="border p-2">Principal + <br /> Interest</th>
                     <th className="border p-2">Start Date</th>
                     <th className="border p-2">Loan Balance</th>
                     {/* Display the week days dynamically */}
@@ -126,17 +131,17 @@ const CustomerLoan = () => {
                   {loans.map((loan, index) => (
                     <tr key={index}>
                       <td className="border p-2">
-                        {loan.customerDetails.firstName}{" "}
-                        {loan.customerDetails.lastName}
+                        {loan?.customerDetails?.firstName}{" "}
+                        {loan?.customerDetails?.lastName}
                       </td>
                       <td className="border p-2">
-                        {loan.loanDetails.amountDisbursed}
+                        {loan?.loanDetails?.amountDisbursed}
                       </td>
                       <td className="border p-2">
-                        {loan.loanDetails.amountToBePaid}
+                        {loan?.loanDetails?.amountToBePaid}
                       </td>
                       <td className="border p-2">
-                        {new Date(loan.createdAt).toLocaleDateString()}
+                        {new Date(loan.createdAt)?.toLocaleDateString()}
                       </td>
                       <td className="border p-2">
                         {loan.loanDetails.amountToBePaid -
@@ -144,7 +149,7 @@ const CustomerLoan = () => {
                       </td>
                       {/* Payment for each day of the week */}
                       {getWeekDates().map((date, index) => {
-                        const payment = loan.repaymentSchedule.find(
+                        const payment = loan.repaymentSchedule?.find(
                           (p) =>
                             new Date(p.date).toDateString() ===
                             date.toDateString()

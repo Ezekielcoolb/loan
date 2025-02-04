@@ -9,6 +9,8 @@ import YearlySalesChart from "./csoMatrics/YearlySalesChart";
 import { createCso, fetchCso } from "../redux/slices/csoSlice";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
+import { MoonLoader, PulseLoader } from "react-spinners";
+import { fetchAllBranches } from "../redux/slices/branchSlice";
 
 const ClientRap = styled.div`
   width: 100%;
@@ -378,7 +380,8 @@ const ClientRap = styled.div`
   .client-all-dropdown-div::-webkit-scrollbar {
     display: none; /* Chrome, Safari, and newer Edge: Hide scrollbar */
   }
-  .client-dropdown-div input {
+  .client-dropdown-div input,
+  .client-dropdown-div select {
     width: 380px;
     height: 45px;
     border: 1px solid #dbe0ee;
@@ -413,6 +416,7 @@ const ClientRap = styled.div`
     text-decoration: none;
     font-weight: 600;
     font-size: 14px;
+    border-style: none;
   }
   .save-cancel-div {
     display: flex;
@@ -506,7 +510,12 @@ const Csos = () => {
   const [isopen, setOpen] = useState(false);
   const [matrixOpen, setMatricOpen] = useState("yearly");
   const [selectedCso, setSelectedCso] = useState(null);
+  const [selectedBranch, setSelectedBranch] = useState("");
+
   const [formattedDateRange, setFormattedDateRange] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { branches } = useSelector((state) => state.branches);
+
 
   const handleMatricOpen = (links) => {
     setMatricOpen(links);
@@ -528,11 +537,24 @@ const Csos = () => {
     profileImg: "",
     date: "",
     city: "",
-    branch: "",
+    branch: selectedBranch,
     state: "",
     zipCode: "",
     country: "",
   });
+
+  // Update formData.branch whenever selectedBranch changes
+  useEffect(() => {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      branch: selectedBranch,
+    }));
+  }, [selectedBranch]);
+
+  useEffect(() => {
+    dispatch(fetchAllBranches());
+  }, [dispatch]);
+
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (
@@ -558,7 +580,21 @@ const Csos = () => {
     }
   }, [dispatch, status, currentPage]);
 
-  if (status === "loading") return <p>Loading branches...</p>;
+  if (status === "loading")
+    return (
+      <p
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          height: "90vh",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {" "}
+        <MoonLoader />
+      </p>
+    );
   if (status === "failed") return <p>Error: {error}</p>;
 
   const filteredCso =
@@ -629,11 +665,13 @@ const Csos = () => {
     formData.status !== "" &&
     formData.branch !== "" &&
     formData.phone !== "";
+  console.log(formData);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isValid) {
       try {
+        setIsLoading(true);
         dispatch(createCso(formData));
         setDropdownVisible(false);
         setFormData({
@@ -659,6 +697,8 @@ const Csos = () => {
           country: "",
         });
       } catch (error) {
+        setIsLoading(false);
+
         toast.error("Failed to create branch");
       }
     }
@@ -814,32 +854,33 @@ const Csos = () => {
                     value={formData.date}
                   />
                 </label>
-                <div className="client-input-div">
-                  <label>
-                    Branch Assigned
-                    <span className="star">*</span> <br />
-                    <input
-                      className="client-small-input-div"
-                      type="text"
-                      placeholder=""
-                      name="branch"
-                      onChange={handleChange}
-                      value={formData.branch}
-                    />
-                  </label>
-                  <label>
-                    Gender
-                    <span className="star">*</span> <br />
-                    <input
-                      className="client-small-input-div"
-                      type="text"
-                      placeholder=""
-                      name="status"
-                      onChange={handleChange}
-                      value={formData.status}
-                    />
-                  </label>
-                </div>
+                <label>
+                  Branch Assigned
+                  {status === "failed" && <p>Error: {error}</p>}
+                  <select
+                    value={selectedBranch}
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                  >
+                    <option value="">Select Branch</option>
+                    {branches.map((branch) => (
+                      <option key={branch.name} value={branch.name}>
+                        {branch.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Gender
+                  <span className="star">*</span> <br />
+                  <input
+                    className="client-small-input-div"
+                    type="text"
+                    placeholder=""
+                    name="status"
+                    onChange={handleChange}
+                    value={formData.status}
+                  />
+                </label>
                 <label>
                   Address
                   <input
@@ -965,16 +1006,23 @@ const Csos = () => {
                   >
                     Cancel
                   </Link>
-                  <Link
+                  <button
                     className="client-create-btn"
                     onClick={handleSubmit}
                     disabled={!isValid}
                     style={{
                       backgroundColor: isValid ? "#0c1d55" : "#727789",
+                      cursor: !isValid ? "not-allowed" : "pointer",
                     }}
                   >
-                    Save
-                  </Link>
+                    {isLoading ? (
+                      <>
+                        <PulseLoader color="white" size={10} />
+                      </>
+                    ) : (
+                      "Save"
+                    )}
+                  </button>
                 </div>
               </div>
             </div>
@@ -1127,8 +1175,6 @@ const Csos = () => {
                     />
                   </Link>
                 </div>
-
-                
               </div>
             </>
           )}

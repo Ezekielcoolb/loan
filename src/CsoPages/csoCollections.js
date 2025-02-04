@@ -296,7 +296,7 @@ const ActiveLoansTable = () => {
 
   const handleUpload = () => {
     if (imageUrl) {
-      dispatch(uploadRemittance({ workId, imageUrl }));
+      dispatch(uploadRemittance({ amount: totalAmountPaid, workId, imageUrl }));
     }
   };
 

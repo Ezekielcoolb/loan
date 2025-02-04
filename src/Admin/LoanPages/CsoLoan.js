@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCsoTransactions } from "../../redux/slices/csoSlice";
 import styled from "styled-components";
+import { MoonLoader } from "react-spinners";
 
 const CsoLoanRap = styled.div`
 .cso-loan-1 {
@@ -64,7 +65,11 @@ const CsoTransactionsTable = () => {
     );
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p style={{display: "flex", 
+    flexDirection: "column", 
+    height: "90vh",
+    justifyContent: "center",
+   alignItems: "center"}} > <MoonLoader /></p>;
   if (error) return <p>Error: {error}</p>;
 
   return (
@@ -108,10 +113,11 @@ const CsoTransactionsTable = () => {
                     <th>Name of CSO</th>
                     <th>Number of Loans</th>
                     <th>Amount Disbursed</th>
-                    <th>Amount to be Paid</th>
-                    <th>Amount Paid</th>
+                    <th>Principal + <br />
+                    Interest</th>
+                    <th>Actual Paid</th>
                     <th>Loan Balance</th>
-                    <th>Total Loan App Form</th>
+                    <th> Loan App Form</th>
                     <th>Monthly Loan Target</th>
                     <th>Monthly Disbursement Target</th>
                     <th>Target Status</th>

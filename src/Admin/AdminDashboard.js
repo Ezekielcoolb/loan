@@ -6,6 +6,9 @@ import LoanDoughnutChart from "./DashboardCharts/LoanChart";
 import { fetchLoanStatsChart } from "../redux/slices/branchLoanSlice";
 import DisbursementChart from "./DashboardCharts/DisburseChart";
 import { Link } from "react-router-dom";
+import Notifications from "./Notification";
+import {MoonLoader} from 'react-spinners'
+
 
 const DashboardRap = styled.div`
 width: 100%;
@@ -333,10 +336,11 @@ const Dashboard = () => {
   const dispatch = useDispatch();
   const { allLoans, loading, error } = useSelector((state) => state.loan);
      const { totalLoanTarget, totalActiveLoan, status } = useSelector((state) => state.loanBranches);
-
+const [isLoading, setIsLoading] = useState(true)
   useEffect(() => {
     dispatch(allLaonfTransactions());
     dispatch(fetchLoanStatsChart());
+    setIsLoading(false)
   }, [dispatch]);
 
   // ✅ Loan statistics
@@ -414,8 +418,17 @@ const Dashboard = () => {
   const currentMonthYear = `${currentDay.toLocaleDateString("en-US", {
     month: "long",
   })} ${currentDay.getFullYear()}`;
+
+
+
+  
   return (
     <DashboardRap>
+      {isLoading? <p style={{display: "flex", 
+          flexDirection: "column", 
+          height: "90vh",
+          justifyContent: "center",
+         alignItems: "center"}} > <MoonLoader /></p> :(
       <div className="dashboard">
         <div className="left-dash">
           <div className="left-dash-1">
@@ -445,13 +458,13 @@ const Dashboard = () => {
                   <p> ₦{totalAmountDisbursed?.toLocaleString()}</p>
                 </div>
                 <div className="width-total">
-                  <h5>AMOUNT DISBURSED + INTEREST</h5>
+                  <h5>PRINCIPAL + INTEREST</h5>
                   <p> ₦{totalAmountToBePaid?.toLocaleString()}</p>
                 </div>
               </div>
               <div className="overview-total complete-cancel">
                 <div>
-                  <h5>TOTAL PAYMENT</h5>
+                  <h5>ACTUAL PAYMENT</h5>
                   <p> ₦{totalAmountPaid?.toLocaleString()}</p>
                 </div>
                 <div className="width-total">
@@ -532,15 +545,12 @@ const Dashboard = () => {
                 <img src="/images/event_see.png" alt="" />
                 All Notifications
             </h3>
-            <Link className="event-seeall"> See all</Link>
           </div>
-          <div className="third-right-dash-card">
-                <img src="/images/mask_img.png" alt="" />
-                <p>You currently have no notifications</p>
-          </div>
+                <Notifications />
           </div>
         </div>
       </div>
+         )}
     </DashboardRap>
   );
 };

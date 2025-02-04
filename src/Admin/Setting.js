@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { fetchAllBranches, setBranchTargets, setYearlyTargets } from "../redux/slices/branchSlice";
+import TargetForm from "./Target";
 
 const SettingRap = styled.div`
   font-family: "Onest";
@@ -451,7 +452,7 @@ const SettingRap = styled.div`
 `;
 
 const Setting = () => {
-  const [activeLink, setActiveLink] = useState("notification");
+  const [activeLink, setActiveLink] = useState("target");
   const [isOn, setIsOn] = useState(true);
   const [onCal, setOnCal] = useState(true);
   const [onCalen, setOnCalen] = useState(true);
@@ -541,19 +542,25 @@ const Setting = () => {
         <div className="setting-1">
           <div className="link-width">
             <div className="link-container">
-              <Link
+              {/* <Link
                 className={`link ${
                   activeLink === "notification" ? "active" : ""
                 }`}
                 onClick={() => handleLinkClick("notification")}
               >
                 Notification
-              </Link>
+              </Link> */}
               <Link
                 className={`link ${activeLink === "target" ? "active" : ""}`}
                 onClick={() => handleLinkClick("target")}
               >
                 Target
+              </Link>
+              <Link
+                className={`link ${activeLink === "interest" ? "active" : ""}`}
+                onClick={() => handleLinkClick("interest")}
+              >
+                Interest
               </Link>
               <Link
                 className={`link ${activeLink === "security" ? "active" : ""}`}
@@ -565,7 +572,7 @@ const Setting = () => {
           </div>
         </div>
 
-        {activeLink === "notification" && (
+        {/* {activeLink === "notification" && (
           <div className="notify">
             <div className="category-notification">
               <h4>All Notifications</h4>
@@ -581,7 +588,6 @@ const Setting = () => {
                     justifyContent: isOn ? "flex-end" : "flex-start",
                   }}
                 >
-                  {/* Circular switch */}
                   <div
                     className="circularSwitch"
                     style={{
@@ -606,7 +612,6 @@ const Setting = () => {
                     justifyContent: onCal ? "flex-end" : "flex-start",
                   }}
                 >
-                  {/* Circular switch */}
                   <div
                     className="circularSwitch"
                     style={{
@@ -627,7 +632,6 @@ const Setting = () => {
                     justifyContent: onCalen ? "flex-end" : "flex-start",
                   }}
                 >
-                  {/* Circular switch */}
                   <div
                     className="circularSwitch"
                     style={{
@@ -651,7 +655,6 @@ const Setting = () => {
                     justifyContent: onCalen ? "flex-end" : "flex-start",
                   }}
                 >
-                  {/* Circular switch */}
                   <div
                     className="circularSwitch"
                     style={{
@@ -672,7 +675,6 @@ const Setting = () => {
                     justifyContent: onCalen ? "flex-end" : "flex-start",
                   }}
                 >
-                  {/* Circular switch */}
                   <div
                     className="circularSwitch"
                     style={{
@@ -693,7 +695,6 @@ const Setting = () => {
                     justifyContent: onCalen ? "flex-end" : "flex-start",
                   }}
                 >
-                  {/* Circular switch */}
                   <div
                     className="circularSwitch"
                     style={{
@@ -717,7 +718,6 @@ const Setting = () => {
                     justifyContent: onCalen ? "flex-end" : "flex-start",
                   }}
                 >
-                  {/* Circular switch */}
                   <div
                     className="circularSwitch"
                     style={{
@@ -738,7 +738,6 @@ const Setting = () => {
                     justifyContent: onCalen ? "flex-end" : "flex-start",
                   }}
                 >
-                  {/* Circular switch */}
                   <div
                     className="circularSwitch"
                     style={{
@@ -761,7 +760,6 @@ const Setting = () => {
                     justifyContent: onCalen ? "flex-end" : "flex-start",
                   }}
                 >
-                  {/* Circular switch */}
                   <div
                     className="circularSwitch"
                     style={{
@@ -782,7 +780,6 @@ const Setting = () => {
                     justifyContent: onCalen ? "flex-end" : "flex-start",
                   }}
                 >
-                  {/* Circular switch */}
                   <div
                     className="circularSwitch"
                     style={{
@@ -803,7 +800,6 @@ const Setting = () => {
                     justifyContent: onCalen ? "flex-end" : "flex-start",
                   }}
                 >
-                  {/* Circular switch */}
                   <div
                     className="circularSwitch"
                     style={{
@@ -814,7 +810,7 @@ const Setting = () => {
               </div>
             </div>
           </div>
-        )}
+        )} */}
 
         {activeLink === "target" && (
           <div className="notify notice">
@@ -874,6 +870,8 @@ const Setting = () => {
           
           </div>
         )}
+
+        {activeLink === "interest" && <TargetForm />}
 
         {activeLink === "security" && (
           <div className="security-div">

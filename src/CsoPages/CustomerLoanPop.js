@@ -431,7 +431,7 @@ const LoanApplicationForm = () => {
                 name="guarantorDetails.phone"
                 value={formData.guarantorDetails.phone}
                 onChange={handleInputChange}
-                placeholder="Mobile No 1"
+                placeholder="Enter phone number in form of +234XXXXXXXXXX"
                 required
               />
               <input
