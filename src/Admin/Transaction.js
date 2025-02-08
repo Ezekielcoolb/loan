@@ -69,7 +69,7 @@ const AllTransactions = () => {
           </Link>
           <Link
             className={`client-link ${
-              activeLink === "application" ? "active" : ""
+              activeLink === "collection" ? "active" : ""
             }`}
             onClick={() => handleLinkClick("collection")}
           >

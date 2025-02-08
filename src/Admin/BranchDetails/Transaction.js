@@ -234,7 +234,7 @@ const BranchTransaction = () => {
                   </div>
                 </div>
 
-                <div className="table-container">
+                {/* <div className="table-container">
                   <div className="new-table-scroll">
                     <div className="table-div-con">
                       <table className="custom-table" border="1">
@@ -278,7 +278,7 @@ const BranchTransaction = () => {
                       </table>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             )}
           </div>

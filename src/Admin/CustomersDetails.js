@@ -5,11 +5,15 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  fetchCustomerActiveLoans,
   fetchCustomersSummary,
   fetchPendingLoans,
   fetchRejectedCustomers,
+  searchActiveCustomer,
+  searchPendingCustomer,
 } from "../redux/slices/LoanSlice";
 import { MoonLoader } from "react-spinners";
+import AdminCustomerTable from "./CustomerDetail/ListAdminCustomers";
 
 const BranchCustomerRap = styled.div`
   width: 100%;
@@ -251,13 +255,17 @@ const BranchCustomerRap = styled.div`
 const CustomersDetails = () => {
   const [activeLink, setActiveLink] = useState("customer");
   const [activatedLink, setActivatedLink] = useState("active");
+  const [query, setQuery] = useState("");
 
   const dispatch = useDispatch();
-  const { rejectedCustomers, pendingLoans, summaries, loading, error } =
+  const { rejectedCustomers, pendingLoans, summaries, loans, loading, error } =
     useSelector((state) => state.loan);
 
   useEffect(() => {
     dispatch(fetchCustomersSummary());
+  }, [dispatch]);
+  useEffect(() => {
+    dispatch(fetchCustomerActiveLoans());
   }, [dispatch]);
 
   useEffect(() => {
@@ -268,13 +276,13 @@ const CustomersDetails = () => {
     dispatch(fetchRejectedCustomers());
   }, [dispatch]);
 
-  if (loading) return <p style={{display: "flex", 
-    flexDirection: "column", 
-    height: "90vh",
-    justifyContent: "center",
-   alignItems: "center"}} > <MoonLoader /></p>;;
+  // if (loading) return <p style={{display: "flex", 
+  //   flexDirection: "column", 
+  //   height: "90vh",
+  //   justifyContent: "center",
+  //  alignItems: "center"}} > <MoonLoader /></p>;;
   if (error) return <p>Error loading customers: {error}</p>;
-  console.log(rejectedCustomers);
+  console.log(pendingLoans);
 
   const handleLinkClick = (link) => {
     setActiveLink(link);
@@ -283,21 +291,44 @@ const CustomersDetails = () => {
   const handleActivatedLink = (links) => {
     setActivatedLink(links);
   };
+    const handleChange = (e) => {
+      setQuery(e.target.value);
+      if (e.target.value.trim() !== "") {
+        dispatch(searchActiveCustomer(e.target.value));
+      }
+    };
+
+    const handlePendingChange = (e) => {
+      setQuery(e.target.value);
+      if (e.target.value.trim() !== "") {
+        dispatch(searchPendingCustomer(e.target.value));
+      }
+    };
 
   return (
     <BranchCustomerRap>
       <div className="client-1">
         <div className="client-link-container">
+          
           <Link
             className={`client-link ${
               activeLink === "customer" ? "active" : ""
             }`}
             onClick={() => handleLinkClick("customer")}
           >
-            Customers
+            Customer Loan
+          </Link>
+          <Link
+            className={`client-link ${
+              activeLink === "details" ? "active" : ""
+            }`}
+            onClick={() => handleLinkClick("details")}
+          >
+             Details
           </Link>
         </div>
       </div>
+        {activeLink === "customer" &&
       <div className="custom-1">
         <div className="find-lawyer-header">
           <h4 style={{ marginBottom: "15px" }}> List of Customers</h4>
@@ -327,8 +358,10 @@ const CustomersDetails = () => {
               </Link>
             </div>
             <div className="search-div" style={{ marginBottom: "20px" }}>
+              {activatedLink==="active" &&
               <div style={{ position: "relative" }}>
-                <input type="text" placeholder="search" />
+                <input  value={query}
+                onChange={handleChange} type="text" placeholder="search" />
                 <Icon
                   className="search-position"
                   icon="material-symbols-light:search"
@@ -337,6 +370,20 @@ const CustomersDetails = () => {
                   style={{ color: "#9499AC" }}
                 />
               </div>
+}
+{activatedLink==="pending" &&
+              <div style={{ position: "relative" }}>
+                <input  value={query}
+                onChange={handlePendingChange} type="text" placeholder="search" />
+                <Icon
+                  className="search-position"
+                  icon="material-symbols-light:search"
+                  width="18"
+                  height="18"
+                  style={{ color: "#9499AC" }}
+                />
+              </div>
+}
             </div>
           </div>
         </div>
@@ -497,6 +544,8 @@ const CustomersDetails = () => {
           )}
         </div>
       </div>
+}
+{activeLink === "details" && <AdminCustomerTable />}
     </BranchCustomerRap>
   );
 };

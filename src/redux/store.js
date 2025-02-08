@@ -8,6 +8,10 @@ import branchLoanReducer from './slices/branchLoanSlice'
 import notificationReducer from './slices/notificationSlice'
 import targetReducer from './slices/targetSlice'
 import guarantorReducer from './slices/guarantorSlice'
+import remittanceReducer from './slices/remittanceSlice'
+import csoLoanReducer from './slices/csoLoanSlice'
+import searchReducer from './slices/searchSlice'
+import dashboardReducer from './slices/dashboardSlice'
 
 const store = configureStore({
     reducer: {
@@ -20,6 +24,11 @@ const store = configureStore({
         notifications: notificationReducer,
         target: targetReducer,
         guarantor: guarantorReducer,
+        remittance: remittanceReducer,
+        csoLoan: csoLoanReducer,
+        dashboard: dashboardReducer,
+        search: searchReducer,
+        
     },
 });
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   fetchLoanProgress,
-  fetchRemittanceProgress,
+  
 } from "../redux/slices/csoSlice";
 import styled from "styled-components";
 import Calendar from "react-calendar"; // Import the calendar
@@ -15,6 +15,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import LoanProgressChart from "./csoLoanChart";
 import RepaymentPieChart from "./csoPaymentPieChart";
 import { Link, useNavigate } from "react-router-dom";
+import { fetchRemittanceNewProgress } from "../redux/slices/remittanceSlice";
 
 const DashboardRap = styled.div`
   background: #d9d9d9;
@@ -132,10 +133,13 @@ const DashboardRap = styled.div`
 const CsoDashboard = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { remittanceProgress, progressData, loading, error } = useSelector(
+  const {  progressData, loading, error } = useSelector(
     (state) => state.cso
   );
-  const { todayCount, yesterdayCount, monthCount, customers } = useSelector(
+  const { remittanceProgress} = useSelector(
+    (state) => state.remittance
+  );
+  const {weekCount, todayCount, yesterdayCount, monthCount, customers } = useSelector(
     (state) => state.loan
   );
 
@@ -165,7 +169,7 @@ const CsoDashboard = () => {
   }, [dispatch]);
   useEffect(() => {
     if (workId) {
-      dispatch(fetchRemittanceProgress(workId)); // Fetch remittance progress for this CSO
+      dispatch(fetchRemittanceNewProgress(workId)); // Fetch remittance progress for this CSO
     }
   }, [dispatch, workId]);
 
@@ -205,6 +209,10 @@ const CsoDashboard = () => {
     amountDisbursedThisWeek,
     weeklyDisbursementTarget,
     weeklyDisbursementProgress,
+    dailyLoanProgress,
+    dailyDisbursementProgress,
+    loansDisbursedYesterday,
+    yesterdayDisbursementProgress
   } = progressData;
 
   const customersWithDue = customers.filter(
@@ -301,6 +309,11 @@ const CsoDashboard = () => {
                 Month's Loan count: <span>{monthCount}</span>
               </p>
             )}
+             {dayPicker === "weekly" && (
+              <p>
+                Week's Loan count: <span>{weekCount}</span>
+              </p>
+            )}
           </div>
         </div>
 
@@ -363,6 +376,22 @@ const CsoDashboard = () => {
                   {disbursementProgress?.toFixed(1)}%
                 </p>
               </div>
+              <div className="overrall-perform">
+            <div className="overrall-perform-outerbar">
+              <div
+                className="overrall-perform-innerbar"
+                style={{
+                  background: "#FFA500",
+                  width: `${remittanceProgress.monthProgress}%`,
+                  transition: "width 0.3s ease",
+                }}
+              />
+              <div className="overrall-perform-innerbar-text">Remittance</div>
+            </div>
+            <p style={{ fontWeight: "bold", color: "#FFA500" }}>
+              {remittanceProgress?.monthProgress}%
+            </p>
+          </div>
             </>
           )}
 
@@ -405,6 +434,22 @@ const CsoDashboard = () => {
                   {monthlyDisbursementProgress?.toFixed(1)}%
                 </p>
               </div>
+              <div className="overrall-perform">
+            <div className="overrall-perform-outerbar">
+              <div
+                className="overrall-perform-innerbar"
+                style={{
+                  background: "#FFA500",
+                  width: `${remittanceProgress.monthProgress}%`,
+                  transition: "width 0.3s ease",
+                }}
+              />
+              <div className="overrall-perform-innerbar-text">Remittance</div>
+            </div>
+            <p style={{ fontWeight: "bold", color: "#FFA500" }}>
+              {remittanceProgress?.monthProgress}%
+            </p>
+          </div>
             </>
           )}
 
@@ -446,7 +491,79 @@ const CsoDashboard = () => {
                     {weeklyDisbursementProgress?.toFixed(1)}%
                   </p>
                 </div>
+                <div className="overrall-perform">
+            <div className="overrall-perform-outerbar">
+              <div
+                className="overrall-perform-innerbar"
+                style={{
+                  background: "#FFA500",
+                  width: `${remittanceProgress.weekProgress}%`,
+                  transition: "width 0.3s ease",
+                }}
+              />
+              <div className="overrall-perform-innerbar-text">Remittance</div>
+            </div>
+            <p style={{ fontWeight: "bold", color: "#FFA500" }}>
+              {remittanceProgress?.weekProgress}%
+            </p>
+          </div>
               </>
+            }
+            {dayPicker==="yesterday" && 
+            <>
+             <div className="overrall-perform">
+                  <div className="overrall-perform-outerbar">
+                    <div
+                      className="overrall-perform-innerbar"
+                      style={{
+                        background: "#F8BD00",
+                        width: `${loansDisbursedYesterday}%`,
+                        transition: "width 0.3s ease",
+                      }}
+                    />
+                    <div className="overrall-perform-innerbar-text">
+                      Loan Count
+                    </div>
+                  </div>
+                  <p style={{ fontWeight: "bold", color: "#F8BD00" }}>
+                    {loansDisbursedYesterday?.toFixed(1)}%
+                  </p>
+                </div>
+                <div className="overrall-perform">
+                  <div className="overrall-perform-outerbar">
+                    <div
+                      className="overrall-perform-innerbar"
+                      style={{
+                        background: "#009A49",
+                        width: `${yesterdayDisbursementProgress}%`,
+                        transition: "width 0.3s ease",
+                      }}
+                    />
+                    <div className="overrall-perform-innerbar-text">
+                      Loan Amount
+                    </div>
+                  </div>
+                  <p style={{ fontWeight: "bold", color: "#009A49" }}>
+                    {yesterdayDisbursementProgress?.toFixed(1)}%
+                  </p>
+                </div>
+              <div className="overrall-perform">
+            <div className="overrall-perform-outerbar">
+              <div
+                className="overrall-perform-innerbar"
+                style={{
+                  background: "#FFA500",
+                  width: `${remittanceProgress.yesterdayProgress}%`,
+                  transition: "width 0.3s ease",
+                }}
+              />
+              <div className="overrall-perform-innerbar-text">Remittance</div>
+            </div>
+            <p style={{ fontWeight: "bold", color: "#FFA500" }}>
+              {remittanceProgress?.yesterdayProgress}%
+            </p>
+          </div>
+            </>
             }
 {dayPicker === "today"  && 
               <>
@@ -456,7 +573,7 @@ const CsoDashboard = () => {
                       className="overrall-perform-innerbar"
                       style={{
                         background: "#F8BD00",
-                        width: `${weeklyLoanProgress}%`,
+                        width: `${dailyLoanProgress}%`,
                         transition: "width 0.3s ease",
                       }}
                     />
@@ -465,7 +582,7 @@ const CsoDashboard = () => {
                     </div>
                   </div>
                   <p style={{ fontWeight: "bold", color: "#F8BD00" }}>
-                    {weeklyLoanProgress?.toFixed(1)}%
+                    {dailyLoanProgress?.toFixed(1)}%
                   </p>
                 </div>
                 <div className="overrall-perform">
@@ -474,7 +591,7 @@ const CsoDashboard = () => {
                       className="overrall-perform-innerbar"
                       style={{
                         background: "#009A49",
-                        width: `${weeklyDisbursementProgress}%`,
+                        width: `${dailyDisbursementProgress}%`,
                         transition: "width 0.3s ease",
                       }}
                     />
@@ -483,27 +600,28 @@ const CsoDashboard = () => {
                     </div>
                   </div>
                   <p style={{ fontWeight: "bold", color: "#009A49" }}>
-                    {weeklyDisbursementProgress?.toFixed(1)}%
+                    {dailyDisbursementProgress?.toFixed(1)}%
                   </p>
                 </div>
-              </>
-            }
-          <div className="overrall-perform">
+                <div className="overrall-perform">
             <div className="overrall-perform-outerbar">
               <div
                 className="overrall-perform-innerbar"
                 style={{
                   background: "#FFA500",
-                  width: `${remittanceProgress}%`,
+                  width: `${remittanceProgress.progress}%`,
                   transition: "width 0.3s ease",
                 }}
               />
               <div className="overrall-perform-innerbar-text">Remittance</div>
             </div>
             <p style={{ fontWeight: "bold", color: "#FFA500" }}>
-              {remittanceProgress?.toFixed(1)}%
+              {remittanceProgress?.progress}%
             </p>
           </div>
+              </>
+            }
+         
         </div>
         <div>
           <RepaymentPieChart />

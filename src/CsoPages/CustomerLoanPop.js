@@ -4,7 +4,8 @@ import { submitLoanApplication } from "../redux/slices/LoanSlice";
 import axios from "axios";
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { setDropdownVisible } from "../redux/slices/appSlice";
+import { setDropdownVisible, setDropSuccessVisible } from "../redux/slices/appSlice";
+import { PulseLoader } from "react-spinners";
 
 const LoanApplicationRap = styled.div`
 margin-bottom: 100px;
@@ -13,6 +14,13 @@ h3 {
   font-weight: 700px;
   size: 16px;
   text-align: center;
+  margin: auto;
+}
+.upload-label {
+  color: #005e78;
+  font-weight: 400px;
+  size: 12px;
+  margin-bottom: 0px;
 }
 input, select {
 width: 300px;
@@ -54,8 +62,6 @@ margin: auto;
   display: flex;
   flex-direction: column;
   gap: 15px;
-  justify-content: center;
-  align-items: center;
 }
 .all-dropdown-div {
   max-height: 600px;
@@ -73,6 +79,8 @@ const LoanApplicationForm = () => {
   const [ownerImage, setOwnerIamge] = useState("");
   const [loanerImage, setLoanerIamge] = useState("");
   const [otherImages, setOtherIamges] = useState("");
+  const [signImage, setSignImage] = useState("");
+  const [loading, setLoading] = useState(false)
    const { user } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
     csoId: user.workId,
@@ -87,11 +95,19 @@ const LoanApplicationForm = () => {
       phoneOne: "",
       phoneTwo: "",
       address: "",
+      city: "",
+      state: "",
       bvn: null,
+      religion: "",
+      NextOfKin: "",
+      NextOfKinNumber: ""
     },
     businessDetails: {
       businessName: "",
       natureOfBusiness: "",
+      address: "",
+      yearsHere: "",
+      nameKnown: "",
       estimatedValue: null,
       operationalStatus: "",
       additionalInfo: ""
@@ -104,7 +120,7 @@ const LoanApplicationForm = () => {
     },
     loanDetails: {
       amountRequested: null,
-      loanType: "",
+      loanType: "daily",
       amountApproved: null,
     },
     guarantorDetails: {
@@ -123,20 +139,67 @@ const LoanApplicationForm = () => {
     
     },
     pictures: {
+      
       customer: "",
       business: "",
       others: [], // Ensure it's initialized as an empty array
+      signature: "",
     },
   });
+
+  const isValid = formData.customerDetails.firstName !== "" &&
+                  formData.customerDetails.lastName !== "" &&
+                  formData.customerDetails.middleName !== "" &&
+                  formData.customerDetails.email !== "" &&
+                  formData.customerDetails.phoneOne !== "" &&
+                  formData.customerDetails.address !== "" &&
+                  formData.customerDetails.city !== "" &&
+                  formData.customerDetails.state !== "" &&
+                  formData.customerDetails.bvn !== "" &&
+                  formData.customerDetails.dateOfBirth !== "" &&
+                  formData.customerDetails.religion !== "" &&
+                  formData.customerDetails.NextOfKin !== "" &&
+                  formData.customerDetails.NextOfKinNumber !== "" &&
+                  formData.businessDetails.natureOfBusiness !== "" &&
+                  formData.businessDetails.estimatedValue !== "" &&
+                  formData.businessDetails.operationalStatus !== "" &&
+                  formData.businessDetails.businessName !== "" &&
+                  formData.businessDetails.address !== "" &&
+                  formData.businessDetails.yearsHere !== "" &&
+                  formData.businessDetails.nameKnown !== "" &&
+
+                  formData.bankDetails.accountName !== "" &&
+                  formData.bankDetails.accountNo !== "" &&
+                  formData.bankDetails.bankName !== "" &&
+                  formData.loanDetails.amountRequested !== "" &&
+                  formData.loanDetails.loanType !== "" &&
+                  formData.guarantorDetails.name !== "" &&
+                  formData.guarantorDetails.address !== "" &&
+                  formData.guarantorDetails.email !== "" &&
+                  formData.guarantorDetails.phone !== "" &&
+                  formData.guarantorDetails.relationship !== "" &&
+                  formData.guarantorDetails.yearsKnown !== "" &&
+                  formData.groupDetails.groupName !== "" &&
+                  formData.groupDetails.leaderName !== "" &&
+                  formData.groupDetails.mobileNo !== "" &&
+                  ownerImage !== "" &&
+                  loanerImage !== "" &&
+                 signImage !== "" &&
+                  otherImages!== "" 
+
+
+
+
   const { dropdowVisible} = useSelector((state) => state.app);
   
   
-   
+
    
   
   const handleVisisble = () => {
     dispatch(setDropdownVisible());
   };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     const keys = name.split("."); // for nested properties
@@ -183,6 +246,22 @@ const LoanApplicationForm = () => {
       console.log(err);
     }
   };
+  const handleThirdImage = async (e) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", e[0]);
+      formData.append("upload_preset", "ml_default");
+      const imageUrl = await axios.post(
+        `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
+        formData
+      );
+      console.log(imageUrl);
+      setSignImage(imageUrl.data.secure_url);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
 
   const handleFileChange = async (e) => {
     const imageUrls = [];
@@ -206,19 +285,25 @@ const LoanApplicationForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+if (isValid) {
     try {
       formData.pictures = {
         customer: ownerImage,
         business: loanerImage,
         others: otherImages,
+        signature: signImage,
       };
-
+      setLoading(true)
       const res = await dispatch(submitLoanApplication(formData));
-      console.log(formData);
+      setLoading(false)
+      dispatch(setDropdownVisible());
+      dispatch(setDropSuccessVisible());
+      console.log(res);
     } catch (error) {
       console.log(error);
+      setLoading(false)
     }
+  }
   };
 
   return (
@@ -262,6 +347,8 @@ const LoanApplicationForm = () => {
                 placeholder="Last Name"
                 required
               />
+              <label className="upload-label">Date of Birth</label>
+
                <input
                 type="date"
                 name="customerDetails.dateOfBirth"
@@ -285,6 +372,22 @@ const LoanApplicationForm = () => {
                 value={formData.customerDetails.address}
                 onChange={handleInputChange}
                 placeholder="Address"
+                required
+              />
+               <input
+                type="text"
+                name="customerDetails.city"
+                value={formData.customerDetails.city}
+                onChange={handleInputChange}
+                placeholder="City"
+                required
+              />
+               <input
+                type="text"
+                name="customerDetails.state"
+                value={formData.customerDetails.state}
+                onChange={handleInputChange}
+                placeholder="State"
                 required
               />
               <input
@@ -311,6 +414,30 @@ const LoanApplicationForm = () => {
                 placeholder="Mobile No 2"
               
               />
+               <input
+                type="text"
+                name="customerDetails.religion"
+                value={formData.customerDetails.religion}
+                onChange={handleInputChange}
+                placeholder="Religion"
+              
+              />
+              <input
+                type="text"
+                name="customerDetails.NextOfKin"
+                value={formData.customerDetails.NextOfKin}
+                onChange={handleInputChange}
+                placeholder="Next of Kin"
+              
+              />
+              <input
+                type="number"
+                name="customerDetails.NextOfKinNumber"
+                value={formData.customerDetails.NextOfKinNumber}
+                onChange={handleInputChange}
+                placeholder="Next of Kin Number"
+              
+              />
             </div>
             <div className="detailssss">
               {/* Business Details */}
@@ -332,11 +459,35 @@ const LoanApplicationForm = () => {
                 required
               />
               <input
+                type="text"
+                name="businessDetails.address"
+                value={formData.businessDetails.address}
+                onChange={handleInputChange}
+                placeholder="Business Address"
+                required
+              />
+               <input
+                type="text"
+                name="businessDetails.yearsHere"
+                value={formData.businessDetails.yearsHere}
+                onChange={handleInputChange}
+                placeholder="Years you've been in the business address"
+                required
+              />
+               <input
+                type="text"
+                name="businessDetails.nameKnown"
+                value={formData.businessDetails.nameKnown}
+                onChange={handleInputChange}
+                placeholder="Name you are know as in the business area"
+                required
+              />
+              <input
                 type="number"
                 name="businessDetails.estimatedValue"
                 value={formData.businessDetails.estimatedValue}
                 onChange={handleInputChange}
-                placeholder="Estimated Value"
+                placeholder="How much do you make in a month"
                 required
               />
               <input
@@ -344,7 +495,7 @@ const LoanApplicationForm = () => {
                 name="businessDetails.operationalStatus"
                 value={formData.businessDetails.operationalStatus}
                 onChange={handleInputChange}
-                placeholder="Operational Status"
+                placeholder="What is the worth of your business"
                 required
               />
                <input
@@ -352,7 +503,7 @@ const LoanApplicationForm = () => {
                 name="businessDetails.additionalInfo"
                 value={formData.businessDetails.additionalInfo}
                 onChange={handleInputChange}
-                placeholder="Additional Information"
+                placeholder="Is your business seasonal?"
           
               />
             </div>
@@ -367,7 +518,7 @@ const LoanApplicationForm = () => {
                 placeholder="Amount Requested"
                 required
               />
-              <select
+              <select 
                 name="loanDetails.loanType"
                 value={formData.loanDetails.loanType}
                 onChange={handleInputChange}
@@ -498,25 +649,53 @@ const LoanApplicationForm = () => {
             <div className="detailssss">
               {/* Pictures */}
               <h3>Upload Pictures</h3>
+              <label className="upload-label">Upload customer picture</label>
               <input
                 type="file"
                 capture="user"
                 onChange={(e) => handleFirstImage(e.target.files)}
                 required
               />
+              <label className="upload-label">Upload business picture</label>
               <input
                 type="file"
                 capture="user"
                 onChange={(e) => handleSecondImage(e.target.files)}
                 required
               />
+             <label className="upload-label"> Upload another business picture</label>
               <input
                 type="file"
                 multiple
                 onChange={(e) => handleFileChange(Array.from(e.target.files))}
               />
             </div>
-            <button type="submit">Confirm Application</button>
+            <div className="detailssss">
+              {/* Pictures */}
+              <h3>Signature</h3>
+
+              <label className="upload-label">Upload customer's signature</label>
+              <input
+                type="file"
+                capture="user"
+                onChange={(e) => handleThirdImage(e.target.files)}
+                required
+              />
+              </div>
+            <button type="submit"
+            onClick={handleSubmit}
+            disabled={!isValid}
+            style={{
+              backgroundColor: isValid ? "#0c1d55" : "#727789",
+              cursor: !isValid ? "not-allowed" : "pointer",
+            }}
+            >
+              {loading ? 
+                <PulseLoader color="white" size={10} />
+                  : "Confirm Application"
+            }
+              
+              </button>
           </div>
         </form>
       </div>

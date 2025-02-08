@@ -1,137 +1,32 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchGuarantorResponse, submitGuarantorResponse } from '../redux/slices/guarantorSlice';
-import { fetchWaitingLoans } from '../redux/slices/LoanSlice';
-import styled from 'styled-components';
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchLoanStats } from "../redux/slices/dashboardSlice";
 
-
-const GuarantorRap = styled.div`
-background: #ffffff;
-display: flex;
-flex-direction: column;
-align-items: center;
-input, select {
-width: 300px;
-height: 40px;
-border-radius: 15px;
-padding: 10px;
-border: 1px solid #d0d5dd;
-
-}
-.checkbox {
-  width: 18px !important;
-  height: 18px !important;
-  margin-left: 10px;
-}
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-.upper-grand p {
-  color: #60667a;
-  font-size: 14px;
-  font-weight: 450;
-  text-align: center;
-  margin-top: 10px;
-}
-.upper-grand h2 {
-  color: #112240;
-  font-size: 20px;
-  font-weight: 800;
-  text-align: center;
-margin-top: 30px;
-}
-.upper-grand {
-  margin-bottom: 20px;
-}
-button {
-  width: 100px;
-  height: 38px;
-  border-radius: 10px;
-  border: 1px solid #d0d5dd;
-  background: #ffffff;
-  color: #112240;
-  font-size: 14px;
-  font-weight: 500;
-}
-`
-
-const GuarantorForm = () => {
+const LoanStats = () => {
   const dispatch = useDispatch();
-  const { response, status } = useSelector((state) => state.guarantor);
-
-  const id = "67a2648d82aabb6f3f83a4c4"
-    const loans = useSelector((state) => state.loan.loans);
-  
-  const loan = loans.find((loan) => loan._id === id); // Find the loan in the Redux store
-
-  const [formData, setFormData] = useState({
-    loanId: id,
-    known: "",
-    guarantorName: '',
-    knownDuration: '',
-    relationshipConfirmed: '',
-    consentGiven: false,
-  });
-console.log(formData);
-console.log(loans);
-console.log(loan);
+  const { stats, loading, error } = useSelector((state) => state.dashboard);
 
   useEffect(() => {
-    dispatch(fetchGuarantorResponse({loanId: id}));
+    dispatch(fetchLoanStats());
   }, [dispatch]);
-   useEffect(() => {
-      if (!loan) {
-        dispatch(fetchWaitingLoans());
-      }
-    }, [loan, dispatch]);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    dispatch(submitGuarantorResponse(formData));
-  };
-
-  if (status === 'loading') return <p>Loading...</p>;
-  if (response) return <p>✅ You've already submitted your response.</p>;
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
 
   return (
-    <GuarantorRap>
-      <div className='upper-grand'>
-        <h2>Guarantor Form for  {loan?.customerDetails.firstName} {loan?.customerDetails.lastName}</h2>
-        <p> {loan?.customerDetails.firstName} {loan?.customerDetails.lastName} claimed to have known you for {loan?.guarantorDetails.yearsKnown} years as {loan?.guarantorDetails.relationship}
-        </p>
-      </div>
-    <form onSubmit={handleSubmit}>
-      <label>
-        Are you {loan?.guarantorDetails.name}? <br />
-        <input type="text" name="guarantorName" onChange={handleChange} required />
-      </label>
-      <label>
-        Do you Know {loan?.customerDetails.firstName} {loan?.customerDetails.lastName}? <br />
-        <input type="text" name="known" onChange={handleChange} required />
-      </label>
-      <label>
-        How long have you known this person? <br />
-        <input type="text" name="knownDuration" onChange={handleChange} required />
-      </label>
-      <label>
-        Confirm your relationship with this person: <br />
-        <input type="text" name="relationshipConfirmed" onChange={handleChange} required />
-      </label>
-      <label>
-        Do you consent to be the guarantor?
-        <input className='checkbox' type="checkbox" name="consentGiven" onChange={handleChange} required />
-      </label>
-      <button type="submit">Submit</button>
-    </form>
-    </GuarantorRap>
+    <div className="p-4">
+      <h2 className="text-2xl font-bold">Loan Statistics</h2>
+
+      {["today", "yesterday", "week", "month", "year", "overall"].map((period) => (
+        <div key={period} className="border p-4 m-2 rounded shadow">
+          <h3 className="text-xl font-semibold capitalize">{period} Statistics</h3>
+          <p>Total Loans: {stats[period]?.totalLoans || 0}</p>
+          <p>Total Amount Disbursed: ₦{stats[period]?.totalDisbursed || 0}</p>
+          <p>Total Daily Payments: ₦{stats[period]?.totalDailyPayment || 0}</p>
+        </div>
+      ))}
+    </div>
   );
 };
 
-export default GuarantorForm;
+export default LoanStats;

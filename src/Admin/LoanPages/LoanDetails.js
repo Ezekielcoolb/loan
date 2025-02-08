@@ -226,6 +226,39 @@ const LoanDetailRap = styled.div`
     background: white;
     margin-top: 15px;
   }
+  .customerimages {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .customerimages img{
+    max-width: 250px;
+    max-height: 250px;
+    border-radius: 20px;
+  }
+  .signature img {
+    width: 100px;
+    height: 70px;
+  }
+
+  .doenload-details {
+    border-top: 1px solid #dbe0ee;
+    padding: 20px;
+  }
+  .download {
+    background: #030b26;
+    color: wheat;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    width: 100px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+  }
 `;
 
 const Button = styled.button`
@@ -467,19 +500,41 @@ const [rejectLoading, setRejectLoading] = useState(false)
             <p>
               <span>Leader's Number:</span> {loan?.groupDetails?.mobileNo}
             </p>
+            
+          </div>
+          <div className="inner-details">
+            <h4>Signature</h4>
+            <div className="signature">
+                  <img src={loan?.pictures?.signature} alt="" />
+                </div>
+            
           </div>
           <div className="inner-details">
             <h4>Images</h4>
-            <div>
-              <h5>Business Image</h5>
+            <div className="customerimages">
               <div>
-                <img src={loan?.pictures?.business} alt="" />
+                <h5>Customer Image</h5>
+                <div>
+                  <img src={loan?.pictures?.customer} alt="" />
+                </div>
+              </div>
+              <div>
+                <h5>Business Image</h5>
+                <div>
+                  <img src={loan?.pictures?.business} alt="" />
+                </div>
               </div>
             </div>
             <div>
               <h5>Other Images</h5>
+              <div className="customerimages">
+                {loan?.pictures?.others.map((img, index) => (
+                  <img key={index} src={img} alt="" />
+                ))}
+                </div>
             </div>
           </div>
+         
         </div>
 
         <div className="right-loan-detail">
@@ -505,7 +560,7 @@ const [rejectLoading, setRejectLoading] = useState(false)
               <Button onClick={() => setPopup('verifyCustomer')} active={verifyCustomer} disabled={verifyCustomer}>Verify </Button>
               </div>
             <p>
-              Click <Link>here</Link> to confirm if guarantor fill the guarantor
+              Click <Link to={`/guarantorDetails/${id}`}>here</Link> to confirm if guarantor fill the guarantor
               form
             </p>
           </div>

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { format } from "date-fns";
 
 const API_URL = 'https://sever-qvw1.onrender.com/api/cso'; // Backend API URL
+// const API_URL = "http://localhost:5000/api/cso"
 
 // Async thunk to fetch cso
 export const fetchCso = createAsyncThunk('cso/fetchCso', async ({ page, limit }) => {
@@ -84,25 +85,36 @@ export const uploadRemittance = createAsyncThunk(
       }
     }
   );
-  export const fetchRemittanceProgress = createAsyncThunk(
-    'loans/fetchRemittanceProgress',
-    async (workId) => {
-      try {
-      const response = await axios.get(`${API_URL}/remittance-progress/${workId}`);
-      console.log(response.data.progress)
-      return response.data.progress;
-      }  catch (err) {
-        console.error(err);
-        throw err;
-      }
-    }
-  );
+  // export const fetchRemittanceProgress = createAsyncThunk(
+  //   'loans/fetchRemittanceProgress',
+  //   async (workId) => {
+  //     try {
+  //     const response = await axios.get(`${API_URL}/remittance-progress/${workId}`);
+  //     console.log(response.data.progress)
+  //     return response.data.progress;
+  //     }  catch (err) {
+  //       console.error(err);
+  //       throw err;
+  //     }
+  //   }
+  // );
 // Async action to fetch remittances
 export const fetchRemittancesForAllcso = createAsyncThunk("remittance/fetchRemittancesForAllcso", async (date) => {
   const response = await axios.get(`${API_URL}/remittances-for-all-cso?date=${date}`);
   return response.data;
 });
 
+export const searchCso = createAsyncThunk(
+  'cso/searchCso',
+  async (query) => {
+    const response = await fetch(`${API_URL}/search-cso?query=${query}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch cso');
+    }
+    const data = await response.json();
+    return data;
+  }
+);
 
 const csoSlice = createSlice({
     name: 'cso',
@@ -122,7 +134,7 @@ const csoSlice = createSlice({
         monthlyLoanTarget: 0,
         monthlyLoanCounts: [],
         remmitdata: [],
-        remittanceProgress: 0,
+       
         selectedCSO: null,
         remmitCsoData: [],
         selectedRemiteDate: format(new Date(), "yyyy-MM-dd"),
@@ -161,6 +173,18 @@ const csoSlice = createSlice({
             .addCase(createCso.fulfilled, (state, action) => {
                 state.cso.push(action.payload);
             });
+               builder
+                  .addCase(searchCso.pending, (state) => {
+                    state.loading = true;
+                  })
+                  .addCase(searchCso.fulfilled, (state, action) => {
+                    state.loading = false;
+                    state.cso = action.payload;
+                  })
+                  .addCase(searchCso.rejected, (state, action) => {
+                    state.loading = false;
+                    state.error = action.error.message;
+                  });
 
             builder
             .addCase(fetchRemittancesForAllcso.pending, (state) => {
@@ -175,18 +199,7 @@ const csoSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message;
             });
-            builder
-            .addCase(fetchRemittanceProgress.pending, (state) => {
-              state.loading = true;
-            })
-            .addCase(fetchRemittanceProgress.fulfilled, (state, action) => {
-              state.loading = false;
-              state.remittanceProgress = action.payload;
-            })
-            .addCase(fetchRemittanceProgress.rejected, (state, action) => {
-              state.loading = false;
-              state.error = action.error.message;
-            });
+      
 
             builder
             .addCase(fetchLoanProgressChart.pending, (state) => {

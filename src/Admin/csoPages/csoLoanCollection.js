@@ -5,18 +5,22 @@ import Calendar from "react-calendar"; // Import the calendar
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import { Pie, Bar } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale,
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
   LinearScale,
   BarElement,
   LineElement,
   Title,
- } from "chart.js";
+} from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import {
   fetchallgetRemittances,
   fetchLoanProgress,
   fetchLoanProgressChart,
-  fetchRemittanceProgress,
   setSelectedRemmitDate,
 } from "../../redux/slices/csoSlice";
 import {
@@ -30,9 +34,19 @@ import {
 } from "../../redux/slices/LoanSlice";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { MoonLoader } from "react-spinners";
+import { fetchRemittanceNewProgress } from "../../redux/slices/remittanceSlice";
 
-
-ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, LineElement, Title, Tooltip, Legend, ChartDataLabels);
+ChartJS.register(
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ChartDataLabels
+);
 
 const CollectRap = styled.div`
   width: 100%;
@@ -260,7 +274,7 @@ const CollectRap = styled.div`
   .remmit {
     padding: 20px;
   }
-  .remmit  h2 {
+  .remmit h2 {
     font-size: 20px;
     color: #030b26;
     font-weight: 700;
@@ -283,9 +297,9 @@ const CollectRap = styled.div`
     color: #030b26;
     font-weight: 600;
   }
-  .remmittance-div img  {
+  .remmittance-div img {
     width: 500px;
-    margin-top: 20px
+    margin-top: 20px;
   }
 `;
 
@@ -301,7 +315,7 @@ const CsoLoanCollection = () => {
   const [selectedDate, setSelectedDate] = useState(new Date()); // State for selected date
   const [showCalendar, setShowCalendar] = useState(false); // State for calendar visibility
   const [totalAmountPaid, setTotalAmountPaid] = useState(0);
-  
+
   const [dayPicker, setDayPicker] = useState("today");
 
   const csoId = id;
@@ -321,31 +335,32 @@ const CsoLoanCollection = () => {
     todayCount,
     yesterdayCount,
     monthCount,
+    weekCount,
     status,
     error,
   } = useSelector((state) => state.loan);
 
-  const {remmitdata, selectedRemiteDate, remittanceProgress, progressData, monthlyLoanCounts, loading } = useSelector(
-    (state) => state.cso);
-    
+  const {
+    remmitdata,
+    selectedRemiteDate,
+    progressData,
+    monthlyLoanCounts,
+    loading,
+  } = useSelector((state) => state.cso);
 
+  const { remittanceProgress } = useSelector((state) => state.remittance);
 
-
-  
- useEffect(() => {
-        dispatch(fetchallgetRemittances({ workId, date: selectedRemiteDate }));
-    }, [dispatch, workId, selectedRemiteDate]);
-
-
-
+  useEffect(() => {
+    dispatch(fetchallgetRemittances({ workId, date: selectedRemiteDate }));
+  }, [dispatch, workId, selectedRemiteDate]);
 
   useEffect(() => {
     dispatch(fetchLoanProgress(workId));
-    dispatch(fetchRemittanceProgress(workId)); // Fetch remittance progress for this CSO
+    dispatch(fetchRemittanceNewProgress(workId)); // Fetch remittance progress for this CSO
   }, [dispatch, workId]);
 
-useEffect(() => {
-     dispatch(fetchLoanProgressChart(workId));
+  useEffect(() => {
+    dispatch(fetchLoanProgressChart(workId));
   }, [dispatch, workId]);
 
   useEffect(() => {
@@ -372,12 +387,9 @@ useEffect(() => {
     dispatch(fetchPieRepaymentData({ csoId }));
   }, [dispatch, csoId]);
 
-  
-   
-    useEffect(() => {
-      dispatch(fetchLoanAllTimeCounts({ csoId }));
-    }, [dispatch]);
-  
+  useEffect(() => {
+    dispatch(fetchLoanAllTimeCounts({ csoId }));
+  }, [dispatch]);
 
   useEffect(() => {
     dispatch(fetchAllLoansByCsoId({ csoId }));
@@ -387,7 +399,7 @@ useEffect(() => {
     dispatch(fetchLoanAllTimeCounts({ csoId }));
   }, [dispatch]);
   useEffect(() => {
-    dispatch(fetchRemittanceProgress(workId)); // Fetch remittance progress for this CSO
+    dispatch(fetchRemittanceNewProgress(workId)); // Fetch remittance progress for this CSO
   }, [dispatch, workId]);
 
   useEffect(() => {
@@ -428,9 +440,11 @@ useEffect(() => {
     amountDisbursedThisWeek,
     weeklyDisbursementTarget,
     weeklyDisbursementProgress,
+    dailyLoanProgress,
+    dailyDisbursementProgress,
+    loansDisbursedYesterday,
+    yesterdayDisbursementProgress,
   } = progressData || {};
-
- 
 
   const customersWithDue = customers.filter(
     (customer) => customer.amountDue !== 0
@@ -472,43 +486,40 @@ useEffect(() => {
     ],
   };
 
-
-
-
   const data = {
     labels: [
-     'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ],
     datasets: [
       {
-        label: 'Monthly Loan count',
+        label: "Monthly Loan count",
         data: monthlyLoanCounts,
         backgroundColor: monthlyLoanCounts.map((count, index) =>
-          index === 3 ? '#10B981' : 'rgba(16, 185, 129, 0.3)'
+          index === 3 ? "#10B981" : "rgba(16, 185, 129, 0.3)"
         ), // Highlight April
         borderRadius: 10, // Rounded corners for bars
         barThickness: 20,
       },
       {
-        label: ' Loan Target',
-        type: 'line',
+        label: " Loan Target",
+        type: "line",
         data: Array(12).fill(monthlyLoanTarget),
-        borderColor: '#1E40AF', // Deep blue for the line
+        borderColor: "#1E40AF", // Deep blue for the line
         borderWidth: 3,
         tension: 0.4, // Smooth line
-        pointBackgroundColor: '#1E40AF',
-        pointBorderColor: '#1E40AF',
+        pointBackgroundColor: "#1E40AF",
+        pointBorderColor: "#1E40AF",
       },
     ],
   };
@@ -517,7 +528,7 @@ useEffect(() => {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top',
+        position: "top",
         labels: {
           usePointStyle: true,
           boxWidth: 10,
@@ -525,12 +536,12 @@ useEffect(() => {
       },
       title: {
         display: true,
-        text: '',
+        text: "",
       },
       tooltip: {
-        backgroundColor: '#111827', // Dark tooltip background
-        titleColor: '#FFFFFF',
-        bodyColor: '#FFFFFF',
+        backgroundColor: "#111827", // Dark tooltip background
+        titleColor: "#FFFFFF",
+        bodyColor: "#FFFFFF",
         padding: 10,
       },
       datalabels: {
@@ -541,7 +552,7 @@ useEffect(() => {
       y: {
         beginAtZero: true,
         grid: {
-          color: 'rgba(0, 0, 0, 0.1)', // Light grid lines
+          color: "rgba(0, 0, 0, 0.1)", // Light grid lines
         },
       },
       x: {
@@ -554,11 +565,21 @@ useEffect(() => {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
-  if (!progressData) return  <p style={{display: "flex", 
-    flexDirection: "column", 
-    height: "90vh",
-    justifyContent: "center",
-   alignItems: "center"}} > <MoonLoader /></p>;
+  if (!progressData)
+    return (
+      <p
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          height: "90vh",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {" "}
+        <MoonLoader />
+      </p>
+    );
   return (
     <CollectRap>
       <div className="cso-1">
@@ -592,7 +613,9 @@ useEffect(() => {
             Dashboard
           </Link>
           <Link
-            className={`cso-link ${activeLink === "remmitance" ? "active" : ""}`}
+            className={`cso-link ${
+              activeLink === "remmitance" ? "active" : ""
+            }`}
             onClick={() => handleLinkClick("remmitance")}
           >
             Remmitance
@@ -751,7 +774,7 @@ useEffect(() => {
 
         {activeLink === "dashboard" && (
           <>
-            <div style={{padding: "20px"}}>
+            <div style={{ padding: "20px" }}>
               <div className="calendar-display-icon">
                 <span>{selectedDate?.toDateString()}</span>{" "}
               </div>
@@ -844,6 +867,11 @@ useEffect(() => {
                       Month's Loan count: <span>{monthCount}</span>
                     </p>
                   )}
+                  {dayPicker === "weekly" && (
+                    <p>
+                      Week's Loan count: <span>{weekCount}</span>
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -906,6 +934,24 @@ useEffect(() => {
                         {disbursementProgress?.toFixed(1)}%
                       </p>
                     </div>
+                    <div className="overrall-perform">
+                      <div className="overrall-perform-outerbar">
+                        <div
+                          className="overrall-perform-innerbar"
+                          style={{
+                            background: "#FFA500",
+                            width: `${remittanceProgress.monthProgress}%`,
+                            transition: "width 0.3s ease",
+                          }}
+                        />
+                        <div className="overrall-perform-innerbar-text">
+                          Remittance
+                        </div>
+                      </div>
+                      <p style={{ fontWeight: "bold", color: "#FFA500" }}>
+                        {remittanceProgress?.monthProgress}%
+                      </p>
+                    </div>
                   </>
                 )}
 
@@ -945,6 +991,24 @@ useEffect(() => {
                       </div>
                       <p style={{ fontWeight: "bold", color: "#009A49" }}>
                         {monthlyDisbursementProgress?.toFixed(1)}%
+                      </p>
+                    </div>
+                    <div className="overrall-perform">
+                      <div className="overrall-perform-outerbar">
+                        <div
+                          className="overrall-perform-innerbar"
+                          style={{
+                            background: "#FFA500",
+                            width: `${remittanceProgress.monthProgress}%`,
+                            transition: "width 0.3s ease",
+                          }}
+                        />
+                        <div className="overrall-perform-innerbar-text">
+                          Remittance
+                        </div>
+                      </div>
+                      <p style={{ fontWeight: "bold", color: "#FFA500" }}>
+                        {remittanceProgress?.monthProgress}%
                       </p>
                     </div>
                   </>
@@ -988,9 +1052,28 @@ useEffect(() => {
                         {weeklyDisbursementProgress?.toFixed(1)}%
                       </p>
                     </div>
+                    <div className="overrall-perform">
+                      <div className="overrall-perform-outerbar">
+                        <div
+                          className="overrall-perform-innerbar"
+                          style={{
+                            background: "#FFA500",
+                            width: `${remittanceProgress.weekProgress}%`,
+                            transition: "width 0.3s ease",
+                          }}
+                        />
+                        <div className="overrall-perform-innerbar-text">
+                          Remittance
+                        </div>
+                      </div>
+                      <p style={{ fontWeight: "bold", color: "#FFA500" }}>
+                        {remittanceProgress?.weekProgress}%
+                      </p>
+                    </div>
                   </>
                 )}
-                {dayPicker === "today" && (
+
+                {dayPicker === "yesterday" && (
                   <>
                     <div className="overrall-perform">
                       <div className="overrall-perform-outerbar">
@@ -998,7 +1081,7 @@ useEffect(() => {
                           className="overrall-perform-innerbar"
                           style={{
                             background: "#F8BD00",
-                            width: `${weeklyLoanProgress}%`,
+                            width: `${loansDisbursedYesterday}%`,
                             transition: "width 0.3s ease",
                           }}
                         />
@@ -1007,7 +1090,7 @@ useEffect(() => {
                         </div>
                       </div>
                       <p style={{ fontWeight: "bold", color: "#F8BD00" }}>
-                        {weeklyLoanProgress?.toFixed(1)}%
+                        {loansDisbursedYesterday?.toFixed(1)}%
                       </p>
                     </div>
                     <div className="overrall-perform">
@@ -1016,7 +1099,7 @@ useEffect(() => {
                           className="overrall-perform-innerbar"
                           style={{
                             background: "#009A49",
-                            width: `${weeklyDisbursementProgress}%`,
+                            width: `${yesterdayDisbursementProgress}%`,
                             transition: "width 0.3s ease",
                           }}
                         />
@@ -1025,29 +1108,88 @@ useEffect(() => {
                         </div>
                       </div>
                       <p style={{ fontWeight: "bold", color: "#009A49" }}>
-                        {weeklyDisbursementProgress?.toFixed(1)}%
+                        {yesterdayDisbursementProgress?.toFixed(1)}%
+                      </p>
+                    </div>
+                    <div className="overrall-perform">
+                      <div className="overrall-perform-outerbar">
+                        <div
+                          className="overrall-perform-innerbar"
+                          style={{
+                            background: "#FFA500",
+                            width: `${remittanceProgress.yesterdayProgress}%`,
+                            transition: "width 0.3s ease",
+                          }}
+                        />
+                        <div className="overrall-perform-innerbar-text">
+                          Remittance
+                        </div>
+                      </div>
+                      <p style={{ fontWeight: "bold", color: "#FFA500" }}>
+                        {remittanceProgress?.yesterdayProgress}%
                       </p>
                     </div>
                   </>
                 )}
-                <div className="overrall-perform">
-                  <div className="overrall-perform-outerbar">
-                    <div
-                      className="overrall-perform-innerbar"
-                      style={{
-                        background: "#FFA500",
-                        width: `${remittanceProgress}%`,
-                        transition: "width 0.3s ease",
-                      }}
-                    />
-                    <div className="overrall-perform-innerbar-text">
-                      Remittance
+
+                {dayPicker === "today" && (
+                  <>
+                    <div className="overrall-perform">
+                      <div className="overrall-perform-outerbar">
+                        <div
+                          className="overrall-perform-innerbar"
+                          style={{
+                            background: "#F8BD00",
+                            width: `${dailyLoanProgress}%`,
+                            transition: "width 0.3s ease",
+                          }}
+                        />
+                        <div className="overrall-perform-innerbar-text">
+                          Loan Count
+                        </div>
+                      </div>
+                      <p style={{ fontWeight: "bold", color: "#F8BD00" }}>
+                        {dailyLoanProgress?.toFixed(1)}%
+                      </p>
                     </div>
-                  </div>
-                  <p style={{ fontWeight: "bold", color: "#FFA500" }}>
-                    {remittanceProgress?.toFixed(1)}%
-                  </p>
-                </div>
+                    <div className="overrall-perform">
+                      <div className="overrall-perform-outerbar">
+                        <div
+                          className="overrall-perform-innerbar"
+                          style={{
+                            background: "#009A49",
+                            width: `${dailyDisbursementProgress}%`,
+                            transition: "width 0.3s ease",
+                          }}
+                        />
+                        <div className="overrall-perform-innerbar-text">
+                          Loan Amount
+                        </div>
+                      </div>
+                      <p style={{ fontWeight: "bold", color: "#009A49" }}>
+                        {dailyDisbursementProgress?.toFixed(1)}%
+                      </p>
+                    </div>
+                    <div className="overrall-perform">
+                      <div className="overrall-perform-outerbar">
+                        <div
+                          className="overrall-perform-innerbar"
+                          style={{
+                            background: "#FFA500",
+                            width: `${remittanceProgress.progress}%`,
+                            transition: "width 0.3s ease",
+                          }}
+                        />
+                        <div className="overrall-perform-innerbar-text">
+                          Remittance
+                        </div>
+                      </div>
+                      <p style={{ fontWeight: "bold", color: "#FFA500" }}>
+                        {remittanceProgress?.progress}%
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
               <div style={{ maxWidth: "350px", margin: "auto" }}>
                 <Pie
@@ -1081,43 +1223,64 @@ useEffect(() => {
                   }}
                 />
               </div>
-              <div><Bar data={data} options={options} /></div>
-
+              <div>
+                <Bar data={data} options={options} />
+              </div>
             </div>
           </>
         )}
         {activeLink === "remmitance" && (
           <>
             <div className="remmit">
-                      <h2 className="text-xl font-bold mb-4">Remittances</h2>
-          
-                      {/* Date Picker */}
-                      <input 
-                          type="date"
-                          value={selectedRemiteDate}
-                          onChange={(e) => dispatch(setSelectedRemmitDate(e.target.value))}
-                          className="date-input"
+              <h2 className="text-xl font-bold mb-4">Remittances</h2>
+
+              {/* Date Picker */}
+              <input
+                type="date"
+                value={selectedRemiteDate}
+                onChange={(e) =>
+                  dispatch(setSelectedRemmitDate(e.target.value))
+                }
+                className="date-input"
+              />
+
+              {/* Display Remittances */}
+              {status === "loading" && (
+                <p
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "90vh",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  {" "}
+                  <MoonLoader />
+                </p>
+              )}
+              {status === "failed" && <p className="text-red-500">{error}</p>}
+              {status === "succeeded" && remmitdata.length === 0 && (
+                <p>No remittances for this date.</p>
+              )}
+
+              <div className="grid gap-4">
+                {remmitdata.map((remit, index) => (
+                  <div key={index} className="remmittance-div">
+                    <p className="font-semibold">
+                      Amount: <span> {remit.amount}</span>
+                    </p>
+                    {remit.image && (
+                      <img
+                        src={remit.image}
+                        alt="Remittance"
+                        className="w-40 mt-2"
                       />
-          
-                      {/* Display Remittances */}
-                      {status === "loading" && 
-                       <p style={{display: "flex", 
-                        flexDirection: "column", 
-                        height: "90vh",
-                        justifyContent: "center",
-                       alignItems: "center"}} > <MoonLoader /></p>}
-                      {status === "failed" && <p className="text-red-500">{error}</p>}
-                      {status === "succeeded" && remmitdata.length === 0 && <p>No remittances for this date.</p>}
-          
-                      <div className="grid gap-4">
-                          {remmitdata.map((remit, index) => (
-                              <div key={index} className="remmittance-div">
-                                  <p className="font-semibold">Amount: <span> {remit.amount}</span></p>
-                                  {remit.image && <img src={remit.image} alt="Remittance" className="w-40 mt-2" />}
-                              </div>
-                          ))}
-                      </div>
+                    )}
                   </div>
+                ))}
+              </div>
+            </div>
           </>
         )}
       </div>

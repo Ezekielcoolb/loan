@@ -60,6 +60,14 @@ export const fetchLoans = createAsyncThunk(
     }
   }
 );
+export const fetchAdminLoans = createAsyncThunk('loans/fetchAdminLoans', async () => {
+  try {
+  const response = await fetch(`${API_URL}/all-loans-for-admin`); // Adjust API endpoint as needed
+  return response.json();
+  } catch(error) {
+    console.error(error);
+  }
+});
 
 export const fetchWaitingLoans = createAsyncThunk('loans/fetchWaitingLoans', async ({ page = 1, limit = 10 }) => {
   try {
@@ -245,6 +253,7 @@ export const fetchLoansByMonth = createAsyncThunk(
   }
 );
 
+
 export const fetchDisbursementDataChart = createAsyncThunk(
   'disbursement/fetchDisbursementDataChart',
   async () => {
@@ -255,10 +264,11 @@ export const fetchDisbursementDataChart = createAsyncThunk(
       return data;
   }
 );
+
 export const fetchAllLoansByCsoId = createAsyncThunk(
   'loans/fetchAllLoansByCsoId',
-  async ({ csoId, page = 1, limit = 20 }) => {
-      const response = await axios.get(`${API_URL}/getLoansByCsoId?csoId=${csoId}&page=${page}&limit=${limit}`);
+  async ({ csoId }) => {
+      const response = await axios.get(`${API_URL}/getLoansByCsoId?csoId=${csoId}`);
       return response.data;
   }
 );
@@ -315,7 +325,53 @@ export const updateCallStatus = createAsyncThunk(
   }
 );
 
+export const searchCustomer = createAsyncThunk(
+  'customer/searchCustomer',
+  async (query) => {
+    const response = await fetch(`${API_URL}/search?query=${query}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch customer');
+    }
+    const data = await response.json();
+    return data;
+  }
+);
+export const searchActiveCustomer = createAsyncThunk(
+  'customer/searchActiveCustomer',
+  async (query) => {
+    const response = await fetch(`${API_URL}/search-customer-active?query=${query}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch customer');
+    }
+    const data = await response.json();
+    return data;
+  }
+);
+export const searchPendingCustomer = createAsyncThunk(
+  'customer/searchPendingCustomer',
+  async (query) => {
+    const response = await fetch(`${API_URL}/search-pending-loans?query=${query}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch customer');
+    }
+    const data = await response.json();
+    return data;
+  }
+);
 
+export const updateGuarantorFormPic = createAsyncThunk(
+  "loan/updateGuarantorFormPic",
+  async ({ loanId, imageUrl }, { rejectWithValue }) => {
+      try {
+          const response = await axios.put(`${API_URL}/update-guarantor-form-pic/${loanId}`, { imageUrl });
+          console.log(response.data.loan);
+          
+          return response.data.loan; // Return updated loan data
+      } catch (error) {
+          return rejectWithValue(error.response.data.message || "Failed to update");
+      }
+  }
+);
 
 // Slice
 const loanSlice = createSlice({
@@ -356,6 +412,7 @@ const loanSlice = createSlice({
     todayCount: 0,
     yesterdayCount: 0,
     monthCount: 0,
+    weekCount: 0,
     callCso: false,
     callGuarantor: false,
     callCustomer: false,
@@ -479,6 +536,74 @@ setLoan: (state, action) => {
       });
 
       builder
+      .addCase(searchCustomer.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(searchCustomer.fulfilled, (state, action) => {
+        state.loading = false;
+        state.loans = action.payload;
+      })
+      .addCase(searchCustomer.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+      builder
+      .addCase(fetchAdminLoans.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchAdminLoans.fulfilled, (state, action) => {
+        state.loading = false;
+        state.loans = action.payload;
+      })
+      .addCase(fetchAdminLoans.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+      builder
+      .addCase(searchActiveCustomer.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(searchActiveCustomer.fulfilled, (state, action) => {
+        state.loading = false;
+        state.summaries = action.payload;
+      })
+      .addCase(searchActiveCustomer.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+
+      builder
+      .addCase(searchPendingCustomer.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(searchPendingCustomer.fulfilled, (state, action) => {
+        state.loading = false;
+        state.pendingLoans = action.payload;
+      })
+      .addCase(searchPendingCustomer.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+
+          builder
+            .addCase(updateGuarantorFormPic.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateGuarantorFormPic.fulfilled, (state, action) => {
+                state.loading = false;
+                // Update the specific loan in the state
+                const index = state.loans.findIndex(loan => loan._id === action.payload._id);
+                if (index !== -1) {
+                    state.loans[index] = action.payload;
+                }
+            })
+            .addCase(updateGuarantorFormPic.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
+
+      builder
       .addCase(updateCallStatus.pending, (state) => {
         state.loading = true;
       })
@@ -500,6 +625,7 @@ setLoan: (state, action) => {
         state.todayCount = action.payload.todayCount;
         state.yesterdayCount = action.payload.yesterdayCount;
         state.monthCount = action.payload.monthCount;
+        state.weekCount = action.payload.weekCount;
       })
       .addCase(fetchLoanAllTimeCounts.rejected, (state, action) => {
         state.loading = false;

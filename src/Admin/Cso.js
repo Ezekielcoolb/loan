@@ -6,11 +6,13 @@ import MonthlySalesChart from "./csoMatrics/MonthlySalesChart";
 import WeeklySalesChart from "./csoMatrics/WeeklySalesChart";
 import DailySalesChart from "./csoMatrics/DailySalesChart";
 import YearlySalesChart from "./csoMatrics/YearlySalesChart";
-import { createCso, fetchCso } from "../redux/slices/csoSlice";
+import { createCso, fetchCso, searchCso } from "../redux/slices/csoSlice";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { MoonLoader, PulseLoader } from "react-spinners";
 import { fetchAllBranches } from "../redux/slices/branchSlice";
+import axios from "axios";
+
 
 const ClientRap = styled.div`
   width: 100%;
@@ -464,7 +466,18 @@ const ClientRap = styled.div`
     overflow: hidden; /* Ensures uploaded image doesn't overflow */
     background-color: #ffffff; /* Light background color */
   }
-
+.upper-image-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  margin: auto;
+}
+.upper-image-display {
+  width: 200px;
+  height: 100px;
+}
   /* Hide the actual file input */
   .image-upload-container input[type="file"] {
     display: none;
@@ -511,18 +524,17 @@ const Csos = () => {
   const [matrixOpen, setMatricOpen] = useState("yearly");
   const [selectedCso, setSelectedCso] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState("");
-
+  const [loanerImage, setLoanerIamge] = useState("");
   const [formattedDateRange, setFormattedDateRange] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { branches } = useSelector((state) => state.branches);
+  const [query, setQuery] = useState("");
 
 
   const handleMatricOpen = (links) => {
     setMatricOpen(links);
   };
   const [formData, setFormData] = useState({
-    img: null, // Store the file object
-    imgPreview: null,
     firstName: "",
     lastName: "",
     email: "",
@@ -542,6 +554,7 @@ const Csos = () => {
     zipCode: "",
     country: "",
   });
+console.log(formData);
 
   // Update formData.branch whenever selectedBranch changes
   useEffect(() => {
@@ -665,18 +678,46 @@ const Csos = () => {
     formData.status !== "" &&
     formData.branch !== "" &&
     formData.phone !== "";
-  console.log(formData);
+
+
+    const handleSecondImage = async (e) => {
+      try {
+        const formData = new FormData();
+        formData.append("file", e[0]);
+        formData.append("upload_preset", "ml_default");
+    
+        const response = await axios.post(
+          `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
+          formData
+        );
+    
+        const imageUrl = response.data.secure_url;
+        console.log(imageUrl);
+    
+        setLoanerIamge(imageUrl);
+    
+        // Update formData state
+        setFormData((prevData) => ({
+          ...prevData,
+          profileImg: imageUrl,
+        }));
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+
+
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isValid) {
       try {
-        setIsLoading(true);
-        dispatch(createCso(formData));
+     
+        dispatch(createCso(formData));        
         setDropdownVisible(false);
         setFormData({
-          img: null, // Store the file object
-          imgPreview: null,
           firstName: "",
           lastName: "",
           email: "",
@@ -732,6 +773,10 @@ const Csos = () => {
     }
   };
 
+  
+  
+
+
   return (
     <ClientRap>
       <div>
@@ -770,6 +815,7 @@ const Csos = () => {
               </div>
 
               <div className="client-dropdown-div">
+                <div className="upper-image-display">
                 <div class="image-upload-container">
                   <label for="upload-input">
                     <div class="upload-icon"></div>
@@ -777,9 +823,11 @@ const Csos = () => {
                       type="file"
                       id="upload-input"
                       accept="images/*"
-                      onChange={handleImage}
+                      onChange={(e) => handleSecondImage(e.target.files)}
                     />
                   </label>
+                </div>
+                <img src={`${loanerImage}`} alt="" />
                 </div>
 
                 <div className="client-input-div">
@@ -1049,8 +1097,8 @@ const Csos = () => {
                   ))}
                 </div>
                 <div className="search-div" style={{ marginBottom: "20px" }}>
-                  <div style={{ position: "relative" }}>
-                    <input type="text" placeholder="search" />
+                  {/* <div style={{ position: "relative" }}>
+                    <input  type="text" placeholder="search" />
                     <Icon
                       className="search-position"
                       icon="material-symbols-light:search"
@@ -1058,7 +1106,7 @@ const Csos = () => {
                       height="18"
                       style={{ color: "#9499AC" }}
                     />
-                  </div>
+                  </div> */}
                 </div>
               </div>
               <div className="table-container">

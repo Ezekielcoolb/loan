@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 const API_URL = 'https://sever-qvw1.onrender.com/api/loginauth';
+// const API_URL = "http://localhost:5000/api/loginauth"
 
 // Login Thunk
 export const login = createAsyncThunk('auth/login', async (credentials) => {

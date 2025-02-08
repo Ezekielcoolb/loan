@@ -119,23 +119,7 @@ const Notifications = () => {
       {renderCategory(paymentFullLate, 'Payment, Full Payment, and Late Payment')}
       {renderCategory(defaultingMonthlySubmit, 'Defaulting and Monthly Loan Submit')}
 
-      <div style={{
-        display: "flex",
-        justifyContent: "space-between"
-      }}>
-        <button style={{
-          width: "80px"
-        }} onClick={handlePrevPage} disabled={page === 1}>
-          Previous
-        </button>
-        <span>Page {page}</span>
-        <button style={{
-          width: "80px"
-        }} onClick={handleNextPage} disabled={notifications.length < limit}>
-  Next
-</button>
-
-      </div>
+     
     </div>
   );
 };

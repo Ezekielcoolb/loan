@@ -3,6 +3,8 @@ import axios from "axios";
 
 const API_URL = "https://sever-qvw1.onrender.com/api/interest";
 
+// const API_URL = "http://localhost:5000/api/interest"
+
 // Async Thunks
 export const fetchTarget = createAsyncThunk("target/fetchTarget", async () => {
   const response = await axios.get(`${API_URL}/get-interest`);

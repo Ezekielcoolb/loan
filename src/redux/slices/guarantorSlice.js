@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 const API_URL = 'https://sever-qvw1.onrender.com/api/guarantor';
+// const API_URL = "http://localhost:5000/api/guarantor"
 
 // Fetch guarantor response
 export const fetchGuarantorResponse = createAsyncThunk('guarantor/fetchResponse', async (loanId) => {

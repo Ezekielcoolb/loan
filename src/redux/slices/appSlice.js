@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
- 
+ dropSuccessVisible: false,
   dropdowVisible: false,
   openSideBar: false,
 };
@@ -18,8 +18,11 @@ const appSlice = createSlice({
     setOpenSideBar: (state) => {
       state.openSideBar = !state.openSideBar;
     },
+    setDropSuccessVisible: (state) => {
+      state.dropSuccessVisible = !state.dropSuccessVisible;
+    },
   },
 });
-export const { setDropdownVisible, setOpenSideBar} = appSlice.actions;
+export const { setDropdownVisible, setOpenSideBar, setDropSuccessVisible} = appSlice.actions;
 export default appSlice.reducer;
 

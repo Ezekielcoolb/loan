@@ -1,8 +1,9 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
-import React from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import CsoNotifications from "./csoNotification";
 
 const CsoNavRap = styled.div`
   
@@ -35,6 +36,14 @@ const CsoNavRap = styled.div`
     top: 0px;
     z-index: 9999;
   }
+  .notification-icon-div {
+    position: relative;
+  }
+  .the-notification {
+    position: absolute;
+    right: 0px;
+    width: 300px !important;
+  }
 `
 
 
@@ -42,25 +51,37 @@ const CsoNav = () => {
     const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate()
 
+
+  const [openNotification, setOpenNotification] = useState(false)
+
+  const handleOpenNotification = () => {
+    setOpenNotification(!openNotification)
+  }
+
     const handleGoToProfile = () => {
       navigate("/cso/csos-profile")
     }
     return (
         <CsoNavRap>
                   {user && (
-                          <div onClick={handleGoToProfile} className="home-header">
-                            <div className="home-header-text">
+                          <div  className="home-header">
+                            <div onClick={handleGoToProfile} className="home-header-text">
                               <h3>Hi, {user.firstName}</h3>
                               <p>{user.email}</p>
                             </div>
-                            <div>
-                              <Icon
+                            <div className="notification-icon-div">
+                              <Icon onClick={handleOpenNotification}
                                 className="notify"
                                 icon="ion:notifications-outline"
                                 width="24"
                                 height="24"
                                 style={{ color: "white" }}
                               />
+                              {openNotification? ( 
+                              <div className="the-notification">
+                                  <CsoNotifications />
+                              </div>
+                              ): ""}
                             </div>
                           </div>
                         )}

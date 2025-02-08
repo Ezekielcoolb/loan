@@ -4,6 +4,12 @@ import { formatDistanceToNow } from 'date-fns';
 
 
 const API_URL = 'https://sever-qvw1.onrender.com/api/notification';
+
+// const API_URL = "http://localhost:5000/api/notification"
+
+
+
+
 // Async thunk for fetching notifications with pagination
 export const fetchNotifications = createAsyncThunk(
   'notifications/fetchNotifications',
@@ -33,10 +39,25 @@ export const fetchNotifications = createAsyncThunk(
   }
 );
 
+
+// Async thunk to fetch notifications
+export const fetchCsoNotifications = createAsyncThunk(
+  "notifications/fetchCsoNotifications",
+  async (workId, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/cso-notifications/${workId}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to fetch notifications");
+    }
+  }
+);
+
 const notificationSlice = createSlice({
   name: 'notifications',
   initialState: {
     notifications: [],
+    data: null,
     status: 'idle',
     error: null,
     page: 1,
@@ -58,6 +79,20 @@ const notificationSlice = createSlice({
       })
       .addCase(fetchNotifications.rejected, (state, action) => {
         state.status = 'failed';
+        state.error = action.payload;
+      });
+
+      builder
+      .addCase(fetchCsoNotifications.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCsoNotifications.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
+      })
+      .addCase(fetchCsoNotifications.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       });
   },

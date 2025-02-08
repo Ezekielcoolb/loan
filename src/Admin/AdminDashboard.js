@@ -8,6 +8,7 @@ import DisbursementChart from "./DashboardCharts/DisburseChart";
 import { Link } from "react-router-dom";
 import Notifications from "./Notification";
 import {MoonLoader} from 'react-spinners'
+import { fetchLoanStats } from "../redux/slices/dashboardSlice";
 
 
 const DashboardRap = styled.div`
@@ -40,20 +41,24 @@ padding: 20px;
   .over-text p {
     color: #ffffff99;
   }
-  .overview-total h5 {
-    font-size: 12px;
+  .overview-total h5, .complete-cancel h5{
+    font-size: 12px !important;
     font-weight: 500;
     color: #ffffff99;
+  }
+  .complete-cancel h5{
+    margin-bottom: 10px;
   }
   .overview-total p {
     color: #ffffff;
     font-size: 16px;
     font-weight: 700;
+ 
   }
-  .overview-total div {
+  .overview-total-div {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 20px;
   }
   .overview-total {
     display: flex;
@@ -66,7 +71,7 @@ padding: 20px;
     background: #0c1d55;
     padding: 20px 15px;
     border-radius: 15px;
-    width: 50%;
+    width: 100%;
   }
   .complete-cancel {
     border-top: 1px solid #ffffff1a;
@@ -107,6 +112,16 @@ padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 10px;
+  }
+  .overview-total-div h5 {
+    color:#cbd0e3;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .overview-total-div span {
+    color: #727789;
+    font-size: 12px;
+    font-weight: 500;
   }
   .pay-div h5 {
     color: #727789;
@@ -291,6 +306,7 @@ padding: 20px;
   .dashboard {
 display: flex;
 gap: 20px;
+width: 100%;
   }
   .right-dash-card {
    background: #ffffff;
@@ -299,12 +315,19 @@ gap: 20px;
     padding: 10px;
     width: 30% !important;
   }
+  .left-dash {
+    width: 70%;
+  }
   .third-right-dash-card {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 15px;
+  }
+  .notificationwrapper {
+    max-height: 600px;
+    overflow-y: auto;
   }
   @media (max-width: 1200px) {
 .dashboard {
@@ -334,9 +357,18 @@ gap: 20px;
 
 const Dashboard = () => {
   const dispatch = useDispatch();
-  const { allLoans, loading, error } = useSelector((state) => state.loan);
+  const { allLoans, error } = useSelector((state) => state.loan);
      const { totalLoanTarget, totalActiveLoan, status } = useSelector((state) => state.loanBranches);
 const [isLoading, setIsLoading] = useState(true)
+  const { stats } = useSelector((state) => state.dashboard);
+
+  useEffect(() => {
+    dispatch(fetchLoanStats());
+  }, [dispatch]);
+
+
+
+
   useEffect(() => {
     dispatch(allLaonfTransactions());
     dispatch(fetchLoanStatsChart());
@@ -442,27 +474,23 @@ const [isLoading, setIsLoading] = useState(true)
                   <img src="/images/dash-chart.png" alt="" />
                 </div>
               </div>
+
               <div className="overview-total">
-                <div>
-                  <h5>TOTAL LOANS</h5>
-                  <p>{totalLoans}</p>
-                </div>
-                <div className="width-total">
-                  <h5>TOTAL ACTIVE LOANS</h5>
-                  <p>{activeLoansCount}</p>
-                </div>
+              {["today", "yesterday", "week", "month", "year", "overall"].map((period) => (
+        <div key={period} className="overview-total-div">
+          <h5>{period.toUpperCase()}</h5>
+          
+          <p><span>Loans:</span> <br />  {stats[period]?.totalLoans || 0}</p>
+          <p><span>Amount Disbursed:</span> <br />  ₦{stats[period]?.totalDisbursed.toLocaleString() || 0}</p>
+          <p> <span>Payments:</span> <br />  ₦{stats[period]?.totalDailyPayment.toLocaleString() || 0}</p>
+        </div>
+      ))}
               </div>
               <div className="overview-total complete-cancel">
-                <div>
-                  <h5>AMOUNT DISBURSED</h5>
-                  <p> ₦{totalAmountDisbursed?.toLocaleString()}</p>
-                </div>
-                <div className="width-total">
+              <div className="width-total">
                   <h5>PRINCIPAL + INTEREST</h5>
                   <p> ₦{totalAmountToBePaid?.toLocaleString()}</p>
                 </div>
-              </div>
-              <div className="overview-total complete-cancel">
                 <div>
                   <h5>ACTUAL PAYMENT</h5>
                   <p> ₦{totalAmountPaid?.toLocaleString()}</p>
@@ -472,8 +500,12 @@ const [isLoading, setIsLoading] = useState(true)
                   <p> ₦{totalLoanBalance?.toLocaleString()}</p>
                 </div>
               </div>
+
+
+
+             
             </div>
-            <div className="all-payment-divs">
+            {/* <div className="all-payment-divs">
               <div className="payment-div">
                 <div className="payment-img">
                   <img src="/images/pay-chart.png" alt=".." />
@@ -496,7 +528,7 @@ const [isLoading, setIsLoading] = useState(true)
                 </div>
                 <LoanDoughnutChart />
               </div>
-            </div>
+            </div> */}
           </div>
           <div className="left-dash-2">
             <DisbursementChart />
@@ -504,39 +536,20 @@ const [isLoading, setIsLoading] = useState(true)
         </div>
         <div className="right-dash-card">
           <div className="first-right-dash-card">
-            <div className="cal-eve">
-              <h3>Calendar </h3>
-         
-            </div>
-            <div className="calendar-container">
-              {/* Month and Year Header */}
-              <div className="calendar-header">
-                <button onClick={goToPreviousMonth}>&lt; </button>
-                <span>{currentMonthYear}</span>
-                <button onClick={goToNextMonth}> &gt;</button>
-              </div>
-
-              {/* Weekdays and Navigation */}
-              <div className="calendar-week">
-                <button onClick={goToPreviousDay}>&lt;</button>
-                <div className="calendar-days">
-                  {visibleDays.map((day, index) => (
-                    <div
-                      key={index}
-                      className={`calendar-day ${
-                        day.fullDate.toDateString() === today.toDateString()
-                          ? "highlight"
-                          : ""
-                      }`}
-                    >
-                      <span className="day-name">{day.dayName}</span>
-                      <span className="day-date">{day.dayDate}</span>
+           
+            <div className="paid-outstand">
+                <div className="target-text">
+                    <div className="target-text-1">
+                        <h4>Loan Target</h4>
+                        <p>{totalLoanTarget}</p>
                     </div>
-                  ))}
+                    <div className="target-text-1">
+                        <h4>No. Loan</h4>
+                        <p>{totalActiveLoan}</p>
+                    </div>
                 </div>
-                <button onClick={goToNextDay}>&gt;</button>
+                <LoanDoughnutChart />
               </div>
-            </div>
           </div>
           <div>
 
@@ -546,7 +559,10 @@ const [isLoading, setIsLoading] = useState(true)
                 All Notifications
             </h3>
           </div>
-                <Notifications />
+          <div className="notificationwrapper">
+          <Notifications />
+          </div>
+                
           </div>
         </div>
       </div>
