@@ -48,6 +48,7 @@ import ActiveLoans from "../Admin/test";
 import LoanStats from "../Admin/test";
 import GuarantorDetails from "../Admin/LoanPages/GuarantorDetails";
 import DownloadLoanForm from "../Admin/DownloanLoanForm";
+import GuarantorDetailsTest from "../Admin/test";
 
 
 
@@ -84,7 +85,7 @@ export default function Routess() {
                         // {path: "/testDetails", element: <TargetForm  />},
                         // {path: "/calendar/test/:id", element: <LoanCalendar  />},
                         // {path: "/branches/:id", element: <CsoDetail  />},
-                        {path: "/test", element: <LoanStats  />},
+                        {path: "/test", element: <GuarantorDetailsTest  />},
                         // {path: "/test", element: <Notifications  />},
                         {path: "/customer/:bvn", element: <CustomerDetailsInfo />},
                         {path: "/customer/calender/:bvn", element: <AdminCalendarPage />},

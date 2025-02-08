@@ -13,12 +13,28 @@ export const fetchGuarantorResponse = createAsyncThunk('guarantor/fetchResponse'
 // Submit a guarantor response
 export const submitGuarantorResponse = createAsyncThunk('guarantor/submitResponse', async (formData) => {
   const response = await axios.post(`${API_URL}/guarantorInfo`, formData);
+  console.log(response.data);
+  
   return response.data;
 });
+
+// Async thunk to fetch guarantor response by loanId
+export const fetchGuarantor = createAsyncThunk(
+  'guarantor/fetchGuarantor',
+  async (loanId) => {
+    const response = await fetch(`${API_URL}/fetch-guarantor/${loanId}`); // Adjust API endpoint if needed
+    if (!response.ok) {
+      throw new Error('Failed to fetch guarantor response');
+    }
+    return response.json();
+  }
+);
+
 
 const guarantorSlice = createSlice({
   name: 'guarantor',
   initialState: {
+    guarantorResponse: null,
     response: null,
     status: 'idle',
     error: null,
@@ -40,6 +56,20 @@ const guarantorSlice = createSlice({
       .addCase(submitGuarantorResponse.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.response = action.payload;
+      });
+
+      builder
+      .addCase(fetchGuarantor.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchGuarantor.fulfilled, (state, action) => {
+        state.loading = false;
+        state.guarantorResponse = action.payload;
+      })
+      .addCase(fetchGuarantor.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
       });
   },
 });
