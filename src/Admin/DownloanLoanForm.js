@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
@@ -6,6 +6,7 @@ import { fetchAdminLoans, fetchWaitingLoans } from "../redux/slices/LoanSlice";
 import { useReactToPrint } from "react-to-print";
 import generatePDF from "react-to-pdf";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { fetchGuarantor } from "../redux/slices/guarantorSlice";
 
 const DownloadRap = styled.div`
   width: 100%;
@@ -153,6 +154,33 @@ const DownloadRap = styled.div`
     margin-top: 10px;
     border-style: none;
   }
+  .guarantor-pic {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100vh;
+}
+.guarantor-pic img {
+  min-width: 300px;
+  max-width: 600px;
+  height: 500px;
+}
+.alternative-form {
+  padding: 30px;
+}
+.alternative-form p {
+  font-size: 20px;
+  font-weight: 600;
+}
+.alternative-form span {
+  color: #99a33a;
+}
+.guaran-h2 {
+  font-size: 30px;
+  font-weight: 500;
+  margin-top: 100px;
+}
 `;
 
 const DownloadLoanForm = () => {
@@ -161,15 +189,31 @@ const DownloadLoanForm = () => {
   const navigate = useNavigate();
   const loans = useSelector((state) => state.loan.loans);
   const loan = loans.find((loan) => loan._id === id);
-
+  const loanId = id;
   const formRef = useRef();
-  console.log(loan);
+  const [opened, setOpen] = useState(false);
+    const { guarantorResponse } = useSelector((state) => state.guarantor);
+    const guarantorRef = useRef();
+    const picRef = useRef();
 
   useEffect(() => {
     if (!loan) {
       dispatch(fetchAdminLoans());
     }
   }, [loan, dispatch]);
+
+    useEffect(() => {
+      if (loanId) {
+        dispatch(fetchGuarantor(loanId));
+      }
+    }, [dispatch, loanId]);
+  
+   
+  
+  
+    const handleClick = () => {
+      setOpen(!opened);
+    };
 
   const handlePrint = useReactToPrint({
     content: () => formRef.current, // Ensure this returns the correct reference
@@ -450,6 +494,156 @@ const DownloadLoanForm = () => {
         >
           Download{" "}
         </button>{" "}
+      </div>
+      <div>
+        <h2 className="guaran-h2">Guarantor Form</h2>
+      {guarantorResponse ? (
+        <>
+          <div
+            style={{
+              padding: "50px",
+            }}
+            ref={formRef}
+          >
+            <div className="form-header">
+              <div className="image-div">
+                <img src="/images/login_img.png" alt="" />
+                <p>LOAN & SAVINGS</p>
+              </div>
+              <div className="header-1">
+                <div className="header-sub-1">
+                  <div className="header-info-1">
+                    <h2>JK POS SOLUTION ENTERPRISES</h2>
+                    <p>20, Deji Oworu Street, Ketu Alapere, Lagos</p>
+                    <p>+234-9015047850 (Office)</p>
+                    <p>www.</p>
+                  </div>
+                  <div className="loan-form-app">
+                    <h4>
+                      Guarantor <span>Form</span>
+                    </h4>
+                  </div>
+                </div>
+                <div className="form-details">
+                  <h5>GUARANTOR FORM DETAILS</h5>
+                </div>
+              </div>
+            </div>
+            <div className="form-body">
+              <div className="personal-Details">
+                <h3>GUARANTOR DETAILS</h3>
+                <div className="form-body-info">
+                  <div className="form-body-info-sub">
+                    <h5>Name:</h5>
+                    <p>{guarantorResponse.guarantorName}</p>
+                  </div>
+                  <div className="form-body-info-sub">
+                    <h5>Residential Address:</h5>
+                    <p>{guarantorResponse.address}</p>
+                  </div>
+                </div>
+                <div className="form-body-info">
+                  <div className="form-body-info-sub">
+                    <h5>Relationship with customer:</h5>
+                    <p>{guarantorResponse.relationship}</p>
+                  </div>
+                  <div className="form-body-info-sub">
+                    <h5>Business Address</h5>
+                    <p>{guarantorResponse.businessAddress}</p>
+                  </div>
+                </div>
+                <div className="form-body-info">
+                  <div className="form-body-info-sub">
+                    <h5>Phone Number:</h5>
+                    <p>{guarantorResponse.guaraphonentorName}</p>
+                  </div>
+                  <div className="form-body-info-sub">
+                    <h5> Known client for:</h5>
+                    <p>{guarantorResponse.knownDuration} years</p>
+                  </div>
+                </div>
+              </div>
+              <div className="personal-Details">
+                <h3>DECLARATION</h3>
+                <p>
+                  {" "}
+                  I <span style={{fontWeight: "700"}}>{guarantorResponse.guarantorName} </span> hereby confirm that
+                  Mr/Mrs/Miss<span style={{fontWeight: "700"}}> {loan?.customerDetails.lastName}{" "}
+                  {loan?.customerDetails.firstName} </span> of{" "}
+                  <span style={{fontWeight: "700"}}> {loan?.customerDetails.address} </span> has been known to me for{" "}
+                  <span style={{fontWeight: "700"}}> {guarantorResponse.knownDuration} years </span> and I am his/ her{" "}
+                  <span style={{fontWeight: "700"}}>  {guarantorResponse.relationship} </span>.
+                </p>
+                <p>
+                  I declare that all information, including NIN, picture, and ID
+                  tendered for this purpose, are valid and authentic; any false
+                  information given may disqualify the client from loan
+                  approval. I confirm that the client house address provided
+                  above is valid and correct.
+                </p>
+                <p>
+                  I have agreed to take responsibility for the payment of the
+                  principal Loan amount plus the interest in the event of
+                  default.
+                </p>
+              </div>
+              <div className="personal-Details">
+                <h3>SIGNATURE & DATE</h3>
+                <div className="form-body-info">
+                  <div className="form-body-info-sub">
+                    <h5>Signature</h5>
+                    <img src={guarantorResponse.signature} alt="Signature" />
+                  </div>
+                  <div className="form-body-info-sub">
+                    <h5> Date:</h5>
+                    <p>
+                      {new Date(guarantorResponse.submittedAt).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              generatePDF(guarantorRef, {
+                filename: `Guarantor form for ${loan.customerDetails.lastName} ${loan.customerDetails.firstName}`,
+              });
+            }}
+          >
+            Download{" "}
+          </button>
+        </>
+      ) : (
+        <div className="alternative-form">
+          <p>
+          Guarantor Form not submitted yet{" "}
+            <span onClick={handleClick}>See if guarantor form was uploaded </span>
+          </p>
+          {opened ? (
+            <>
+              <div ref={picRef}>
+                <h4>Uploaded Guarantor Form Picture</h4>
+
+                <div className="guarantor-pic">
+                  <img src={loan?.guarantorFormPic} alt="" />
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  generatePDF(picRef, {
+                    filename: `Guarantor form `,
+                  });
+                }}
+              >
+                Download{" "}
+              </button>
+            </>
+          ) : (
+            ""
+          )}
+        </div>
+      )}
       </div>
     </DownloadRap>
   );

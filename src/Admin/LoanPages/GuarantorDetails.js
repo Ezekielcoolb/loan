@@ -7,6 +7,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { fetchGuarantor } from "../../redux/slices/guarantorSlice";
 import generatePDF from "react-to-pdf";
 
+
 const GurarantoRap = styled.div`
   padding: 30px;
   .guarantor-pic {
@@ -318,7 +319,7 @@ const GuarantorDetails = () => {
       ) : (
         <div className="alternative-form">
           <p>
-            Form not submitted yet{" "}
+            Guarantor Form not submitted yet{" "}
             <span onClick={handleClick}>See if guarantor form was uploaded </span>
           </p>
           {opened ? (
