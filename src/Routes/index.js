@@ -50,6 +50,7 @@ import GuarantorDetails from "../Admin/LoanPages/GuarantorDetails";
 import DownloadLoanForm from "../Admin/DownloanLoanForm";
 import GuarantorDetailsTest from "../Admin/test";
 import AdminForm from "../Admin/AdminPanel";
+import CustomerLoanCard from "../CsoPages/CustomerLoanCard";
 
 
 
@@ -112,13 +113,14 @@ export default function Routess() {
                         {path: "/cso/loans-collections", element: <LoanCollections />},
                         {path: "/cso/csos-dashboard", element: <RemittanceUpload />},
                         {path: "/cso/csos-profile", element: <CsoProfile />},
+                       
                     ]
                 },
 
 
                 { path:'/csoLogin', element: <CsoLogin />} ,
                 { path:'/guarantor/:id', element: <GuarantorForm />} ,
-                
+                {path: "/customerLoanCard/:id", element: <CustomerLoanCard  />},
             ]
         )
     )

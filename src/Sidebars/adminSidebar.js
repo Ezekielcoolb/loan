@@ -72,7 +72,7 @@ const sidebarConfig = [
   {
     id: 11,
     icon: "lets-icons:setting-line",
-    link: "/test",
+    link: "/customerLoanCard/:id",
     title: "Test",
   },
 ];
