@@ -289,7 +289,7 @@ const PaymentPage = () => {
                         " Make Payment"
                       )}
                     </button>
-                    <button onClick={() => setConfirm(false)} className="exist-btn">Exist</button>
+                    <button onClick={() => setConfirm(false)} className="exist-btn">Cancel</button>
                   </div>
                 </div>
               </div>
@@ -308,7 +308,7 @@ const PaymentPage = () => {
                     />
                   </div>
                   <p>Payment made successfully</p>
-                  <button onClick={() => setPay(false)} className="exist-btn">Exist</button>
+                  <button onClick={() => setPay(false)} className="exist-btn">Exit</button>
                 </div>
               </div>
             ) : (

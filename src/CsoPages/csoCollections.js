@@ -522,7 +522,7 @@ const ActiveLoansTable = () => {
                         ? "Uploaded"
                         : "Yes"}
                     </button>
-                    <button onClick={() => setConfirm(false)} className="upload-cancel-btn">Exist</button>
+                    <button onClick={() => setConfirm(false)} className="upload-cancel-btn">Cancel</button>
           </div>
           </div>
           </div>
@@ -540,7 +540,7 @@ const ActiveLoansTable = () => {
                           />
                         </div>
                         <p>Remittance uploaded successfully</p>
-                        <button onClick={() => setIsLoading(false)} className="upload-cancel-btn">Exist</button>
+                        <button onClick={() => setIsLoading(false)} className="upload-cancel-btn">Exit</button>
                       </div>
                     </div>
                   ) : (

@@ -636,7 +636,7 @@ const handleIsReject = () => {
                 <button className="approve" onClick={handleApprove}>
                   Approve
                 </button>
-                <button onClick={() => setIsApproved(false)} className="reject">Exist</button>
+                <button onClick={() => setIsApproved(false)} className="reject">Cancel</button>
                 </div>
               </div>
               </div>
@@ -667,7 +667,7 @@ const handleIsReject = () => {
                 <button className="reject" onClick={handleReject}>
                   Reject
                 </button>
-                <button onClick={() => setIsRejected(false)} className="approve">Exist</button>
+                <button onClick={() => setIsRejected(false)} className="approve">Cancel</button>
                 </div>
               </div>
               </div>
@@ -682,7 +682,7 @@ const handleIsReject = () => {
                 fontSize: "18px",
                 color: "#030b26"
               }}> {amountApproved}</span> </p>
-              <button onClick={handleApprovedPop}>Cancel</button>
+              <button onClick={handleApprovedPop}>Exit</button>
               </div>
               </div>
             ): ""}
@@ -694,7 +694,7 @@ const handleIsReject = () => {
                 fontSize: "18px",
                 color: "red"
               }}> {rejectionReason}</span> </p>
-              <button onClick={handleRejectPop}>Cancel</button>
+              <button onClick={handleRejectPop}>Exit</button>
               </div>
               </div>
             ): ""}

@@ -467,7 +467,7 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
 <div className="dropdown-container">
           <div className="success-visible">
             <p>Guarantor's Form uploaded successfully</p>
-            <button onClick={() => setSuccessGuarantorForm(false)}>Cancel</button>
+            <button onClick={() => setSuccessGuarantorForm(false)}>Exit</button>
           </div>
         </div>
 </>
@@ -476,7 +476,7 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
         <div className="dropdown-container">
           <div className="success-visible">
             <p>Loan application submitted successfully</p>
-            <button onClick={handleSuccessVisible}>Cancel</button>
+            <button onClick={handleSuccessVisible}>Exit</button>
           </div>
         </div>
       ) : (
