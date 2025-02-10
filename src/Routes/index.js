@@ -49,6 +49,7 @@ import LoanStats from "../Admin/test";
 import GuarantorDetails from "../Admin/LoanPages/GuarantorDetails";
 import DownloadLoanForm from "../Admin/DownloanLoanForm";
 import GuarantorDetailsTest from "../Admin/test";
+import AdminForm from "../Admin/AdminPanel";
 
 
 
@@ -96,6 +97,7 @@ export default function Routess() {
                         {path: "/settings", element: <Setting  />},
                         {path: "/guarantorDetails/:id", element: <GuarantorDetails  />},
                         {path: "/downloadLoanForm/:id", element: <DownloadLoanForm  />},
+                        {path: "/admin-members", element: <AdminForm  />},
                     ]
                 },
                 {

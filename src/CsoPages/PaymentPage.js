@@ -6,10 +6,11 @@ import { fetchLoanById, makePayment } from "../redux/slices/LoanSlice";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import styled from "styled-components";
 import axios from "axios";
+import { PulseLoader } from "react-spinners";
 
 const PaymentRap = styled.div`
-height: 100vh !important;
-padding-top: 30px;
+  height: 80vh !important;
+  padding-top: 30px;
   background: #ffffff;
   .select-payment {
     background: #d9d9d9 !important;
@@ -70,10 +71,9 @@ padding-top: 30px;
     align-items: center;
     justify-content: space-between;
     height: 70%;
-
   }
   .alll-pay h1 {
-    color: #005E78;
+    color: #005e78;
     font-size: 24px;
     font-weight: 700;
     margin-bottom: 20px;
@@ -83,10 +83,9 @@ padding-top: 30px;
     flex-direction: column;
     align-items: center;
     height: 90vh;
-    
   }
   .make-pay-btn {
-    background: #005E78;
+    background: #005e78;
     width: 200px;
     height: 55px;
     border-style: none;
@@ -96,7 +95,51 @@ padding-top: 30px;
     font-weight: 600;
     font-size: 16px;
   }
-
+  .pay-btn,
+  .exist-btn {
+    background: #005e78;
+    width: 150px;
+    height: 55px;
+    border-style: none;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 16px;
+  }
+  .pop-btn {
+    display: flex;
+    gap: 15px;
+  }
+  .exist-btn {
+    background: red;
+    color: black;
+  }
+  .pay-dropdown p {
+    color: #005e78;
+    font-size: 30px;
+    font-weight: 800;
+    text-align: center;
+  }
+  .pay-dropdown {
+    width: 350px;
+    padding: 30px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    border-radius: 15px;
+    align-items: center;
+  }
+  .pay-green-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: lightgreen;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 `;
 
 const PaymentPage = () => {
@@ -107,7 +150,9 @@ const PaymentPage = () => {
   const [amount, setAmount] = useState(null);
   const [isManual, setIsManual] = useState(false);
   const [visible, setVisible] = useState(false);
- 
+  const [confirm, setConfirm] = useState(false);
+  const [pay, setPay] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Get today's amountPaid
   const today = new Date().toISOString().split("T")[0]; // Format as YYYY-MM-DD
@@ -115,7 +160,8 @@ const PaymentPage = () => {
     (schedule) => schedule.date.split("T")[0] === today
   );
 
-  const isValid = amount !== "";
+  const isValid = amount !== null && amount !== NaN
+  
 
   const dailyAmount = loan?.loanDetails?.amountToBePaid / 30;
 
@@ -126,6 +172,7 @@ const PaymentPage = () => {
   const handleVisisble = () => {
     setVisible(!visible);
   };
+
   // Button Handlers
   const setPredefined = () => {
     setIsManual(false); // Disable manual mode
@@ -135,7 +182,7 @@ const PaymentPage = () => {
 
   const enableManualInput = () => {
     setIsManual(true); // Enable manual mode
-    setAmount(null); // Clear input
+    setAmount(NaN);
     setVisible(!visible);
   };
 
@@ -146,39 +193,42 @@ const PaymentPage = () => {
     }
   };
 
-
   useEffect(() => {
     dispatch(fetchLoanById(id)); // Fetch loan data when the component loads
   }, [dispatch, id]);
 
   const handlePayment = () => {
     if (isValid) {
-      dispatch(makePayment({ id, amount}));
+      setLoading(true);
+      dispatch(makePayment({ id, amount }));
       setAmount(null);
-     
+      setPay(true);
+      setConfirm(false);
+      setLoading(false);
     }
   };
 
   const handleMoveBack = () => {
     navigate(`/cso/customer-details/${id}`);
   };
+  const handleConfirm = () => {
+    setConfirm(!confirm);
+  };
 
   return (
     <PaymentRap>
-       <Icon
-                      onClick={handleMoveBack}
-                      icon="formkit:arrowleft"
-                      width="50"
-                      height="50"
-                      style={{ color: "#005E78", cursor: "pointer" , marginLeft: "15px"}}
-                    />
+      <Icon
+        onClick={handleMoveBack}
+        icon="formkit:arrowleft"
+        width="50"
+        height="50"
+        style={{ color: "#005E78", cursor: "pointer", marginLeft: "15px" }}
+      />
       <div className="alll-pay">
-        
-        
         <h1>Make Payment</h1>
-       
+
         {loan && (
-          < div className="inner-payment-div">
+          <div className="inner-payment-div">
             <div className="all-select-pay">
               <div onClick={handleVisisble} className="select-payment">
                 <Icon
@@ -212,10 +262,58 @@ const PaymentPage = () => {
               placeholder="Enter Amount"
               required
             />
-          
-            <button className="make-pay-btn" onClick={handlePayment} disabled={!isValid}>
+            <button
+              className="make-pay-btn"
+              onClick={handleConfirm}
+              disabled={!isValid}
+              style={{
+                backgroundColor: isValid ? "#0c1d55" : "#727789",
+                cursor: !isValid ? "not-allowed" : "pointer",
+              }}
+            >
               Make Payment
             </button>
+            {confirm ? (
+              <div className="dropdown-container">
+                <div className="pay-dropdown">
+                  <p>Do you want to make a payment of {amount}</p>
+                  <div className="pop-btn">
+                    <button
+                      className="pay-btn"
+                      onClick={handlePayment}
+                     
+                    >
+                      {loading ? (
+                        <PulseLoader color="white" size={10} />
+                      ) : (
+                        " Make Payment"
+                      )}
+                    </button>
+                    <button onClick={() => setConfirm(false)} className="exist-btn">Exist</button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
+            {pay ? (
+              <div className="dropdown-container">
+                <div className="pay-dropdown">
+                  <div className="pay-green-circle">
+                    <Icon
+                      icon="twemoji:check-mark"
+                      width="40"
+                      height="40"
+                      style={{ color: "black" }}
+                    />
+                  </div>
+                  <p>Payment made successfully</p>
+                  <button onClick={() => setPay(false)} className="exist-btn">Exist</button>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
           </div>
         )}
       </div>

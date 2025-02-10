@@ -373,6 +373,12 @@ export const updateGuarantorFormPic = createAsyncThunk(
   }
 );
 
+// Fetch loans by csoId
+export const fetchLoanDashboardLoans = createAsyncThunk("loans/fetchLoanDashboardLoans", async (csoId) => {
+  const response = await axios.get(`${API_URL}/get-loan-dashboard-loans/${csoId}`);
+  return response.data;
+});
+
 // Slice
 const loanSlice = createSlice({
   name: "loans",
@@ -404,6 +410,10 @@ const loanSlice = createSlice({
     noPaymentYesterday: [],
     defaultingCustomers: [],
     customers: [],
+    allDahboardLoans: [],
+    activeDashboardLoans: [],
+    pendingDashboardLoans: [],
+    rejectedDashboardLoans: [],
     loading: 'idle',
     error: null,
     filter: 'all',
@@ -547,6 +557,10 @@ setLoan: (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });
+
+
+
+
       builder
       .addCase(fetchAdminLoans.pending, (state) => {
         state.loading = true;
@@ -559,6 +573,25 @@ setLoan: (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });
+
+      builder
+      .addCase(fetchLoanDashboardLoans.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchLoanDashboardLoans.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.allDahboardLoans = action.payload.allLoans;
+        state.activeDashboardLoans = action.payload.activeLoans;
+        state.pendingDashboardLoans = action.payload.pendingLoans;
+        state.rejectedDashboardLoans = action.payload.rejectedLoans;
+      })
+      .addCase(fetchLoanDashboardLoans.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      });
+
+
+
       builder
       .addCase(searchActiveCustomer.pending, (state) => {
         state.loading = true;

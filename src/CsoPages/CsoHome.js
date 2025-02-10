@@ -90,6 +90,15 @@ const HomeCsoRap = styled.div`
   .images-mapped {
     display: inline-block; /* Ensures each item is treated as an inline block for spacing */
     text-align: center;
+    position: relative;
+  }
+  .circle-div {
+    width: 12px;
+    border-radius: 50%;
+    height: 12px;
+    position: absolute;
+    right: 0px;
+    top: 0px;
   }
   .images-mapped img {
     width: 95px;
@@ -287,6 +296,7 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
     if (loan?.status === "waiting for approval") {
       message = "Waiting for approval";
       color = "#005e78"; // Color for waiting for approval
+      
       setCustomerId(loan?._id);
       setOpenGuarantorForm(true)
     } else if (loan?.status === "waiting for disbursement") {
@@ -355,7 +365,7 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
           <ul>
             <div>
               <div className="images-container">
-                {currentLoans?.map((loan, index) => (
+                {currentLoans?.reverse().map((loan, index) => (
                   <li
                     className="images-mapped"
                     key={index}
@@ -374,6 +384,11 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
                     <p className="custom-business">
                       {loan?.businessDetails?.businessName}
                     </p>
+                    <div style={{
+                      background: loan?.status === "waiting for approval" ? "green" :
+                                  loan?.status === "waiting for disbursement" ? "orange" :
+                                  loan?.status === "rejected" ? "red" : "blue"
+                    }}   className="circle-div"></div>
                   </li>
                 ))}
               </div>

@@ -12,6 +12,7 @@ import remittanceReducer from './slices/remittanceSlice'
 import csoLoanReducer from './slices/csoLoanSlice'
 import searchReducer from './slices/searchSlice'
 import dashboardReducer from './slices/dashboardSlice'
+import adminReducer from "./slices/adminSlice"
 
 const store = configureStore({
     reducer: {
@@ -27,7 +28,9 @@ const store = configureStore({
         remittance: remittanceReducer,
         csoLoan: csoLoanReducer,
         dashboard: dashboardReducer,
+        admin: adminReducer,
         search: searchReducer,
+        
         
     },
 });

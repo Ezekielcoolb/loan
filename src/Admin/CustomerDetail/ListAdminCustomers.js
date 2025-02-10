@@ -65,7 +65,7 @@ const AdminCustomerTable = () => {
           </tr>
         </thead>
         <tbody>
-          {currentLoans.map((loan) => (
+          {currentLoans.reverse().map((loan) => (
             <tr key={loan._id} >
               <td>
                 {loan.customerDetails.firstName} {loan.customerDetails.lastName}

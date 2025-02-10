@@ -60,9 +60,21 @@ padding: 20px;
     flex-direction: column;
     gap: 20px;
   }
+
   .overview-total {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 850px) {
+    .overview-total {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  @media (max-width: 500px) {
+    .overview-total {
+      grid-template-columns: repeat(2, 1fr);
+    }
   }
   .overview-divs {
     display: flex;

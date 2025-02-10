@@ -54,8 +54,8 @@ const sidebarConfig = [
   {
     id: 8,
     icon: "mdi:comment-account-outline",
-    link: "/test/details",
-    title: "Account",
+    link: "/admin-members",
+    title: "Admin Panel",
   },
   {
     id: 9,

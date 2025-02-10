@@ -6,12 +6,42 @@ import {
   calculateDefaultingCustomers,
   calculateNoPaymentYesterday,
   fetchAllLoansByCsoId,
+  fetchLoanDashboardLoans,
 } from "../redux/slices/LoanSlice";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import styled from "styled-components";
 
 const LoanCsoRap = styled.div`
   height: 100vh;
+
+  color: #005e78;
+  th,
+  td,
+  tr,
+  table,
+  thead,
+  tbody {
+    border: none;
+    color: #005e78;
+    font-size: 16px;
+    text-align: start;
+    background-color: transparent !important;
+  }
+  th {
+    padding: 5px;
+    font-weight: 700;
+  }
+  td {
+    font-weight: 400;
+    padding: 5px;
+    white-space: nowrap;
+    text-align: center;
+  }
+  .table-div-con {
+    min-width: 600px;
+    max-height: 600px;
+    overflow-y: auto;
+  }
   .all-loan {
     padding: 20px;
     padding-top: 120px;
@@ -154,6 +184,24 @@ const LoanCsoRap = styled.div`
     color: #005e78;
     font-size: 14px;
   }
+  .all-dropdown-div {
+    padding: 20px !important;
+    width: 400px !important;
+  }
+  .cancle-icon {
+    display: flex;
+   
+  }
+  .table-header h2 {
+    background: #005e78;
+    color: #ffffff;
+    margin: auto;
+    border-radius: 10px;
+    padding: 10px;
+    width: fit-content;
+    font-size: 16px;
+    margin-top: 10px;
+  }
 `;
 
 const LoanCsoDashboard = () => {
@@ -167,6 +215,10 @@ const LoanCsoDashboard = () => {
     rejectedLoans,
     defaultingCustomers,
     noPaymentYesterday,
+    allDahboardLoans,
+    activeDashboardLoans,
+    pendingDashboardLoans,
+    rejectedDashboardLoans,
     status,
     error,
   } = useSelector((state) => state.loan);
@@ -174,11 +226,45 @@ const LoanCsoDashboard = () => {
   const [showDefaultingCustomers, setShowDefaultingCustomers] = useState(false);
   const [showYesDefaultingCustomers, setShowYesDefaultingCustomers] =
     useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [approved, setApproved] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [rejected, setRejected] = useState(false);
+
+  const handleSubmitted = () => {
+    setSubmitted(!submitted);
+  };
+
+  const handleApproved = () => {
+    setApproved(!approved);
+  };
+
+  const handlePending = () => {
+    setPending(!pending);
+  };
+
+  const handleRejected = () => {
+    setRejected(!rejected);
+  };
+
+  const handleAllDrop = () => {
+    setSubmitted(false)
+    setApproved(false)
+    setPending(false)
+    setRejected(false)
+  }
+ 
 
   const csoId = user.workId;
   useEffect(() => {
     dispatch(fetchAllLoansByCsoId({ csoId }));
   }, [dispatch]);
+
+  useEffect(() => {
+    if (csoId) {
+      dispatch(fetchLoanDashboardLoans(csoId));
+    }
+  }, [dispatch, csoId]);
 
   const handleShowDefaultingCustomers = () => {
     dispatch(calculateDefaultingCustomers());
@@ -189,8 +275,6 @@ const LoanCsoDashboard = () => {
     setShowYesDefaultingCustomers(true);
   };
 
- 
-
   {
     status === "loading" && <p>Loading...</p>;
   }
@@ -198,39 +282,76 @@ const LoanCsoDashboard = () => {
     status === "failed" && <p>Error: {error}</p>;
   }
 
+  const renderTable = (data, title, columns) => (
+    <div className="dropdown-container">
+              <div className="all-dropdown-div">
+      <div className="table-header">
+        {" "}
+        <Icon className="cancle-icon"
+          onClick={handleAllDrop}
+          icon="stash:times-circle"
+          width="24"
+          height="24"
+          style={{ color: "#005e78", cursor: "pointer" }}
+        />
+        <h2>{title}</h2>
+      </div>
+      <div className="new-table-scroll">
+        <div className="table-div-con">
+          <table border="1">
+            <thead>
+              <tr>
+                {columns.map((col) => (
+                  <th key={col}>{col}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data.length === 0 ? (
+                <tr>
+                  <td colSpan={columns.length}>No data available</td>
+                </tr>
+              ) : (
+                data.map((loan) => (
+                  <tr key={loan.sn}>
+                    {columns.map((col) => (
+                      <td key={col}>{loan[col.toLowerCase()] || "N/A"}</td>
+                    ))}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      </div>
+    </div>
+  );
+
   return (
     <LoanCsoRap>
       <div className="all-loan">
         <div className="home-first-div">
           <h2>Loans</h2>
-          <div className="input-div">
-            <input type="text" placeholder="Search Loan Records" />
-            <Icon
-              className="search-input-icon"
-              icon="ic:baseline-search"
-              width="24"
-              height="24"
-              style={{ color: " #005E7880" }}
-            />
-          </div>
+          
         </div>
 
         <div className="loan-summary">
           <h3>Loan Summary</h3>
           <div className="summary-loan">
-            <p className="p-1">
+            <p onClick={handleSubmitted} className="p-1">
               Submitted Loan Applications
               <span>{totalLoans}</span>
             </p>
-            <p className="p-2">
+            <p onClick={handleApproved} className="p-2">
               Approved loans
               <span> {activeLoans}</span>
             </p>
-            <p className="p-3">
+            <p onClick={handlePending} className="p-3">
               Pending Loans:
               <span> {pendingLoans} </span>
             </p>
-            <p className="p-4">
+            <p onClick={handleRejected} className="p-4">
               Declined Loans:
               <span> {rejectedLoans} </span>
             </p>
@@ -258,23 +379,22 @@ const LoanCsoDashboard = () => {
                   </div>
                 </div>
                 <div className="late-pay-text">
-                <ul>
-                  {defaultingCustomers?.map((customer, index) => (
-                    <li key={index}>
+                  <ul>
+                    {defaultingCustomers?.map((customer, index) => (
+                      <li key={index}>
                         <div className="default-cust">
-                    
-                      <p>
-                      {customer?.customerDetails?.firstName}{" "}
-                      {customer?.customerDetails?.lastName} 
-                      </p>
-                      <p>
-                      {customer?.loanDetails?.amountToBePaid -
-                        customer?.loanDetails?.amountPaidSoFar}
-                        </p>
+                          <p>
+                            {customer?.customerDetails?.firstName}{" "}
+                            {customer?.customerDetails?.lastName}
+                          </p>
+                          <p>
+                            {customer?.loanDetails?.amountToBePaid -
+                              customer?.loanDetails?.amountPaidSoFar}
+                          </p>
                         </div>
-                    </li>
-                  ))}
-                </ul>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </div>
@@ -320,8 +440,9 @@ const LoanCsoDashboard = () => {
                     <ul>
                       {noPaymentYesterday.map((loan, index) => (
                         <li key={index}>
-                        <strong>{loan.customerName}</strong> -  N{loan.amountOwingUntilYesterday.toFixed(2)}
-                    </li>
+                          <strong>{loan.customerName}</strong> - N
+                          {loan.amountOwingUntilYesterday.toFixed(2)}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -350,9 +471,46 @@ const LoanCsoDashboard = () => {
             )}
           </div>
         </div>
-        <div>
-          
-        </div>
+        <div></div>
+      </div>
+
+      <div>
+        {submitted? (<>
+        {renderTable(allDahboardLoans, "Submitted Loans", [
+          "SN",
+          "Name",
+          "AmountRequested",
+          "Date",
+          "Status",
+        ])}
+        </>): ""}
+         {approved? (<>
+        {renderTable(activeDashboardLoans, "Approved Loans", [
+          "SN",
+          "Name",
+          "AmountRequested",
+          "AmountApproved",
+          "Date",
+        ])}
+        </>): ""}
+         {pending? (<>
+        {renderTable(pendingDashboardLoans, "Pending Loans", [
+          "SN",
+          "Name",
+          "AmountRequested",
+          "Date",
+          "Status",
+        ])}
+        </>): ""}
+         {rejected? (<>
+        {renderTable(rejectedDashboardLoans, "Declined Loans", [
+          "SN",
+          "Name",
+          "AmountRequested",
+          "Date",
+          "RejectionReason",
+        ])}
+        </>): ""}
       </div>
     </LoanCsoRap>
   );

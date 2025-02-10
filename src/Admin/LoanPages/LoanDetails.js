@@ -259,6 +259,30 @@ const LoanDetailRap = styled.div`
     align-items: center;
     margin-top: 10px;
   }
+  .all-dropdown-div {
+    width: fit-content !important;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  .all-dropdown-div h5  {
+    font-size: 25px;
+    font-weight: 700;
+    max-width: 370px;
+    text-align: center;
+  }
+  .all-dropdown-div span  {
+    color: #030b26 !important;
+    font-size: 25px;
+    font-weight: 700;
+  }
+  .btn-div {
+    display: flex;
+    gap: 15px;
+  }
 `;
 
 const Button = styled.button`
@@ -335,6 +359,17 @@ const LoanDetails = () => {
   const [popup, setPopup] = useState(null); // Track which popup is open
 const [approveLoading, setApprovedLoading] = useState(false)
 const [rejectLoading, setRejectLoading] = useState(false)
+const [isApproved, setIsApproved] = useState(false)
+const [isRejected, setIsRejected] = useState(false)
+
+
+const handleIsApprove = () => {
+  setIsApproved(!isApproved)
+}
+
+const handleIsReject = () => {
+  setIsRejected(!isRejected)
+}
 
 
   const handleApprovedPop = () => {
@@ -378,12 +413,14 @@ const [rejectLoading, setRejectLoading] = useState(false)
   // Approve loan handler
   const handleApprove = () => {
     dispatch(approveLoan({ id, amountApproved }));
+    setIsApproved(false)
     setApprovedLoading(true)
   };
 
   // Reject loan handler
   const handleReject = () => {
     dispatch(rejectLoan({ id, rejectionReason }));
+    setIsRejected(false)
     setRejectLoading(true)
   };
 
@@ -584,9 +621,24 @@ const [rejectLoading, setRejectLoading] = useState(false)
                   onChange={(e) => setAmountApproved(e.target.value)}
                 />{" "}
                 <br />
+                <button className="approve" onClick={handleIsApprove}>
+                  Approve
+                </button>
+              </div>
+            ) : (
+              ""
+            )}
+               {isApproved ? (
+                <div className="dropdown-container">
+              <div className="all-dropdown-div">
+                <h5 className="">You are about to approve <span> {amountApproved}</span></h5>
+                <div className="btn-div"> 
                 <button className="approve" onClick={handleApprove}>
                   Approve
                 </button>
+                <button onClick={() => setIsApproved(false)} className="reject">Exist</button>
+                </div>
+              </div>
               </div>
             ) : (
               ""
@@ -600,9 +652,24 @@ const [rejectLoading, setRejectLoading] = useState(false)
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
                 />
+                <button className="reject" onClick={handleIsReject}>
+                  Reject
+                </button>
+              </div>
+            ) : (
+              ""
+            )}
+               {isRejected ? (
+                <div className="dropdown-container">
+              <div className="all-dropdown-div">
+                <h5 className="">You are rejecting this loan because of this reason: <span> {rejectionReason}</span></h5>
+                <div className="btn-div"> 
                 <button className="reject" onClick={handleReject}>
                   Reject
                 </button>
+                <button onClick={() => setIsRejected(false)} className="approve">Exist</button>
+                </div>
+              </div>
               </div>
             ) : (
               ""

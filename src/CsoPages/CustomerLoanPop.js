@@ -122,6 +122,7 @@ const LoanApplicationForm = () => {
       amountRequested: null,
       loanType: "daily",
       amountApproved: null,
+      loanAppForm: 2000,
     },
     guarantorDetails: {
       name: "",

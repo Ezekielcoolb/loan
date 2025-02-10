@@ -8,6 +8,7 @@ import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import axios from "axios";
 import { uploadRemittance } from "../redux/slices/csoSlice";
+import { PulseLoader } from "react-spinners";
 
 const CollectionRap = styled.div`
 padding-bottom: 20px;
@@ -189,6 +190,36 @@ padding-bottom: 20px;
     flex-direction: column;
     gap: 20px;
   }
+  .prove {
+    font-size: 25px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .pay-dropdown p {
+    color: #005e78;
+    font-size: 30px;
+    font-weight: 800;
+    text-align: center;
+  }
+  .pay-dropdown {
+    width: 350px;
+    padding: 30px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    border-radius: 15px;
+    align-items: center;
+  }
+  .pay-green-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: lightgreen;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 `;
 
 const ActiveLoansTable = () => {
@@ -207,6 +238,10 @@ const ActiveLoansTable = () => {
   const [uploadRemmit, setUploadRemitt] = useState("");
   const [remitPop, setRemitPop] = useState(false);
   const currenttoday = new Date().toDateString();
+  const [confirm, setConfirm] =useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  
 
   // Timer logic
   useEffect(() => {
@@ -296,7 +331,10 @@ const ActiveLoansTable = () => {
 
   const handleUpload = () => {
     if (imageUrl) {
+     
       dispatch(uploadRemittance({ amount: totalAmountPaid, workId, imageUrl }));
+      setConfirm(false)
+      setIsLoading(true)
     }
   };
 
@@ -309,6 +347,10 @@ const ActiveLoansTable = () => {
   const handleRemitPop = () => {
     setRemitPop(!remitPop);
   };
+  const handleConfirm = () => {
+    setConfirm(true)
+    setRemitPop(false)
+  }
 
   return (
     <CollectionRap>
@@ -376,6 +418,7 @@ const ActiveLoansTable = () => {
             </div>
           </div>
         </div>
+
         <div className="all-summary">
           <h4>Daily Summary</h4>
           <div className="summary-div">
@@ -415,27 +458,23 @@ const ActiveLoansTable = () => {
                       onClick={() => setRemitPop(false)}
                       className="upload-cancel-btn"
                     >
-                      Cancel
+                      Exist
                     </button>
-                    <button
-                      className="upload-confirm-btn"
-                      onClick={handleUpload}
-                      disabled={
+                    <button                       
+                    className="upload-confirm-btn"
+                    onClick={handleConfirm}
+                     disabled={
+                      !imageUrl || isUploading || uploaded || time === 0
+                    }
+                    style={{
+                      background:
                         !imageUrl || isUploading || uploaded || time === 0
-                      }
-                      style={{
-                        background:
-                          !imageUrl || isUploading || uploaded || time === 0
-                            ? "  #749eaa"
-                            : "#005e78",
-                      }}
-                    >
-                      {isUploading
-                        ? "Uploading..."
-                        : uploaded
-                        ? "Uploaded"
-                        : "Confirm"}
-                    </button>
+                          ? "  #749eaa"
+                          : "#005e78",
+                    }}
+                    >Upload</button>
+
+                    
                   </div>
                 </div>
               </div>
@@ -449,7 +488,7 @@ const ActiveLoansTable = () => {
                         onClick={() => setRemitPop(false)}
                         className="upload-cancel-btn"
                       >
-                        Cancel
+                        Exist
                       </button>
               </div>
             </div>
@@ -458,7 +497,55 @@ const ActiveLoansTable = () => {
         ) : (
          ""
         )}
+
+        {confirm? (
+         <div className="dropdown-container">
+                <div className="all-upload-pop">
+            <p className="prove">Are you uploading a prove of payment for {formatNumberWithCommas(totalAmountPaid)}</p>
+            <div className="upload-btns">
+            <button
+                      className="upload-confirm-btn"
+                      onClick={handleUpload}
+                      disabled={
+                        !imageUrl || isUploading || uploaded || time === 0
+                      }
+                      style={{
+                        background:
+                          !imageUrl || isUploading || uploaded || time === 0
+                            ? "  #749eaa"
+                            : "#005e78",
+                      }}
+                    >
+                      {isUploading
+                        ? <PulseLoader color="white" size={10} />
+                        : uploaded
+                        ? "Uploaded"
+                        : "Yes"}
+                    </button>
+                    <button onClick={() => setConfirm(false)} className="upload-cancel-btn">Exist</button>
+          </div>
+          </div>
+          </div>
+        ): ""}
       </div>
+        {isLoading ? (
+                    <div className="dropdown-container">
+                      <div className="pay-dropdown">
+                        <div className="pay-green-circle">
+                          <Icon
+                            icon="twemoji:check-mark"
+                            width="40"
+                            height="40"
+                            style={{ color: "black" }}
+                          />
+                        </div>
+                        <p>Remittance uploaded successfully</p>
+                        <button onClick={() => setIsLoading(false)} className="upload-cancel-btn">Exist</button>
+                      </div>
+                    </div>
+                  ) : (
+                    ""
+                  )}
     </CollectionRap>
   );
 };
