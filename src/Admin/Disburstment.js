@@ -102,6 +102,7 @@ const Disbursment = () => {
   const handleDisburse = (id) => {
     dispatch(disburseLoan(id));
     setIsLoading(true)
+    window.location.reload();
   };
 
   if (loading === 'loading') return <p style={{display: "flex", 
