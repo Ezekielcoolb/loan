@@ -51,6 +51,41 @@ const NewLoanRap = styled.div`
     font-size: 20px;
     font-weight: 700;
   }
+  .pay-green-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: lightgreen;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .all-dropdown-div {
+    width: fit-content;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+
+  }
+  .all-dropdown-div p {
+    color: #0c1d55;
+    font-size: 25px;
+    font-weight: 700;
+    max-width: 300px;
+  }
+  .exist-btn {
+    background: red;
+    width: 150px;
+    height: 55px;
+    border-style: none;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 16px;
+  }
 `;
 
 
@@ -58,6 +93,7 @@ const NewLoanRap = styled.div`
 const Disbursment = () => {
   const dispatch = useDispatch();
   const { loans, loading } = useSelector((state) => state.loan);
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     dispatch(fetchWaitingDisbursementLoans());
@@ -65,6 +101,7 @@ const Disbursment = () => {
 
   const handleDisburse = (id) => {
     dispatch(disburseLoan(id));
+    setIsLoading(true)
   };
 
   if (loading === 'loading') return <p style={{display: "flex", 
@@ -94,7 +131,7 @@ const Disbursment = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {loans.map((loan) => (
+                  {loans?.map((loan) => (
                     <tr
                       key={loan?.id}
                     
@@ -119,6 +156,23 @@ const Disbursment = () => {
          
         </div>
       </div>
+      {isLoading ? (
+      <div className="dropdown-container">
+        <div className="all-dropdown-div">
+            <div className="pay-green-circle">
+                              <Icon
+                                icon="twemoji:check-mark"
+                                width="40"
+                                height="40"
+                                style={{ color: "black" }}
+                              />
+                            </div>
+          <p>Disbursed successfully</p>
+          <button onClick={() => setIsLoading(false)} className="exist-btn">Exit</button>
+
+        </div>
+      </div>
+      ): ""}
     </NewLoanRap>
   );
 };
