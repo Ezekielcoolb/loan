@@ -105,12 +105,11 @@ background: #005e78;
 `;
 
 const CustomerLoanCard = () => {
-//   const { id } = useParams();
+  const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const loan = useSelector((state) => state?.loan?.selectedLoan);
   const [popupInfo, setPopupInfo] = useState(null);
-const id = "67aa045b5bc58ce52ceac28d"
   useEffect(() => {
     dispatch(fetchLoanById(id));
   }, [dispatch, id]);
