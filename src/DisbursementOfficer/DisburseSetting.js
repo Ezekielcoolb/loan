@@ -4,8 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { fetchAllBranches, setBranchTargets, setYearlyTargets } from "../redux/slices/branchSlice";
-import TargetForm from "./Target";
-import { updateSupperAdminPassword } from "../redux/slices/authSlice";
+import { updateAdminPassword } from "../redux/slices/adminSlice";
 import { PulseLoader } from "react-spinners";
 
 const SettingRap = styled.div`
@@ -453,10 +452,8 @@ const SettingRap = styled.div`
   }
 `;
 
-const Setting = () => {
-  const dispatch = useDispatch();
-
-  const [activeLink, setActiveLink] = useState("target");
+const DisburseSetting = () => {
+  const [activeLink, setActiveLink] = useState("security");
   const [isOn, setIsOn] = useState(true);
   const [onCal, setOnCal] = useState(true);
   const [onCalen, setOnCalen] = useState(true);
@@ -474,28 +471,31 @@ const Setting = () => {
   const [selectedBranch, setSelectedBranch] = useState('');   
    const [loanTarget, setLoanTarget] = useState('');
   const [disbursementTarget, setDisbursementTarget] = useState('');
-  const { branches, status } = useSelector(state => state.branches);
   const [newPassword, setNewPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [currentPassword, setCurrentPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [successPop, setSuccessPop] = useState(false)
-    const {adminToken,  superUser, success, error } = useSelector((state) => state.auth);
+    const [confirmPassword, setConfirmPassword] = useState("")
+    const [currentPassword, setCurrentPassword] = useState("")
+    const [isLoading, setIsLoading] = useState(false)
+    const [successPop, setSuccessPop] = useState(false)
+  const dispatch = useDispatch();
+  const { branches, status, error } = useSelector(state => state.branches);
+  const { token, user, success } = useSelector((state) => state.admin);
+
 
 
   const isValid = yearlyLoanTarget !=="" || yearlyDisbursementTarget !== ""
   const valid = selectedBranch !== "" && loanTarget !== "" || disbursementTarget !== ""
 
   const submitValid = currentPassword !=="" && 
-                      newPassword !=="" &&
-                      confirmPassword !=="" &&
-                      currentPassword === superUser.password && 
-                      newPassword === confirmPassword;
+  newPassword !=="" &&
+  confirmPassword !=="" &&
+  currentPassword === user.password && 
+  newPassword === confirmPassword;
 
-  const adminId = superUser?._id
+const adminId = user?._id
 
-
-   useEffect(() => {
+  
+  
+  useEffect(() => {
       dispatch(fetchAllBranches());
   }, [dispatch]);
 
@@ -553,32 +553,31 @@ const Setting = () => {
     setOnCalen((prevState) => !prevState);
   };
 
-
-console.log(success);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (submitValid) {
-      try {
-    dispatch(updateSupperAdminPassword({ id: adminId, newPassword }));
-    setSuccessPop(true)
-    setNewPassword("")
-    setCurrentPassword("")
-    setConfirmPassword("")
-      } 
-        catch(e){
-          console.log(e)
+  
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      if (submitValid) {
+        try {
+      dispatch(updateAdminPassword({ id: adminId, newPassword }));
+      setSuccessPop(true)
+      setNewPassword("")
+      setCurrentPassword("")
+      setConfirmPassword("")
+        } 
+          catch(e){
+            console.log(e)
+        }
       }
+    };
+  
+
+
+    const handleCancel = () => {
+      setNewPassword("")
+      setCurrentPassword("")
+      setConfirmPassword("")
     }
-  };
-
-
-  const handleCancel = () => {
-    setNewPassword("")
-    setCurrentPassword("")
-    setConfirmPassword("")
-  }
-
+  
 
   return (
     <SettingRap>
@@ -594,7 +593,7 @@ console.log(success);
               >
                 Notification
               </Link> */}
-              <Link
+              {/* <Link
                 className={`link ${activeLink === "target" ? "active" : ""}`}
                 onClick={() => handleLinkClick("target")}
               >
@@ -605,7 +604,7 @@ console.log(success);
                 onClick={() => handleLinkClick("interest")}
               >
                 Interest
-              </Link>
+              </Link> */}
               <Link
                 className={`link ${activeLink === "security" ? "active" : ""}`}
                 onClick={() => handleLinkClick("security")}
@@ -615,70 +614,6 @@ console.log(success);
             </div>
           </div>
         </div>
-
-       
-
-        {activeLink === "target" && (
-          <div className="notify notice">
-            <h4>Set yearly target for all branches</h4>
-            <div className="target-loan">
-            <input
-                type="number"
-                placeholder="Yearly Loan Target"
-                value={yearlyLoanTarget}
-                onChange={e => setYearlyLoanTarget(e.target.value)}
-            />
-            <input
-                type="number"
-                placeholder="Yearly Disbursement Target"
-                value={yearlyDisbursementTarget}
-                onChange={e => setYearlyDisbursementTarget(e.target.value)}
-            />
-            <Link className="pro-save-btn"
-                  style={{ 
-                    backgroundColor: isValid ? "#030b26" : "#727789",
-                  }} onClick={handleYearlySubmit}>Save</Link>
-
-
-            </div>
-            <div className="target-loan">
-            <h4>Set yearly target for a specific branch</h4>
-            {status === 'failed' && <p>Error: {error}</p>}
-            <select
-                value={selectedBranch}
-                onChange={e => setSelectedBranch(e.target.value)}
-            >
-                <option value="">Select Branch</option>
-                {branches.map(branch => (
-                    <option key={branch.name} value={branch.name}>
-                        {branch.name}
-                    </option>
-                ))}
-            </select>
-            <input
-                type="number"
-                placeholder="Loan Target"
-                value={loanTarget}
-                onChange={e => setLoanTarget(e.target.value)}
-            />
-            <input
-                type="number"
-                placeholder="Disbursement Target"
-                value={disbursementTarget}
-                onChange={e => setDisbursementTarget(e.target.value)}
-            />
-            <Link className="pro-save-btn"
-                  style={{
-                    backgroundColor: valid ? "#030b26" : "#727789",
-                  }} onClick={handleBranchSubmit}>Save</Link>
-        
-            </div>
-          
-          </div>
-        )}
-
-        {activeLink === "interest" && <TargetForm />}
-
         {activeLink === "security" && (
           <div className="security-div">
             <h4>Change password</h4>
@@ -709,9 +644,9 @@ console.log(success);
                   <input
                     className="password-input"
                     type={passwordVisible ? "text" : "password"}
-                    required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
+                    required
                   />
                 </label>
                 <Icon
@@ -744,8 +679,8 @@ console.log(success);
                 />
               </div>
               <div className="profile-info-links">
-                <button onClick={handleCancel} className="pro-cancel-btn">Cancel</button>
-                <button onClick={handleSubmit}
+                <button onClick={handleCancel}  className="pro-cancel-btn">Cancel</button>
+                <button  onClick={handleSubmit}
                   className="pro-save-btn"
                   disabled={!submitValid}
                   style={{
@@ -765,8 +700,7 @@ console.log(success);
             </div>
           </div>
         )}
-
-         {/* {activeLink === "notification" && (
+        {/* {activeLink === "notification" && (
           <div className="notify">
             <div className="category-notification">
               <h4>All Notifications</h4>
@@ -1005,6 +939,69 @@ console.log(success);
             </div>
           </div>
         )} */}
+
+        {/* {activeLink === "target" && (
+          <div className="notify notice">
+            <h4>Set yearly target for all branches</h4>
+            <div className="target-loan">
+            <input
+                type="number"
+                placeholder="Yearly Loan Target"
+                value={yearlyLoanTarget}
+                onChange={e => setYearlyLoanTarget(e.target.value)}
+            />
+            <input
+                type="number"
+                placeholder="Yearly Disbursement Target"
+                value={yearlyDisbursementTarget}
+                onChange={e => setYearlyDisbursementTarget(e.target.value)}
+            />
+            <Link className="pro-save-btn"
+                  style={{ 
+                    backgroundColor: isValid ? "#030b26" : "#727789",
+                  }} onClick={handleYearlySubmit}>Save</Link>
+
+
+            </div>
+            <div className="target-loan">
+            <h4>Set yearly target for a specific branch</h4>
+            {status === 'failed' && <p>Error: {error}</p>}
+            <select
+                value={selectedBranch}
+                onChange={e => setSelectedBranch(e.target.value)}
+            >
+                <option value="">Select Branch</option>
+                {branches.map(branch => (
+                    <option key={branch.name} value={branch.name}>
+                        {branch.name}
+                    </option>
+                ))}
+            </select>
+            <input
+                type="number"
+                placeholder="Loan Target"
+                value={loanTarget}
+                onChange={e => setLoanTarget(e.target.value)}
+            />
+            <input
+                type="number"
+                placeholder="Disbursement Target"
+                value={disbursementTarget}
+                onChange={e => setDisbursementTarget(e.target.value)}
+            />
+            <Link className="pro-save-btn"
+                  style={{
+                    backgroundColor: valid ? "#030b26" : "#727789",
+                  }} onClick={handleBranchSubmit}>Save</Link>
+        
+            </div>
+          
+          </div>
+        )}
+
+        {activeLink === "interest" && <TargetForm />} */}
+
+       
       </div>
       {successPop ? (
       <div className="dropdown-container">
@@ -1018,4 +1015,4 @@ console.log(success);
     </SettingRap>
   );
 };
-export default Setting;
+export default DisburseSetting;

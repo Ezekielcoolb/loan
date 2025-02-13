@@ -341,9 +341,7 @@ console.log(admins);
                   >
                     <option value="">Select Role</option>
                     <option value="Manager">Manager</option>
-                    <option value="Supervisor">Supervisor</option>
                     <option value="Disbursement Officer">Disbursement Officer</option>
-                    <option value="Support">Support</option>
 
                   </select>
                 </label>

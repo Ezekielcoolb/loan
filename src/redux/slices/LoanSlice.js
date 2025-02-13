@@ -4,8 +4,8 @@ import axios from "axios";
 
 // Async Thunks for API Calls
 
-const API_URL = "https://sever-qvw1.onrender.com/api/loan";
-// const API_URL = "http://localhost:5000/api/loan"
+// const API_URL = "https://sever-qvw1.onrender.com/api/loan";
+const API_URL = "http://localhost:5000/api/loan"
 
 export const submitLoanApplication = createAsyncThunk(
   "loans/submitApplication",

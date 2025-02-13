@@ -2,7 +2,9 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 const API_URL = 'https://sever-qvw1.onrender.com/api/loginauth';
+const API_URLS = 'https://sever-qvw1.onrender.com/api/adminAuth';
 // const API_URL = "http://localhost:5000/api/loginauth"
+// const API_URLS = "http://localhost:5000/api/adminAuth"
 
 // Login Thunk
 export const login = createAsyncThunk('auth/login', async (credentials) => {
@@ -12,6 +14,33 @@ export const login = createAsyncThunk('auth/login', async (credentials) => {
  
   
 });
+// Login Thunk
+export const superAdminLogin = createAsyncThunk('auth/superAdminLogin', async (credentials) => {
+  try {
+  const response = await axios.post(`${API_URLS}/login`, credentials);
+  console.log(credentials);
+  
+  console.log(response.data);
+  return response.data;
+ 
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+export const updateSupperAdminPassword = createAsyncThunk(
+  'admin/updateSupperAdminPassword',
+  async ({ id, newPassword }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`${API_URLS}/update-super-password/${id}`, {
+        newPassword,
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
 
 // Update Password Thunk
 export const updatePassword = createAsyncThunk(
@@ -28,6 +57,9 @@ const authSlice = createSlice({
   initialState: {
     user: null,
     token: null,
+    superUser: null,
+    adminToken: null,
+    success: null,
     status: 'idle',
     error: null,
   },
@@ -35,6 +67,11 @@ const authSlice = createSlice({
     logout(state) {
       state.user = null;
       state.token = null;
+    },
+    resetState: (state) => {
+      state.loading = false;
+      state.success = null;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -49,8 +86,33 @@ const authSlice = createSlice({
       .addCase(updatePassword.fulfilled, (state, action) => {
         state.status = 'succeeded';
       });
+
+      builder
+      .addCase(updateSupperAdminPassword.pending, (state) => {
+        state.loading = true;
+        state.success = null;
+        state.error = null;
+      })
+      .addCase(updateSupperAdminPassword.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = action.payload.message;
+      })
+      .addCase(updateSupperAdminPassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload.message;
+      });
+
+      builder
+      .addCase(superAdminLogin.fulfilled, (state, action) => {
+        state.adminToken = action.payload.token;
+        state.superUser = action.payload.user;
+      })
+      .addCase(superAdminLogin.rejected, (state, action) => {
+        state.error = action.error.message;
+      })
+     
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, resetState } = authSlice.actions;
 export default authSlice.reducer;

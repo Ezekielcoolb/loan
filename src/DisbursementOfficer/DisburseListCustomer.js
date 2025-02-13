@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAdminLoans } from '../../redux/slices/LoanSlice';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+import { fetchAdminLoans } from '../redux/slices/LoanSlice';
 
 const TableRap = styled.div`
  .page-div {
@@ -20,7 +20,7 @@ const TableRap = styled.div`
   }
 `
 
-const AdminCustomerTable = () => {
+const DisburseListCustomer = () => {
   const dispatch = useDispatch();
   const { loans, loading, error } = useSelector((state) => state.loan);
   const itemsPerPage = 15;
@@ -74,7 +74,7 @@ const AdminCustomerTable = () => {
               <td>{loan.customerDetails.email}</td>
               <td>{loan.loanDetails.amountRequested}</td>
               <td>{loan.loanDetails.amountApproved}</td>
-              <td>  <Link to={`/downloadLoanForm/${loan._id}`}>View Details</Link>
+              <td>  <Link to={`/officer/downloadLoanForm/${loan._id}`}>View Details</Link>
               </td>
               <td></td>
             </tr>
@@ -105,4 +105,4 @@ const AdminCustomerTable = () => {
   );
 };
 
-export default AdminCustomerTable;
+export default DisburseListCustomer;

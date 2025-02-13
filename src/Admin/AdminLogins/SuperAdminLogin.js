@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { login } from "../redux/slices/authSlice";
+import { superAdminLogin } from "../../redux/slices/authSlice";
 
 const CsoLoginRap = styled.div`
 height: 100vh;
@@ -15,7 +15,25 @@ font-size: 16px;
 font-weight: 500;
 color: #005E7880;
 background-color: #f4f4f4;
+.disburse-off h2 {
+  font-size: 20px;
+  font-weight: 900;
+  color: #005E7880;
 
+}
+.disburse-off p {
+  font-size: 12px;
+  font-weight: 450;
+  color: #60667a;
+
+}
+.disburse-off  {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
 input {
     width: 334px;
     color: #005E7880;
@@ -56,26 +74,27 @@ input {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 100px;
+    gap: 50px;
 
 }
 `;
 
-const CsoLogin = () => {
+const SuperAdminLogin = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const {token,  user, error } = useSelector((state) => state.auth);
+    const {adminToken,  superUser, error } = useSelector((state) => state.auth);
   
     const handleLogin = () => {
-      dispatch(login({ email, password }));
+      dispatch(superAdminLogin({ email, password }));
     };
     useEffect(() => {
-        if (token) {
-          navigate("/cso"); // Redirect to the protected route
+        if (adminToken) {
+            navigate("/");
+          
         }
-      }, [token, navigate]);
+      }, [adminToken, navigate]);
 
       
   return (
@@ -83,6 +102,10 @@ const CsoLogin = () => {
       <div className="all-login-div">
         <div className="loan-img">
             <img src="/images/login_img.png" alt="" />
+        </div>
+        <div className="disburse-off">
+        <h2>Welcome back Super Admin!</h2>
+        <p>Sign in to your account</p>
         </div>
         <div className="login-input-div">
           <input  type="email" placeholder="Enter your email"  value={email}
@@ -99,4 +122,4 @@ const CsoLogin = () => {
   );
 };
 
-export default CsoLogin;
+export default SuperAdminLogin;

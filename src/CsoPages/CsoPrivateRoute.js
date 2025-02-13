@@ -9,11 +9,11 @@ const ProtectedRoute = () => {
 
  return (
     token ?
-    <div style={{background: "#D9D9D9 " , height: "auto"  }}>
+    <div style={{background: "#D9D9D9 " , height: "auto"  }}> 
       <CsoNav />
       <div style={{marginBottom: "70px", height: "fit-content", paddingTop: "110px" }}>
 
-        <Outlet />
+        <Outlet /> 
       </div>
         <CsoFooter />
     </div>  : <Navigate to="/csoLogin" />
