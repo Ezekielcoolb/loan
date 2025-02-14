@@ -207,6 +207,15 @@ const HomeCsoRap = styled.div`
   .custom-file-upload:active {
     background-color: #ddd;
   }
+  .no-cutomer {
+    font-size: 25px;
+    font-weight: 700;
+    height: 75vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 `;
 
 const CsoHome = () => {
@@ -231,6 +240,9 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
   const { loans, status, error } = useSelector(
     (state) => state.loan
   );
+
+  console.log(loans);
+  
   const [query, setQuery] = useState("");
 
   const csoId = user.workId;
@@ -363,6 +375,7 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
             </div>
           </div>
           <ul>
+          {loans && loans.length > 0 ? (
             <div>
               <div className="images-container">
                 {currentLoans?.reverse().map((loan, index) => (
@@ -411,6 +424,7 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
         </button>
       </div>
             </div>
+            ): <p className="no-cutomer">No customer yet</p>}
           </ul>
         </div>
       </div>

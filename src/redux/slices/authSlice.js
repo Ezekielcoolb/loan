@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = 'https://sever-qvw1.onrender.com/api/loginauth';
-const API_URLS = 'https://sever-qvw1.onrender.com/api/adminAuth';
-// const API_URL = "http://localhost:5000/api/loginauth"
-// const API_URLS = "http://localhost:5000/api/adminAuth"
+// const API_URL = 'https://sever-qvw1.onrender.com/api/loginauth';
+// const API_URLS = 'https://sever-qvw1.onrender.com/api/adminAuth';
+const API_URL = "http://localhost:5000/api/loginauth"
+const API_URLS = "http://localhost:5000/api/adminAuth"
 
 // Login Thunk
 export const login = createAsyncThunk('auth/login', async (credentials) => {
@@ -42,6 +42,20 @@ export const updateSupperAdminPassword = createAsyncThunk(
   }
 );
 
+export const updateCsoPassword = createAsyncThunk(
+  'admin/updateCsoPassword',
+  async ({ id, newPassword }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`${API_URL}/update-cso-password/${id}`, {
+        newPassword,
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 // Update Password Thunk
 export const updatePassword = createAsyncThunk(
   'auth/updatePassword',
@@ -60,6 +74,7 @@ const authSlice = createSlice({
     superUser: null,
     adminToken: null,
     success: null,
+    csoSuccess: null,
     status: 'idle',
     error: null,
   },
@@ -85,6 +100,21 @@ const authSlice = createSlice({
       })
       .addCase(updatePassword.fulfilled, (state, action) => {
         state.status = 'succeeded';
+      });
+
+      builder
+      .addCase(updateCsoPassword.pending, (state) => {
+        state.loading = true;
+        state.csoSuccess = null;
+        state.error = null;
+      })
+      .addCase(updateCsoPassword.fulfilled, (state, action) => {
+        state.loading = false;
+        state.csoSuccess = action.payload.message;
+      })
+      .addCase(updateCsoPassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload.message;
       });
 
       builder

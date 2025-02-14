@@ -1,8 +1,10 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
-import React from "react";
-import { useSelector } from "react-redux";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { PulseLoader } from "react-spinners";
 import styled from "styled-components";
+import { updateCsoPassword } from "../redux/slices/authSlice";
 
 const ProfileRap = styled.div`
   padding: 20px;
@@ -32,12 +34,19 @@ const ProfileRap = styled.div`
     gap: 10px;
     margin-top: 10px;
   }
-  .profile-1 img {
+  .profile-image {
     border: 4px solid #005e78;
     background: #d9d9d9;
-    width: 130px;
-    height: 130px;
+    width: 170px;
+    height: 170px;
     border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .profile-image img {
+    width: 110px;
+    height: 110px;
   }
   .profile-1 {
     display: flex;
@@ -88,15 +97,48 @@ const ProfileRap = styled.div`
     align-items: center;
     text-decoration: none;
   }
- 
 `;
 
 const CsoProfile = () => {
-  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [successPop, setSuccessPop] = useState(false);
+  const { user, csoSuccess } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+
+  const submitValid =
+    currentPassword !== "" &&
+    newPassword !== "" &&
+    confirmPassword !== "" &&
+    currentPassword === user.password &&
+    newPassword === confirmPassword;
+
+  const adminId = user?._id;
+
+  console.log(csoSuccess);
 
   const handleGoBachHome = () => {
     navigate("/cso");
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (submitValid) {
+      try {
+        dispatch(updateCsoPassword({ id: adminId, newPassword }));
+        setSuccessPop(true);
+
+        setNewPassword("");
+        setCurrentPassword("");
+        setConfirmPassword("");
+      } catch (e) {
+        console.log(e);
+      }
+    }
   };
 
   return (
@@ -113,7 +155,9 @@ const CsoProfile = () => {
         <h4>Profile</h4>
 
         <div className="profile-1">
-          <img src={user.profileImg} alt="" />
+          <div className="profile-image">
+            <img src={user.profileImg} alt="" />
+          </div>
           <label>
             Names in full
             <p>
@@ -147,13 +191,55 @@ const CsoProfile = () => {
             <p>Reset Password</p>
           </div>
           <div className="profile-2-div">
-            <input type="text" placeholder="current password" />
-            <input type="text" placeholder="New password" />
-            <input type="text" placeholder="Confirm password" />
-            <Link className="save-btn">Save Changes</Link>
+            <input
+              type="text"
+              placeholder="current password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              placeholder="New password"
+              required
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Confirm password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+            <button onClick={handleSubmit}
+              className="save-btn"
+              disabled={!submitValid}
+              style={{
+                backgroundColor: submitValid ? "#0c1d55" : "#727789",
+                cursor: !submitValid ? "not-allowed" : "pointer",
+              }}
+            >
+              {isLoading ? (
+                <>
+                  <PulseLoader color="white" size={10} />
+                </>
+              ) : (
+                "Save"
+              )}
+            </button>
           </div>
         </div>
       </div>
+      {successPop ? (
+      <div className="dropdown-container">
+        <div className="successPop">
+            <p>{csoSuccess}</p>
+            <button onClick={() => setSuccessPop(false)}>Exit</button>
+        </div>
+
+      </div>
+      ) : ""}
     </ProfileRap>
   );
 };

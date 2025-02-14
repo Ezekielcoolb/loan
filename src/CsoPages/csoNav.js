@@ -44,6 +44,16 @@ const CsoNavRap = styled.div`
     right: 0px;
     width: 300px !important;
   }
+  .home-header-text-all {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .home-header-text-all img {
+    width: 50px;
+    height: 50px;
+    
+  }
 `
 
 
@@ -65,9 +75,12 @@ const CsoNav = () => {
         <CsoNavRap>
                   {user && (
                           <div  className="home-header">
-                            <div onClick={handleGoToProfile} className="home-header-text">
-                              <h3>Hi, {user.firstName}</h3>
-                              <p>{user.email}</p>
+                            <div onClick={handleGoToProfile} className="home-header-text-all">
+                              <img src={user.profileImg} alt="" />
+                              <div className="home-header-text">
+                                <h3>Hi, {user.firstName}</h3>
+                                <p>{user.email}</p>
+                              </div>
                             </div>
                             <div className="notification-icon-div">
                               <Icon onClick={handleOpenNotification}

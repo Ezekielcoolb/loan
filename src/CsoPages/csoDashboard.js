@@ -273,7 +273,7 @@ const CsoDashboard = () => {
               Overall Performance
             </div>
           </div>
-          <p style={{ fontWeight: "bold" }}>{overallPerformance.toFixed(1)}%</p>
+          <p style={{ fontWeight: "bold" }}>{overallPerformance?.toFixed(1)}%</p>
         </div>
 
         {/* Display counts */}
