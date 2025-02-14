@@ -75,6 +75,7 @@ import ManagerLoanForm from "../ManagerPages/ManagerLoanForm";
 import ManagerBranches from "../ManagerPages/ManagerBranches";
 import ManagerBranchDetails from "../ManagerPages/ManagerBranchDetails";
 import ManagerSetting from "../ManagerPages/ManagerSetting";
+import Home from "../GuestPage/Home";
 
 
 
@@ -89,40 +90,41 @@ export default function Routess() {
     return(
         useRoutes(
             [
+                {path: "/", element: <Home />},
                 {
-                    path: "/",
+                    path: "/admin",
                     element: <SuperAdminPrivateRoutes />,
                     children: [
-                        {path: "/", element: <AdminDashboard />},
-                        {path: "/admincso", element: <Csos />},
-                        {path: "/csodetails", element: <CsoDetails />},
-                        {path: "/csocustomers", element: <Customers />},
-                        {path: "/customerdetails", element: <CustomersDetails  />},
-                        {path: "/loan", element: <Loan  />},
-                        {path: "/branches", element: <LoanBranches  />},
-                        {path: "/branches/:id", element: <BranchTransaction  />},
-                        {path: "/branchdetails/:id", element: <BranchDetails  />},
-                        {path: "/branchcso", element: <BranchCSO  />},
+                        {path: "/admin", element: <AdminDashboard />},
+                        {path: "/admin/admincso", element: <Csos />},
+                        {path: "/admin/csodetails", element: <CsoDetails />},
+                        {path: "/admin/csocustomers", element: <Customers />},
+                        {path: "/admin/customerdetails", element: <CustomersDetails  />},
+                        {path: "/admin/loan", element: <Loan  />},
+                        {path: "/admin/branches", element: <LoanBranches  />},
+                        {path: "/admin/branches/:id", element: <BranchTransaction  />},
+                        {path: "/admin/branchdetails/:id", element: <BranchDetails  />},
+                        {path: "/admin/branchcso", element: <BranchCSO  />},
                        
-                        {path: "/allcustomers", element: <AllCustomerDetail  />},
-                        {path: "/newloan", element: <NewLoan  />},
-                        {path: "/disbursement", element: <Disbursment  />},
+                        {path: "/admin/admin/allcustomers", element: <AllCustomerDetail  />},
+                        {path: "/admin/newloan", element: <NewLoan  />},
+                        {path: "/admin/disbursement", element: <Disbursment  />},
 
                         // {path: "/testDetails", element: <TargetForm  />},
                         // {path: "/calendar/test/:id", element: <LoanCalendar  />},
                         // {path: "/branches/:id", element: <CsoDetail  />},
-                        {path: "/test", element: <GuarantorDetailsTest  />},
+                        {path: "/admin/test", element: <GuarantorDetailsTest  />},
                         // {path: "/test", element: <Notifications  />},
-                        {path: "/customer/:bvn", element: <CustomerDetailsInfo />},
-                        {path: "/customer/calender/:bvn", element: <AdminCalendarPage />},
-                        {path: "/calendar/:id", element: <CalendarPage  />},
-                        {path: "/csoDetails/:id", element: <CsoLoanCollection  />},
-                        {path: "/loan/:id", element: <LoanDetails  />},
-                        {path: "/transactions", element: <AllTransactions  />},
-                        {path: "/settings", element: <Setting  />},
-                        {path: "/guarantorDetails/:id", element: <GuarantorDetails  />},
-                        {path: "/downloadLoanForm/:id", element: <DownloadLoanForm  />},
-                        {path: "/admin-members", element: <AdminForm  />},
+                        {path: "/admin/customer/:bvn", element: <CustomerDetailsInfo />},
+                        {path: "/admin/customer/calender/:bvn", element: <AdminCalendarPage />},
+                        {path: "/admin/calendar/:id", element: <CalendarPage  />},
+                        {path: "/admin/csoDetails/:id", element: <CsoLoanCollection  />},
+                        {path: "/admin/loan/:id", element: <LoanDetails  />},
+                        {path: "/admin/transactions", element: <AllTransactions  />},
+                        {path: "/admin/settings", element: <Setting  />},
+                        {path: "/admin/guarantorDetails/:id", element: <GuarantorDetails  />},
+                        {path: "/admin/downloadLoanForm/:id", element: <DownloadLoanForm  />},
+                        {path: "/admin/admin-members", element: <AdminForm  />},
                     ]
                 },
                 {

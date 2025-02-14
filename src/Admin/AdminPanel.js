@@ -7,40 +7,40 @@ import { Link } from "react-router-dom";
 import { PulseLoader } from "react-spinners";
 
 const AdminRap = styled.div`
- width: 100%;
+  width: 100%;
 
-h4 {
-  font-size: 16px;
-  font-weight: 600;
-}
-h5 {
-  font-size: 14px;
-  font-weight: 500;
-}
-p {
-  font-size: 14px;
-  font-weight: 400;
-}
-th {
-  font-size: 14px;
-  font-weight: 500;
-  color: #727789;
-}
-td {
-  font-size: 13px;
-  font-weight: 400;
-  color: #727789;
-}
-label {
-  font-size: 14px !important;
-  color: #60667a;
-  font-weight: 600;
-}
-.star {
-  font-weight: 700;
-  color: red;
-}
-.client-1 {
+  h4 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  h5 {
+    font-size: 14px;
+    font-weight: 500;
+  }
+  p {
+    font-size: 14px;
+    font-weight: 400;
+  }
+  th {
+    font-size: 14px;
+    font-weight: 500;
+    color: #727789;
+  }
+  td {
+    font-size: 13px;
+    font-weight: 400;
+    color: #727789;
+  }
+  label {
+    font-size: 14px !important;
+    color: #60667a;
+    font-weight: 600;
+  }
+  .star {
+    font-weight: 700;
+    color: red;
+  }
+  .client-1 {
     display: flex;
     align-items: center;
     border-bottom: 1px solid #d0d5dd;
@@ -150,14 +150,14 @@ label {
     margin-top: 10px !important;
     padding-left: 10px !important;
   }
-form {
+  form {
     display: flex;
     flex-direction: column;
     padding: 20px;
     gap: 10px;
-}
+  }
 
-.client-create-btn {
+  .client-create-btn {
     background: #0c1d55;
     width: 185px;
     height: 45px;
@@ -175,9 +175,9 @@ form {
 const AdminForm = () => {
   const dispatch = useDispatch();
   const [activeLink, setActiveLink] = useState("cso");
-    const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
   const { admins, loading } = useSelector((state) => state.admin);
-const [isLoading, setIsLoding] = useState(false)
+  const [isLoading, setIsLoding] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -185,17 +185,18 @@ const [isLoading, setIsLoding] = useState(false)
     phone: "",
     password: "",
     gender: "",
-    assignedRole: ""
+    assignedRole: "",
   });
-console.log(admins);
+  console.log(admins);
 
-  const isValid = formData.firstName !== "" &&
-                 formData.lastName !== "" &&
-                 formData.email !== "" &&
-                 formData.password !== "" &&
-                 formData.gender !== "" &&
-                 formData.assignedRole !== "" &&
-                 formData.phone !== "" 
+  const isValid =
+    formData.firstName !== "" &&
+    formData.lastName !== "" &&
+    formData.email !== "" &&
+    formData.password !== "" &&
+    formData.gender !== "" &&
+    formData.assignedRole !== "" &&
+    formData.phone !== "";
 
   useEffect(() => {
     dispatch(fetchAdmins());
@@ -220,13 +221,12 @@ console.log(admins);
       lastName: "",
       email: "",
       phone: "",
-     
+
       password: "",
       gender: "",
-      assignedRole: ""
+      assignedRole: "",
     });
     setDropdownVisible(!dropdownVisible);
-
   };
 
   return (
@@ -266,27 +266,26 @@ console.log(admins);
               </div>
 
               <form onSubmit={handleSubmit}>
-                  <label>
-                    First Name<span className="star">*</span> <br />
-                    <input
-                      type="text"
-                      name="firstName"
-                      onChange={handleChange}
-                      value={formData.firstName}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Last Name<span className="star">*</span> <br />
-                    <input
-
-                      type="text"
-                      name="lastName"
-                      onChange={handleChange}
-                      value={formData.lastName}
-                      required
-                    />
-                  </label>
+                <label>
+                  First Name<span className="star">*</span> <br />
+                  <input
+                    type="text"
+                    name="firstName"
+                    onChange={handleChange}
+                    value={formData.firstName}
+                    required
+                  />
+                </label>
+                <label>
+                  Last Name<span className="star">*</span> <br />
+                  <input
+                    type="text"
+                    name="lastName"
+                    onChange={handleChange}
+                    value={formData.lastName}
+                    required
+                  />
+                </label>
                 <label>
                   Email Address<span className="star">*</span> <br />
                   <input
@@ -341,12 +340,13 @@ console.log(admins);
                   >
                     <option value="">Select Role</option>
                     <option value="Manager">Manager</option>
-                    <option value="Disbursement Officer">Disbursement Officer</option>
-
+                    <option value="Disbursement Officer">
+                      Disbursement Officer
+                    </option>
                   </select>
                 </label>
                 <div className="save-cancel-div">
-                <button
+                  <button
                     className="client-create-btn"
                     onClick={handleSubmit}
                     disabled={!isValid}
@@ -362,16 +362,16 @@ console.log(admins);
                     ) : (
                       "Save"
                     )}
-                    </button>
+                  </button>
                 </div>
               </form>
             </div>
           </div>
         </div>
         <div>
-        {activeLink === "cso" && 
-<div className="find-lawyer-header">
- <div className="table-container">
+          {activeLink === "cso" && (
+            <div className="find-lawyer-header">
+              <div className="table-container">
                 <div className="new-table-scroll">
                   <div className="table-div-con">
                     <table className="custom-table">
@@ -385,20 +385,14 @@ console.log(admins);
                           <th>Phone Number</th>
                           <th>Gender</th>
                           <th>Assigned Role</th>
-                         
                         </tr>
                       </thead>
                       <tbody>
                         {admins ? (
                           admins.map((caseItem) => (
-                            <tr
-                              key={caseItem?.id}
-                            >
+                            <tr key={caseItem?.id}>
                               <td>
-                                <input
-                                  type="checkbox"
-                                 
-                                />
+                                <input type="checkbox" />
                               </td>
                               <td>
                                 {caseItem?.firstName} {caseItem?.lastName}
@@ -407,7 +401,6 @@ console.log(admins);
                               <td>{caseItem?.phone}</td>
                               <td>{caseItem?.gender}</td>
                               <td>{caseItem?.assignedRole}</td>
-                             
                             </tr>
                           ))
                         ) : (
@@ -423,13 +416,9 @@ console.log(admins);
                     </table>
                   </div>
                 </div>
-               
-
-               
               </div>
-</div>
-}
-
+            </div>
+          )}
         </div>
       </div>
     </AdminRap>

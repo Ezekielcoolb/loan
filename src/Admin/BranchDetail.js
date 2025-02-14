@@ -7,8 +7,8 @@ import BranchCustomers from "./BranchDetails/BranchCustomer";
 import { Icon } from "@iconify/react/dist/iconify.js";
 
 const BranchDetailRap = styled.div`
-width: 100%;
- .cso-1 {
+  width: 100%;
+  .cso-1 {
     display: flex;
     align-items: center;
     border-bottom: 1px solid #d0d5dd;
@@ -37,67 +37,55 @@ width: 100%;
     border-bottom: 2px solid black; /* Black underline for the active link */
     color: #030b26;
   }
-`
-
+`;
 
 const BranchDetails = () => {
-     const [activeLink, setActiveLink] = useState("transaction");
+  const [activeLink, setActiveLink] = useState("transaction");
 
-     const handleLinkClick = (link) => {
-        setActiveLink(link);
-      };
-    return (
-        <BranchDetailRap>
-         <div className="cso-1">
-          <div className="cso-link-container">
-                  <Link
-                                      style={{ }}
-                                      className="cso-link"
-                                      to="/branches"
-                                    >
-                                      <Icon
-                                        icon="formkit:arrowleft"
-                                        width="90"
-                                        height="16"
-                                        style={{ color: "black", cursor: "pointer" }}
-                                      />
-                                    </Link>
-            <Link
-              className={`cso-link ${
-                activeLink === "transaction" ? "active" : ""
-              }`}
-              onClick={() => handleLinkClick("transaction")}
-            >
-              Annual Transaction
-            </Link>
-            <Link
-              className={`cso-link ${
-                activeLink === "csos" ? "active" : ""
-              }`}
-              onClick={() => handleLinkClick("csos")}
-            >
-              Cso
-            </Link>
-            <Link
-              className={`cso-link ${
-                activeLink === "customers" ? "active" : ""
-              }`}
-              onClick={() => handleLinkClick("customers")}
-            >
-             Customers
-            </Link>
+  const handleLinkClick = (link) => {
+    setActiveLink(link);
+  };
+  return (
+    <BranchDetailRap>
+      <div className="cso-1">
+        <div className="cso-link-container">
+          <Link style={{}} className="cso-link" to="/admin/branches">
+            <Icon
+              icon="formkit:arrowleft"
+              width="90"
+              height="16"
+              style={{ color: "black", cursor: "pointer" }}
+            />
+          </Link>
+          <Link
+            className={`cso-link ${
+              activeLink === "transaction" ? "active" : ""
+            }`}
+            onClick={() => handleLinkClick("transaction")}
+          >
+            Annual Transaction
+          </Link>
+          <Link
+            className={`cso-link ${activeLink === "csos" ? "active" : ""}`}
+            onClick={() => handleLinkClick("csos")}
+          >
+            Cso
+          </Link>
+          <Link
+            className={`cso-link ${activeLink === "customers" ? "active" : ""}`}
+            onClick={() => handleLinkClick("customers")}
+          >
+            Customers
+          </Link>
+        </div>
+      </div>
+      <div>
+        {activeLink === "transaction" && <BranchTransaction />}
+        {activeLink === "csos" && <BranchCSO />}
+        {activeLink === "customers" && <BranchCustomers />}
+      </div>
+    </BranchDetailRap>
+  );
+};
 
-           
-          </div>
-          
-          </div>
-          <div>
-            {activeLink==="transaction" && <BranchTransaction />}
-            {activeLink==="csos" && <BranchCSO />}
-            {activeLink === "customers" && <BranchCustomers />}
-          </div>
-        </BranchDetailRap>
-    )
-}
-
-export default BranchDetails
+export default BranchDetails;

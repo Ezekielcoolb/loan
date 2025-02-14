@@ -74,7 +74,7 @@ const AdminCustomerTable = () => {
               <td>{loan.customerDetails.email}</td>
               <td>{loan.loanDetails.amountRequested}</td>
               <td>{loan.loanDetails.amountApproved}</td>
-              <td>  <Link to={`/downloadLoanForm/${loan._id}`}>View Details</Link>
+              <td>  <Link to={`/admin/downloadLoanForm/${loan._id}`}>View Details</Link>
               </td>
               <td></td>
             </tr>

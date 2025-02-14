@@ -189,7 +189,7 @@ const GuarantorDetails = () => {
         <Link
           style={{ marginLeft: "-50px" }}
           className="cso-link"
-          to={`/loan/${id}`}
+          to={`/admin/loan/${id}`}
         >
           <Icon
             icon="formkit:arrowleft"

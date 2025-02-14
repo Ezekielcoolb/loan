@@ -451,7 +451,7 @@ const CustomersDetails = () => {
                             {summary.performance}%
                           </td>
                           <td>
-                            <Link to={`/customer/${summary.bvn}`}>
+                            <Link to={`/admin/customer/${summary.bvn}`}>
                               View Details
                             </Link>
                           </td>

@@ -584,7 +584,7 @@ const CsoLoanCollection = () => {
     <CollectRap>
       <div className="cso-1">
         <div className="cso-link-container">
-          <Link style={{}} className="cso-link" to="/admincso">
+          <Link style={{}} className="cso-link" to="/admin/admincso">
             <Icon
               icon="formkit:arrowleft"
               width="90"

@@ -242,7 +242,7 @@ const CsoDetails = () => {
             <Link
               style={{ marginLeft: "-50px" }}
               className="cso-link"
-              to="/cso"
+              to="/admin/cso"
             >
               <Icon
                 icon="formkit:arrowleft"

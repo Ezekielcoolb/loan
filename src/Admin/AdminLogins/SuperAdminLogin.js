@@ -91,7 +91,7 @@ const SuperAdminLogin = () => {
     };
     useEffect(() => {
         if (adminToken) {
-            navigate("/");
+            navigate("/admin");
           
         }
       }, [adminToken, navigate]);

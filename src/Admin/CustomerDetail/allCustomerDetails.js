@@ -94,7 +94,7 @@ const CustomerDetailsInfo = () => {
 
  
   const handleMoveBack = () => {
-    navigate(`/customerdetails`);
+    navigate(`/admin/customerdetails`);
   };
 
   return (
@@ -118,7 +118,7 @@ const CustomerDetailsInfo = () => {
             Customer Transactions
           </Link>
           <Link
-            to={`/customer/calender/${details[0]?.customerDetails?.bvn}`}
+            to={`/admin/customer/calender/${details[0]?.customerDetails?.bvn}`}
             className={`client-link ${
               activeLink === "loanCard" ? "active" : ""
             }`}

@@ -420,3 +420,40 @@ table {
   width: 200px !important;
 }
 }
+
+.containery {
+  padding-right: 140px;
+  padding-left: 140px;
+}
+@media (max-width: 1300px) {
+  .containery {
+      padding-right: 50px !important;
+      padding-left: 50px !important;
+  }
+}
+@media (max-width: 1024px) {
+  .containery {
+      padding-right: 70px !important;
+      padding-left: 70px !important;
+  }
+ 
+
+}
+@media (max-width: 992px) {
+  .containery {
+      padding-right: 60px !important;
+      padding-left: 60px !important;
+  }
+}
+@media (max-width: 767px) {
+  .containery {
+      padding-right: 50px !important;
+      padding-left: 50px !important;
+  }
+}
+@media (max-width: 678px) {
+  .containery {
+      padding-right: 30px !important;
+      padding-left: 30px !important;
+  }
+}

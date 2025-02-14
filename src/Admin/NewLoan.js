@@ -256,7 +256,7 @@ const NewLoan = () => {
                       <td>{loan?.branch}</td>
                       <td style={{color: "green"}}>{loan?.status}</td>
                       <td>
-                        <Link to={`/loan/${loan._id}`}>View Details</Link>
+                        <Link to={`/admin/loan/${loan._id}`}>View Details</Link>
                       </td>
                     </tr>
                   ))}

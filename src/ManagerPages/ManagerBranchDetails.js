@@ -150,7 +150,7 @@ const ManagerBranchDetails = () => {
     <TransactionRap>
       <div className="cso-1">
         <div className="cso-link-container">
-          <Link style={{}} className="cso-link" to="/branches">
+          <Link style={{}} className="cso-link" to="/manager/branches">
             <Icon
               icon="formkit:arrowleft"
               width="90"

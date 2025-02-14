@@ -9,25 +9,25 @@ const sidebarConfig = [
   {
     id: 1,
     icon: "ic:round-dashboard",
-    link: "/",
+    link: "/admin",
     title: "Dashboard",
   },
   {
     id: 2,
     icon: "fluent:people-edit-16-regular",
-    link: "/admincso",
+    link: "/admin/admincso",
     title: "Customer Service Officer",
   },
   {
     id: 3,
     icon: "carbon:global-loan-and-trial",
-    link: "/loan",
+    link: "/admin/loan",
     title: "Loans",
   },
   {
     id: 4,
     icon: "arcticons:studentloan-connect",
-    link: "/newloan",
+    link: "/admin/newloan",
     title: "New Loan",
   },
 
@@ -35,46 +35,46 @@ const sidebarConfig = [
   {
     id: 5,
     icon: "carbon:money",
-    link: "/disbursement",
+    link: "/admin/disbursement",
     title: "Disbursement",
   },
   {
     id: 6,
     icon: "streamline:information-desk-customer",
-    link: "/customerdetails",
+    link: "/admin/customerdetails",
     title: "Customers",
   },
 
   {
     id: 7,
     icon: "mdi:comment-account-outline",
-    link: "/transactions",
+    link: "/admin/transactions",
     title: "Transaction",
   },
   {
     id: 8,
     icon: "mdi:comment-account-outline",
-    link: "/admin-members",
+    link: "/admin/admin-members",
     title: "Admin Panel",
   },
   {
     id: 9,
     icon: "ri:home-office-line",
-    link: "/branches",
+    link: "/admin/branches",
     title: "Branch",
   },
   {
     id: 10,
     icon: "lets-icons:setting-line",
-    link: "/settings",
+    link: "/admin/settings",
     title: "Setting",
   },
-  {
-    id: 11,
-    icon: "lets-icons:setting-line",
-    link: "/customerLoanCard/:id",
-    title: "Test",
-  },
+  // {
+  //   id: 11,
+  //   icon: "lets-icons:setting-line",
+  //   link: "/customerLoanCard/:id",
+  //   title: "Test",
+  // },
 ];
 
 export default function AdminSidebar() {

@@ -481,7 +481,7 @@ const BranchList = () => {
                             <td>{branch.totalAmountPaid}</td>
                             <td>{branch.totalAmountToBePaid - branch.totalAmountPaid}</td>
                             <td>
-                            <Link to={`/branches/${branch.name}`} >
+                            <Link to={`/admin/branches/${branch.name}`} >
                 View Details
               </Link>
                             </td>

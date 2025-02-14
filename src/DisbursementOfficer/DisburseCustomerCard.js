@@ -155,7 +155,7 @@ const DisburseCustomerCard = () => {
   };
 
   const handleMoveBack = () => {
-    navigate(`/manager/customer/${loan[0]?.customerDetails.bvn}`);
+    navigate(`/officer/customer/${loan[0]?.customerDetails.bvn}`);
   };
 
   const closePopup = () => setPopupInfo(null);

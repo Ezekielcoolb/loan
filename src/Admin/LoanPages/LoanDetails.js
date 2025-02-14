@@ -374,11 +374,11 @@ const handleIsReject = () => {
 
   const handleApprovedPop = () => {
     setApprovedLoading(false)
-    navigate('/newloan')
+    navigate('/admin/newloan')
   };
   const handleRejectPop = () => {
     setRejectLoading(false)
-    navigate('/newloan')
+    navigate('/admin/newloan')
   };
 
   const handlePopupResponse = (response) => {
@@ -432,7 +432,7 @@ const handleIsReject = () => {
 <Link
               style={{ marginLeft: "-50px" }}
               className="cso-link"
-              to="/newloan"
+              to="/admin/newloan"
             >
               <Icon
                 icon="formkit:arrowleft"
@@ -597,7 +597,7 @@ const handleIsReject = () => {
               <Button onClick={() => setPopup('verifyCustomer')} active={verifyCustomer} disabled={verifyCustomer}>Verify </Button>
               </div>
             <p>
-              Click <Link to={`/guarantorDetails/${id}`}>here</Link> to confirm if guarantor fill the guarantor
+              Click <Link to={`/admin/guarantorDetails/${id}`}>here</Link> to confirm if guarantor fill the guarantor
               form
             </p>
           </div>

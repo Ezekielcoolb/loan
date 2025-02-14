@@ -135,30 +135,30 @@ const DisbursementRepayment = () => {
   console.log(allLoans);
 
   // ✅ Totals for the selected month
-  const monthlyAmountDisbursed = loans.reduce(
-    (sum, loan) => sum + (loan.loanDetails.amountDisbursed || 0),
+  const monthlyAmountDisbursed = loans?.reduce(
+    (sum, loan) => sum + (loan?.loanDetails.amountDisbursed || 0),
     0
   );
-  const monthlyAmountToBePaid = loans.reduce(
-    (sum, loan) => sum + (loan.loanDetails.amountToBePaid || 0),
+  const monthlyAmountToBePaid = loans?.reduce(
+    (sum, loan) => sum + (loan?.loanDetails.amountToBePaid || 0),
     0
   );
-  const monthlyAmountPaid = loans.reduce(
+  const monthlyAmountPaid = loans?.reduce(
     (sum, loan) => sum + (loan.loanDetails.amountPaidSoFar || 0),
     0
   );
   const monthlyLoanBalance = monthlyAmountToBePaid - monthlyAmountPaid;
 
   // ✅ Cumulative totals for all months and years
-  const totalAmountDisbursed = allLoans.reduce(
+  const totalAmountDisbursed = allLoans?.reduce(
     (sum, loan) => sum + (loan.loanDetails.amountDisbursed || 0),
     0
   );
-  const totalAmountToBePaid = allLoans.reduce(
+  const totalAmountToBePaid = allLoans?.reduce(
     (sum, loan) => sum + (loan.loanDetails.amountToBePaid || 0),
     0
   );
-  const totalAmountPaid = allLoans.reduce(
+  const totalAmountPaid = allLoans?.reduce(
     (sum, loan) => sum + (loan.loanDetails.amountPaidSoFar || 0),
     0
   );
@@ -173,22 +173,22 @@ const DisbursementRepayment = () => {
             </h3>
             <div  className="month-summary-1">
             <p>Amount Disbursed: <span>
-               {monthlyAmountDisbursed.toLocaleString()}
+               {monthlyAmountDisbursed?.toLocaleString()}
                </span>
                </p>
             <p>Principal + <br /> Interest: 
               <span>
-                {monthlyAmountToBePaid.toLocaleString()}
+                {monthlyAmountToBePaid?.toLocaleString()}
             </span>
             </p>
             <p>Actual Paid: 
               <span>
-                {monthlyAmountPaid.toLocaleString()}
+                {monthlyAmountPaid?.toLocaleString()}
             </span>
             </p>
             <p>Loan Balance: 
               <span>
-                {monthlyLoanBalance.toLocaleString()}
+                {monthlyLoanBalance?.toLocaleString()}
             </span>
             </p>
             </div>
@@ -199,23 +199,23 @@ const DisbursementRepayment = () => {
             <p>
               Total Amount Disbursed: 
               <span>
-                {totalAmountDisbursed.toLocaleString()}
+                {totalAmountDisbursed?.toLocaleString()}
               </span>
             </p>
             <p>
               Total Principal + Interest: 
               <span>
-                {totalAmountToBePaid.toLocaleString()}
+                {totalAmountToBePaid?.toLocaleString()}
               </span>
             </p>
             <p>Total Actual Paid: 
               <span>
-                {totalAmountPaid.toLocaleString()}
+                {totalAmountPaid?.toLocaleString()}
             </span>
             </p>
             <p>Total Loan Balance: 
               <span>
-                {totalLoanBalance.toLocaleString()}
+                {totalLoanBalance?.toLocaleString()}
             </span>
             </p>
             </div>
@@ -264,8 +264,8 @@ const DisbursementRepayment = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {loans.length > 0 ? (
-                      [...loans].reverse().map((loan) => (
+                    {loans?.length > 0 ? (
+                      [...loans]?.reverse().map((loan) => (
                         <tr key={loan._id}>
                           <td>
                             {loan.customerDetails.firstName}{" "}

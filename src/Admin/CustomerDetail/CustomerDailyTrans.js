@@ -155,7 +155,7 @@ const AdminCalendarPage = () => {
   };
 
   const handleMoveBack = () => {
-    navigate(`/customer/${loan[0]?.customerDetails.bvn}`);
+    navigate(`/admin/customer/${loan[0]?.customerDetails.bvn}`);
   };
 
   const closePopup = () => setPopupInfo(null);

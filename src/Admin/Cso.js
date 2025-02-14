@@ -1154,7 +1154,7 @@ console.log(formData);
                               <td>{caseItem?.branch}</td>
                               <td>
                                 {" "}
-                                <Link to={`/csoDetails/${caseItem.workId}`}>
+                                <Link to={`/admin/csoDetails/${caseItem.workId}`}>
                                   View Details
                                 </Link>
                               </td>

@@ -226,7 +226,7 @@ const DownloadLoanForm = () => {
         <Link
           style={{ marginLeft: "-50px" }}
           className="cso-link"
-          to="/customerdetails"
+          to="/admin/customerdetails"
         >
           <Icon
             icon="formkit:arrowleft"
