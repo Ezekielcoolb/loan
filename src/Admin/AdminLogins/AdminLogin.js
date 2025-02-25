@@ -92,7 +92,8 @@ const ManagerLogin = () => {
     useEffect(() => {
         if (token) {
            navigate("/manager")
-            
+           localStorage.setItem("managerToken", token);
+           localStorage.setItem("managerAssigned", user.assignedRole);
           
         }
       }, [token, navigate]);

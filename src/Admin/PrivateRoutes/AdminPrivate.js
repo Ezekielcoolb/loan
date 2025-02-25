@@ -4,10 +4,11 @@ import DisburseDashboardLayout from "../../Controller/disburseController";
 
 
 const DisbursementAdminPrivateRoutes = () => {
-    const { token, user } = useSelector((state) => state.admin);
+    const officerToken = localStorage.getItem("officerToken");
+    const officerAssigned = localStorage.getItem("officerAssigned");
 
     return(
-        token && user.assignedRole === "Disbursement Officer" ? <DisburseDashboardLayout> <Outlet /> </DisburseDashboardLayout> : <Navigate to="/superAdminLogin" />
+        officerToken && officerAssigned === "Disbursement Officer" ? <DisburseDashboardLayout> <Outlet /> </DisburseDashboardLayout> : <Navigate to="/disburseLogin" />
     )
 }
 export default DisbursementAdminPrivateRoutes

@@ -373,15 +373,34 @@ const ClientRap = styled.div`
   .client-dropdown-div {
     padding: 15px;
     display: flex;
-
     flex-direction: column;
     gap: 15px;
     padding-bottom: 20px;
   }
+  .client-dropdown-div::-webkit-scrollbar {
+  height: 3px; /* Set scrollbar width */
+ 
+}
 
-  .client-all-dropdown-div::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, and newer Edge: Hide scrollbar */
-  }
+.client-dropdown-div::-webkit-scrollbar-thumb {
+  background: #888; /* Scrollbar thumb color */
+  border-radius: 4px; /* Optional for rounded scrollbar */
+}
+
+.client-dropdown-div::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Thumb hover color */
+}
+
+.client-dropdown-div::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Scrollbar track color */
+}
+
+/* Hide Up and Down Arrows in Scrollbar */
+.client-dropdown-div::-webkit-scrollbar-button {
+  display: none; /* Hides the arrows */
+}
+
+
   .client-dropdown-div input,
   .client-dropdown-div select {
     width: 380px;
@@ -920,14 +939,18 @@ console.log(formData);
                 <label>
                   Gender
                   <span className="star">*</span> <br />
-                  <input
-                    className="client-small-input-div"
-                    type="text"
-                    placeholder=""
-                    name="status"
-                    onChange={handleChange}
-                    value={formData.status}
-                  />
+              
+
+<select 
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                required
+              >
+                <option >Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
                 </label>
                 <label>
                   Address

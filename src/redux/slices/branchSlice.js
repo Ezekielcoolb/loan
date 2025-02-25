@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {Toaster, toast} from "react-hot-toast"
 import axios from 'axios';
 
-const API_URL = 'https://sever-qvw1.onrender.com/api/branches'; // Backend API URL
+const API_URL = 'http://api.jksolutn.com/api/branches'; // Backend API URL
 // const API_URL = "http://localhost:5000/api/branches"
 
 // Async thunk to fetch branches

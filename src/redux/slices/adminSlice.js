@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 
-const API_URL = 'https://sever-qvw1.onrender.com/api/admin-members';
+const API_URL = 'http://api.jksolutn.com/api/admin-members';
 
 // const API_URL = "http://localhost:5000/api/admin-members";
 

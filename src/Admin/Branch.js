@@ -104,9 +104,28 @@ const BranchRap = styled.div`
     padding-bottom: 20px;
   }
 
-  .client-all-dropdown-div::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, and newer Edge: Hide scrollbar */
-  }
+  .client-dropdown-div::-webkit-scrollbar {
+  height: 3px; /* Set scrollbar width */
+ 
+}
+
+.client-dropdown-div::-webkit-scrollbar-thumb {
+  background: #888; /* Scrollbar thumb color */
+  border-radius: 4px; /* Optional for rounded scrollbar */
+}
+
+.client-dropdown-div::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Thumb hover color */
+}
+
+.client-dropdown-div::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Scrollbar track color */
+}
+
+/* Hide Up and Down Arrows in Scrollbar */
+.client-dropdown-div::-webkit-scrollbar-button {
+  display: none; /* Hides the arrows */
+}
   .client-dropdown-div input {
     width: 380px;
     height: 45px;

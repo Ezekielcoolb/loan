@@ -400,19 +400,19 @@ if (isValid) {
                 required
               />
                 <input
-                type="number"
+                type="text"
                 name="customerDetails.phoneOne"
                 value={formData.customerDetails.phoneOne}
                 onChange={handleInputChange}
-                placeholder="Mobile No 1"
+                placeholder="Enter phone number in form of +234XXXXXXXXXX"
                 required
               />
                <input
-                type="number"
+                type="text"
                 name="customerDetails.phoneTwo"
                 value={formData.customerDetails.phoneTwo}
                 onChange={handleInputChange}
-                placeholder="Mobile No 2"
+                placeholder="Mobile No 2 in form of +234XXXXXXXXXX"
               
               />
                <input
@@ -587,11 +587,11 @@ if (isValid) {
                 required
               />
               <input
-                type="number"
+                type="text"
                 name="guarantorDetails.phoneTwo"
                 value={formData.guarantorDetails.phoneTwo}
                 onChange={handleInputChange}
-                placeholder="Mobile No 2"
+                placeholder="Mobile No 2 in form of +234XXXXXXXXXX"
                
               />
               <input

@@ -92,7 +92,7 @@ const SuperAdminLogin = () => {
     useEffect(() => {
         if (adminToken) {
             navigate("/admin");
-          
+            localStorage.setItem("superAdminToken", adminToken);
         }
       }, [adminToken, navigate]);
 

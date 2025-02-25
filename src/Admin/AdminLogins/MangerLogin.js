@@ -92,7 +92,10 @@ const AdminLogin = () => {
     useEffect(() => {
         if (token) {
            navigate("/officer/disbursement")
-            
+           localStorage.setItem("officerToken", token);
+           localStorage.setItem("officerAssigned", user.assignedRole);
+
+
           
         }
       }, [token, navigate]);

@@ -4,10 +4,11 @@ import ManagerDashboardLayout from "../../Controller/managerController";
 
 
 const ManagerAdminPrivateRoutes = () => {
-    const { token, user } = useSelector((state) => state.admin);
+    const managerToken = localStorage.getItem("managerToken");
+    const managerAssigned = localStorage.getItem("managerAssigned");
 
     return(
-        token && user.assignedRole === "Manager" ? <ManagerDashboardLayout> <Outlet /> </ManagerDashboardLayout> : <Navigate to="/superAdminLogin" />
+        managerToken && managerAssigned === "Manager" ? <ManagerDashboardLayout> <Outlet /> </ManagerDashboardLayout> : <Navigate to="/managerLogin" />
     )
 }
 export default ManagerAdminPrivateRoutes

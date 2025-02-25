@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 
 
 const SuperAdminPrivateRoutes = () => {
-    const { adminToken } = useSelector((state) => state.auth);
+    const adminToken = localStorage.getItem("superAdminToken");
 
     return(
         adminToken ? <AdminDashboardLayout> <Outlet /> </AdminDashboardLayout> : <Navigate to="/superAdminLogin" />
