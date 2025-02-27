@@ -16,6 +16,22 @@ const ProfileRap = styled.div`
     text-align: center;
     margin-bottom: 30px;
   }
+  .log-out-cso {
+    height: 40px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #005e78;
+border: 1px solid #005e78;
+font-size: 16px;
+font-weight: 500;
+    width: 100px;
+  }
+  .log-out-cso:hover {
+    border-style: none;
+    color: #ffffff;
+    background: #005e78;
+
+  }
   .profile-1 label {
     color: #005e78;
     font-size: 16px;
@@ -107,7 +123,8 @@ const CsoProfile = () => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [successPop, setSuccessPop] = useState(false);
-  const { user, csoSuccess } = useSelector((state) => state.auth);
+  const {token, user, csoSuccess } = useSelector((state) => state.auth);
+  
   const navigate = useNavigate();
 
   const submitValid =
@@ -140,7 +157,10 @@ const CsoProfile = () => {
       }
     }
   };
+  const handleLogOut = () => {
+    window.location.reload()
 
+  }
   return (
     <ProfileRap>
       <Icon
@@ -229,6 +249,12 @@ const CsoProfile = () => {
               )}
             </button>
           </div>
+        </div>
+        <div className="profile-2"> 
+        <h5>Logout</h5>
+        <p>Click the button bellow to logout your account</p>
+        <button onClick={handleLogOut} className="log-out-cso">Logout</button>
+
         </div>
       </div>
       {successPop ? (

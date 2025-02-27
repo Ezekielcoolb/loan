@@ -56,8 +56,22 @@ display: flex;
  
 }
 
+.log-out-admins {
+  width: 100px;
+  height: 40px;
+  border: 1px solid #d0d5dd;
+border-radius: 10px;
+cursor: pointer;
+color: #ffffff;
+font-size: 16px;
+font-weight: 500;
+background: transparent;
+}
+.log-out-admins:hover {
+  color: #0C1D55;
+  background: #FFFFFF;
 
-
+}
 .admin-nav-3 {
   position: relative;
   display: flex;

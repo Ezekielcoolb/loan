@@ -18,7 +18,7 @@ const GuarantorRap = styled.div`
   padding: 50px;
   input,
   select {
-    width: 300px;
+    width: 280pxpx;
     height: 40px;
   border: none;
     border-bottom: 1px solid #d0d5dd;
@@ -26,6 +26,7 @@ const GuarantorRap = styled.div`
   label {
     display: flex;
     gap: 10px;
+    flex-direction: column;
     align-items: flex-end;
     justify-content: space-between;
   }

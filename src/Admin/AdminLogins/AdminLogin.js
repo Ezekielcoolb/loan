@@ -4,6 +4,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { managerAdminLogin } from "../../redux/slices/adminSlice";
+import { ClipLoader } from "react-spinners";
 
 const CsoLoginRap = styled.div`
 height: 100vh;
@@ -85,9 +86,12 @@ const ManagerLogin = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const {token, user, error } = useSelector((state) => state.admin);
+    const [isLoading, setIsLoading] = useState(false)
   
     const handleLogin = () => {
+    setIsLoading(true)
       dispatch(managerAdminLogin({ email, password }));
+      setIsLoading(false)
     };
     useEffect(() => {
         if (token) {
@@ -114,7 +118,13 @@ const ManagerLogin = () => {
         onChange={(e) => setEmail(e.target.value)}/>
           <input type="password" placeholder="Enter your password"  value={password}
         onChange={(e) => setPassword(e.target.value)}/>
-          <Link onClick={handleLogin} className="login-btn">Log in</Link>
+          <Link onClick={handleLogin} className="login-btn">
+          {isLoading ? 
+      
+                <ClipLoader color="white" size={10} />
+                  : "Login"
+            }
+          </Link>
         </div>
 
 

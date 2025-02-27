@@ -35,7 +35,7 @@ const LoanDoughnutChart = () => {
         plugins: {
             tooltip: {
                 callbacks: {
-                    label: (context) => `${context.label}: ₦${context.raw.toLocaleString()}`
+                    label: (context) => `${context.label}: ${context.raw.toLocaleString()}`
                 }
             }
         }

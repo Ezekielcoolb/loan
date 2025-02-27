@@ -165,7 +165,7 @@ const CustomerLoanCard = () => {
          
         </div>
         <h6>
-          Amount disbursed:
+        Loan + Interest:
           <span className="loan-span">
             {" "}
             {loan?.loanDetails?.amountToBePaid}{" "}

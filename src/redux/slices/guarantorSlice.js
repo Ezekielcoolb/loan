@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = 'http://api.jksolutn.com/api/guarantor';
+const API_URL = 'https://api.jksolutn.com/api/guarantor';
 // const API_URL = "http://localhost:5000/api/guarantor"
 
 // Fetch guarantor response

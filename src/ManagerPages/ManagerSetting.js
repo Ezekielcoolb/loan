@@ -594,7 +594,7 @@ const adminId = user?._id
               >
                 Notification
               </Link> */}
-              <Link
+              {/* <Link
                 className={`link ${activeLink === "target" ? "active" : ""}`}
                 onClick={() => handleLinkClick("target")}
               >
@@ -605,7 +605,7 @@ const adminId = user?._id
                 onClick={() => handleLinkClick("interest")}
               >
                 Interest
-              </Link>
+              </Link> */}
               <Link
                 className={`link ${activeLink === "security" ? "active" : ""}`}
                 onClick={() => handleLinkClick("security")}

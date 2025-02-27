@@ -3,7 +3,7 @@ import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
 
 
-const API_URL = 'http://api.jksolutn.com/api/notification';
+const API_URL = 'https://api.jksolutn.com/api/notification';
 
 // const API_URL = "http://localhost:5000/api/notification"
 

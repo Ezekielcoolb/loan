@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = 'http://api.jksolutn.com/api/loginauth';
-const API_URLS = 'http://api.jksolutn.com/api/adminAuth';
+const API_URL = 'https://api.jksolutn.com/api/loginauth';
+const API_URLS = 'https://api.jksolutn.com/api/adminAuth';
 // const API_URL = "http://localhost:5000/api/loginauth"
 // const API_URLS = "http://localhost:5000/api/adminAuth"
 

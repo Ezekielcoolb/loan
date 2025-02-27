@@ -4,6 +4,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { superAdminLogin } from "../../redux/slices/authSlice";
+import { ClipLoader, PulseLoader } from "react-spinners";
 
 const CsoLoginRap = styled.div`
 height: 100vh;
@@ -85,9 +86,19 @@ const SuperAdminLogin = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const {adminToken,  superUser, error } = useSelector((state) => state.auth);
+    const [isLoading, setIsLoading] = useState(false)
   
+
     const handleLogin = () => {
+      try {
+      setIsLoading(true)
+
       dispatch(superAdminLogin({ email, password }));
+      setIsLoading(false)
+      }  catch(e){
+        console.log(e)
+    }
+
     };
     useEffect(() => {
         if (adminToken) {
@@ -112,7 +123,13 @@ const SuperAdminLogin = () => {
         onChange={(e) => setEmail(e.target.value)}/>
           <input type="password" placeholder="Enter your password"  value={password}
         onChange={(e) => setPassword(e.target.value)}/>
-          <Link onClick={handleLogin} className="login-btn">Log in</Link>
+          <Link onClick={handleLogin} className="login-btn">
+          {isLoading ? 
+      
+      <PulseLoader color="white"  />
+        : "Login"
+  }
+          </Link>
         </div>
 
 

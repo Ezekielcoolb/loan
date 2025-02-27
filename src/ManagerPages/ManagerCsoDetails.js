@@ -660,8 +660,8 @@ const ManagerCsoDetails = () => {
                           <td>{loan.loanDetails.amountToBePaid}</td>
                           <td>{loan.loanDetails.amountPaidSoFar}</td>
                           <td>
-                            {loan.loanDetails.amountToBePaid} -{" "}
-                            {loan.loanDetails.amountPaidSoFar}
+                            {loan.loanDetails.amountToBePaid - loan.loanDetails.amountPaidSoFar} 
+                            
                           </td>
                           <td>{loan.status}</td>
                         </tr>

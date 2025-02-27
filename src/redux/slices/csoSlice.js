@@ -3,7 +3,7 @@ import {Toaster, toast} from "react-hot-toast"
 import axios from 'axios';
 import { format } from "date-fns";
 
-const API_URL = 'http://api.jksolutn.com/api/cso'; // Backend API URL
+const API_URL = 'https://api.jksolutn.com/api/cso'; // Backend API URL
 // const API_URL = "http://localhost:5000/api/cso"
 
 // Async thunk to fetch cso

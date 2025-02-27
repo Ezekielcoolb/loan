@@ -178,7 +178,7 @@ const ManagerCustomerCard = () => {
           </div>
         </div>
         <h6>
-          Amount disbursed:
+        Loan + Interest:
           <span className="loan-span">
             {" "}
             {loan[0]?.loanDetails?.amountToBePaid}{" "}

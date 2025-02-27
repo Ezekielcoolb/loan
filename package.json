@@ -2,6 +2,7 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
+  "homepage" : "https://jksolutn.com/",
   "dependencies": {
     "@iconify/react": "^5.1.0",
     "@reduxjs/toolkit": "^2.5.0",

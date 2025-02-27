@@ -1,11 +1,12 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { setOpenSideBar } from "../redux/slices/appSlice";
 
 
 const AdminNavbar = () => {
+  const navigate = useNavigate()
   const {openSideBar} = useSelector((state)=> state.app)
   const dispatch =useDispatch()
   console.log(openSideBar);
@@ -14,6 +15,14 @@ const AdminNavbar = () => {
     dispatch(setOpenSideBar())
   }
   
+
+  const handleLogOut = () => {
+    localStorage.removeItem("managerToken");
+    localStorage.removeItem("officerToken");
+    localStorage.removeItem("superAdminToken");
+    navigate("/")
+
+  }
   return (
     <nav className="admin-nav">
         <Icon className="icon-admin-menu"
@@ -27,19 +36,12 @@ const AdminNavbar = () => {
 
       <div className="admin-nav-2">
         <p>Welcome back!</p>
-        <div className="admin-nav-3 ">
-         
-        </div>
+       
       </div>
       <div className="admin-nav-3">
        
-        <Icon
-          icon="tdesign:notification"
-          width="20"
-          height="20"
-          style={{ color: "white" }}
-        />
-      
+       
+      <button onClick={handleLogOut} className="log-out-admins">Logout</button>
       </div>
 
     </nav>

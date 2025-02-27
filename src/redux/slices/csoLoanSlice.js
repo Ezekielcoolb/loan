@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = 'http://api.jksolutn.com/api/loan'; // Backend API URL
+const API_URL = 'https://api.jksolutn.com/api/loan'; // Backend API URL
 
 // const API_URL = "http://localhost:5000/api/loan"
 
