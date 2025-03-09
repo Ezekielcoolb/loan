@@ -6,13 +6,19 @@ import MonthlySalesChart from "./csoMatrics/MonthlySalesChart";
 import WeeklySalesChart from "./csoMatrics/WeeklySalesChart";
 import DailySalesChart from "./csoMatrics/DailySalesChart";
 import YearlySalesChart from "./csoMatrics/YearlySalesChart";
-import { createCso, fetchCso, searchCso } from "../redux/slices/csoSlice";
+import {
+  activateCSO,
+  clearMessages,
+  createCso,
+  deactivateCSO,
+  fetchCso,
+  searchCso,
+} from "../redux/slices/csoSlice";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { MoonLoader, PulseLoader } from "react-spinners";
 import { fetchAllBranches } from "../redux/slices/branchSlice";
 import axios from "axios";
-
 
 const ClientRap = styled.div`
   width: 100%;
@@ -52,6 +58,35 @@ const ClientRap = styled.div`
     display: flex;
     flex-direction: column;
     gap: 10px;
+  }
+  .button {
+    border-style: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+    width: 80px;
+    height: 30px;
+    background: #0c1d55;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 10px;
+  }
+  .exit-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0c1d55;
+    width: 80px;
+    height: 30px;
+    padding: 10px;
+    cursor: pointer;
+    border: 1px solid #0c1d55 ;
+    border-radius: 10px;
   }
   .bill-custom h4 {
     cursor: pointer;
@@ -378,28 +413,26 @@ const ClientRap = styled.div`
     padding-bottom: 20px;
   }
   .client-dropdown-div::-webkit-scrollbar {
-  height: 3px; /* Set scrollbar width */
- 
-}
+    height: 3px; /* Set scrollbar width */
+  }
 
-.client-dropdown-div::-webkit-scrollbar-thumb {
-  background: #888; /* Scrollbar thumb color */
-  border-radius: 4px; /* Optional for rounded scrollbar */
-}
+  .client-dropdown-div::-webkit-scrollbar-thumb {
+    background: #888; /* Scrollbar thumb color */
+    border-radius: 4px; /* Optional for rounded scrollbar */
+  }
 
-.client-dropdown-div::-webkit-scrollbar-thumb:hover {
-  background: #555; /* Thumb hover color */
-}
+  .client-dropdown-div::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Thumb hover color */
+  }
 
-.client-dropdown-div::-webkit-scrollbar-track {
-  background: #f1f1f1; /* Scrollbar track color */
-}
+  .client-dropdown-div::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Scrollbar track color */
+  }
 
-/* Hide Up and Down Arrows in Scrollbar */
-.client-dropdown-div::-webkit-scrollbar-button {
-  display: none; /* Hides the arrows */
-}
-
+  /* Hide Up and Down Arrows in Scrollbar */
+  .client-dropdown-div::-webkit-scrollbar-button {
+    display: none; /* Hides the arrows */
+  }
 
   .client-dropdown-div input,
   .client-dropdown-div select {
@@ -485,18 +518,18 @@ const ClientRap = styled.div`
     overflow: hidden; /* Ensures uploaded image doesn't overflow */
     background-color: #ffffff; /* Light background color */
   }
-.upper-image-display {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
-  width: 100%;
-  margin: auto;
-}
-.upper-image-display {
-  width: 200px;
-  height: 100px;
-}
+  .upper-image-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    margin: auto;
+  }
+  .upper-image-display {
+    width: 200px;
+    height: 100px;
+  }
   /* Hide the actual file input */
   .image-upload-container input[type="file"] {
     display: none;
@@ -530,10 +563,10 @@ const Csos = () => {
   const clientdropdownRef = useRef(null);
 
   const dispatch = useDispatch();
-  const { cso, totalPages, currentPage, status, error } = useSelector(
-    (state) => state.cso
-  );
+  const { successMessage, cso, totalPages, currentPage, status, error } =
+    useSelector((state) => state.cso);
   const limit = 10;
+  console.log(successMessage);
 
   const [filter, setFilter] = useState("all");
   const [activeLink, setActiveLink] = useState("cso");
@@ -548,7 +581,6 @@ const Csos = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { branches } = useSelector((state) => state.branches);
   const [query, setQuery] = useState("");
-
 
   const handleMatricOpen = (links) => {
     setMatricOpen(links);
@@ -573,7 +605,6 @@ const Csos = () => {
     zipCode: "",
     country: "",
   });
-console.log(formData);
 
   // Update formData.branch whenever selectedBranch changes
   useEffect(() => {
@@ -698,43 +729,37 @@ console.log(formData);
     formData.branch !== "" &&
     formData.phone !== "";
 
+  const handleSecondImage = async (e) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", e[0]);
+      formData.append("upload_preset", "ml_default");
 
-    const handleSecondImage = async (e) => {
-      try {
-        const formData = new FormData();
-        formData.append("file", e[0]);
-        formData.append("upload_preset", "ml_default");
-    
-        const response = await axios.post(
-          `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
-          formData
-        );
-    
-        const imageUrl = response.data.secure_url;
-        console.log(imageUrl);
-    
-        setLoanerIamge(imageUrl);
-    
-        // Update formData state
-        setFormData((prevData) => ({
-          ...prevData,
-          profileImg: imageUrl,
-        }));
-      } catch (err) {
-        console.log(err);
-      }
-    };
+      const response = await axios.post(
+        `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
+        formData
+      );
 
+      const imageUrl = response.data.secure_url;
+      console.log(imageUrl);
 
+      setLoanerIamge(imageUrl);
 
-
+      // Update formData state
+      setFormData((prevData) => ({
+        ...prevData,
+        profileImg: imageUrl,
+      }));
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isValid) {
       try {
-     
-        dispatch(createCso(formData));        
+        dispatch(createCso(formData));
         setDropdownVisible(false);
         setFormData({
           firstName: "",
@@ -779,6 +804,11 @@ console.log(formData);
     }));
   };
 
+  const handleSuccessExit = () => {
+    dispatch(clearMessages())
+    window.location.reload();
+  }
+
   const handleImage = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -791,10 +821,6 @@ console.log(formData);
       }));
     }
   };
-
-  
-  
-
 
   return (
     <ClientRap>
@@ -835,18 +861,18 @@ console.log(formData);
 
               <div className="client-dropdown-div">
                 <div className="upper-image-display">
-                <div class="image-upload-container">
-                  <label for="upload-input">
-                    <div class="upload-icon"></div>
-                    <input
-                      type="file"
-                      id="upload-input"
-                      accept="images/*"
-                      onChange={(e) => handleSecondImage(e.target.files)}
-                    />
-                  </label>
-                </div>
-                <img src={`${loanerImage}`} alt="" />
+                  <div class="image-upload-container">
+                    <label for="upload-input">
+                      <div class="upload-icon"></div>
+                      <input
+                        type="file"
+                        id="upload-input"
+                        accept="images/*"
+                        onChange={(e) => handleSecondImage(e.target.files)}
+                      />
+                    </label>
+                  </div>
+                  <img src={`${loanerImage}`} alt="" />
                 </div>
 
                 <div className="client-input-div">
@@ -939,18 +965,16 @@ console.log(formData);
                 <label>
                   Gender
                   <span className="star">*</span> <br />
-              
-
-<select 
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                required
-              >
-                <option >Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option>Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
                 </label>
                 <label>
                   Address
@@ -1148,6 +1172,7 @@ console.log(formData);
                           <th>No of customer</th>
                           <th>Branch</th>
                           <th>Action</th>
+                          <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1177,9 +1202,42 @@ console.log(formData);
                               <td>{caseItem?.branch}</td>
                               <td>
                                 {" "}
-                                <Link to={`/admin/csoDetails/${caseItem.workId}`}>
+                                <Link
+                                  to={`/admin/csoDetails/${caseItem.workId}`}
+                                >
                                   View Details
                                 </Link>
+                              </td>
+                              <td>
+                                {caseItem.isActive === true ? (
+                                  <button
+                                    className="button"
+                                    onClick={() =>
+                                      dispatch(deactivateCSO(caseItem._id))
+                                    }
+                                    disabled={isLoading}
+                                  >
+                                    {isLoading ? (
+                                      <PulseLoader color="white" size={10} />
+                                    ) : (
+                                      "Deactivate "
+                                    )}
+                                  </button>
+                                ) : (
+                                  <button
+                                    className="button"
+                                    onClick={() =>
+                                      dispatch(activateCSO(caseItem._id))
+                                    }
+                                    disabled={isLoading}
+                                  >
+                                    {isLoading ? (
+                                      <PulseLoader color="white" size={10} />
+                                    ) : (
+                                      "Activate"
+                                    )}
+                                  </button>
+                                )}
                               </td>
                             </tr>
                           ))
@@ -1251,6 +1309,15 @@ console.log(formData);
           )}
         </div>
       </div>
+      {successMessage !== null ? (
+        <div className="dropdown-container">
+          <div className="successPop">
+<p>{successMessage}</p>
+<button onClick={handleSuccessExit} className="exit-btn">Exit</button>
+</div>
+</div>
+      ): ""}
+      
     </ClientRap>
   );
 };

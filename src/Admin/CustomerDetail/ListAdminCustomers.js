@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAdminLoans } from '../../redux/slices/LoanSlice';
+import { deleteLoan, fetchAdminLoans } from '../../redux/slices/LoanSlice';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
@@ -43,7 +43,16 @@ const AdminCustomerTable = () => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
     }
-  };
+    
+  }
+  
+  const handleDelete = (id) => {
+    if (window.confirm('Are you sure you want to delete this loan?')) {
+        dispatch(deleteLoan(id));
+    }
+};
+
+    
   return (
     <div>
       <h2 >Customers</h2>
@@ -62,6 +71,7 @@ const AdminCustomerTable = () => {
             <th>Amount Requested</th>
             <th>Amount Approved</th>
             <th>Action</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -76,7 +86,7 @@ const AdminCustomerTable = () => {
               <td>{loan.loanDetails.amountApproved}</td>
               <td>  <Link to={`/admin/downloadLoanForm/${loan._id}`}>View Details</Link>
               </td>
-              <td></td>
+              <td><button style={{background: "red", color: "white", borderStyle: "none"}} onClick={() => handleDelete(loan._id)}>Delete</button></td>
             </tr>
           ))}
         </tbody>

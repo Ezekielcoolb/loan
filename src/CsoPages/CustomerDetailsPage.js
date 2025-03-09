@@ -24,6 +24,13 @@ const CustomerPageDetailRap = styled.div`
     font-size: 16px;
     font-weight: 700;
   }
+
+  a {
+    color: #005e78;
+    text-decoration: none;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+  }
   .customer-details p {
     color: #005e78;
     font-size: 12px;
@@ -190,6 +197,7 @@ const CustomerDetailsPage = () => {
     }
   }, [loan, dispatch]);
 
+  console.log(loan);
   
 
   const handleGoToCalendar = () => {
@@ -296,15 +304,16 @@ const AmountDue = dailyAmount - todayRepayment?.amountPaid
                     {`${loan?.customerDetails?.firstName} ${loan?.customerDetails?.lastName}`}
                   </h4>
                   <p>{loan?.customerDetails?.address}</p>
-                  <p>{loan?.customerDetails?.phone}</p>
-                  <p>{loan?.businessDetails?.businessName}</p>
+                  <a href={`tel:${loan?.customerDetails?.phoneOne}`}>
+  {loan?.customerDetails?.phoneOne}
+</a>                  <p>{loan?.businessDetails?.businessName}</p>
                 </div>
               </div>
               <div className="the-current-loan">
                 <p>Ammout Disbursed</p>
                 <h4>{loan?.loanDetails?.amountApproved}</h4>
-                <p>Customer Reliability Ratings</p>
-                <p>Default Payment</p>
+                {/* <p>Customer Reliability Ratings</p>
+                <p>Default Payment</p> */}
               </div>
             </div>
           </div>

@@ -379,6 +379,15 @@ export const fetchLoanDashboardLoans = createAsyncThunk("loans/fetchLoanDashboar
   return response.data;
 });
 
+export const deleteLoan = createAsyncThunk('loans/deleteLoan', async (id, { rejectWithValue }) => {
+  try {
+      const response = await axios.delete(`${API_URL}/delete-loans/${id}`);
+      return response.data;
+  } catch (error) {
+      return rejectWithValue(error.response.data);
+  }
+});
+
 // Slice
 const loanSlice = createSlice({
   name: "loans",
@@ -438,6 +447,10 @@ const loanSlice = createSlice({
     setFilter: (state, action) => {
       state.filter = action.payload;
     },
+    setLoans: (state, action) => {
+      state.loans = action.payload;
+  },
+
     nextWeek: (state) => {
       state.currentWeekStart = new Date(state.currentWeekStart);
       state.currentWeekStart.setDate(state.currentWeekStart.getDate() + 7);
@@ -559,7 +572,19 @@ setLoan: (state, action) => {
       });
 
 
-
+      builder
+      .addCase(deleteLoan.pending, (state) => {
+          state.loading = true;
+          state.error = null;
+      })
+      .addCase(deleteLoan.fulfilled, (state, action) => {
+          state.loading = false;
+          state.loans = state.loans.filter((loan) => loan._id !== action.payload.loan._id);
+      })
+      .addCase(deleteLoan.rejected, (state, action) => {
+          state.loading = false;
+          state.error = action.payload;
+      });
 
       builder
       .addCase(fetchAdminLoans.pending, (state) => {
@@ -873,5 +898,5 @@ setLoan: (state, action) => {
     });
   },
 });
-export const { setPage, setPages, setFilter, nextWeek, previousWeek, setMonth, setYear, calculateLoanStats, calculateDefaultingCustomers, calculateNoPaymentYesterday, setLoan  } = loanSlice.actions;
+export const { setPage, setPages, setLoans , setFilter, nextWeek, previousWeek, setMonth, setYear, calculateLoanStats, calculateDefaultingCustomers, calculateNoPaymentYesterday, setLoan  } = loanSlice.actions;
 export default loanSlice.reducer;

@@ -117,7 +117,7 @@ const CsoTransactionsTable = () => {
                     Interest</th>
                     <th>Actual Paid</th>
                     <th>Loan Balance</th>
-                    <th> Loan App Form</th>
+                    <th> Admin and Transaction Fees</th>
                     <th>Monthly Loan Target</th>
                     <th>Monthly Disbursement Target</th>
                     <th>Target Status</th>

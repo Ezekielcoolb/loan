@@ -359,7 +359,7 @@ const LoanCsoDashboard = () => {
           <div className="btns">
             <button onClick={handleNoPaymentYesterday}>Late Payment</button>
             <button onClick={handleShowDefaultingCustomers}>
-              Defaulted Loans
+              Past Due Loans
             </button>
           </div>
 

@@ -7,13 +7,17 @@ const API_URLS = 'https://api.jksolutn.com/api/adminAuth';
 // const API_URLS = "http://localhost:5000/api/adminAuth"
 
 // Login Thunk
-export const login = createAsyncThunk('auth/login', async (credentials) => {
-  const response = await axios.post(`${API_URL}/login`, credentials);
-  console.log(response.data);
-  return response.data;
- 
-  
-});
+export const login = createAsyncThunk(
+  'auth/login',
+  async (credentials, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${API_URL}/login`, credentials);
+      return response.data; // Success: return the response data
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Login failed'); // Capture the error message
+    }
+  }
+);
 // Login Thunk
 export const superAdminLogin = createAsyncThunk('auth/superAdminLogin', async (credentials) => {
   try {
@@ -56,6 +60,9 @@ export const updateCsoPassword = createAsyncThunk(
   }
 );
 
+
+
+
 // Update Password Thunk
 export const updatePassword = createAsyncThunk(
   'auth/updatePassword',
@@ -74,6 +81,7 @@ const authSlice = createSlice({
     superUser: null,
     adminToken: null,
     success: null,
+    message: null,
     csoSuccess: null,
     status: 'idle',
     error: null,
@@ -88,15 +96,21 @@ const authSlice = createSlice({
       state.success = null;
       state.error = null;
     },
+    clearMessage: (state) => {
+      state.message = null;
+      state.error = null;
+    }
   },
   extraReducers: (builder) => {
     builder
       .addCase(login.fulfilled, (state, action) => {
         state.user = action.payload.cso;
         state.token = action.payload.token;
+        state.message = action.payload.message || "Login successful";
       })
       .addCase(login.rejected, (state, action) => {
-        state.error = action.error.message;
+        state.error = action.payload;
+        state.message = action.payload
       })
       .addCase(updatePassword.fulfilled, (state, action) => {
         state.status = 'succeeded';
@@ -144,5 +158,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, resetState } = authSlice.actions;
+export const { logout, resetState, clearMessage  } = authSlice.actions;
 export default authSlice.reducer;

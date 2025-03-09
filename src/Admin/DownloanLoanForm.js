@@ -181,6 +181,25 @@ const DownloadRap = styled.div`
   font-weight: 500;
   margin-top: 100px;
 }
+.form-body-info-sub-img img {
+  width: 450px;
+  height: 450px;
+}
+.form-body-info-sub-img {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.picture-divs-sub {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+.picture-divs{
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+} 
 `;
 
 const DownloadLoanForm = () => {
@@ -195,6 +214,11 @@ const DownloadLoanForm = () => {
     const { guarantorResponse } = useSelector((state) => state.guarantor);
     const guarantorRef = useRef();
     const picRef = useRef();
+
+
+console.log(loan);
+
+
 
   useEffect(() => {
     if (!loan) {
@@ -454,6 +478,34 @@ const DownloadLoanForm = () => {
                 </div>
               </div>
             </div>
+
+            <div className="personal-Details">
+              <h3>Pictures</h3>
+              <div className="picture-divs">
+                <div className="picture-divs-sub">
+                <div className="form-body-info-sub-img">
+                  <h5>Customer picture:</h5>
+                   <img src={loan?.pictures?.customer} />
+                </div>
+                <div className="form-body-info-sub-img">
+                  <h5>Business picture:</h5>
+                  <img src={loan?.pictures?.customer}/>
+                </div>
+                </div>
+                <div className="picture-divs-sub">
+                <div className="form-body-info-sub-img">
+                  <h5>Other pictures:</h5>
+                  <div className="other-pictures-div">
+                  {loan?.pictures?.others.map((image, index) => (
+                    <img key={index} src={image} alt="" />
+                  ))}
+                  </div>
+                </div>
+                </div>
+              </div>
+              
+            </div>
+
             <div className="personal-Details">
               <h3>TERM AND CONDITIONS</h3>
               <div>
@@ -562,7 +614,9 @@ const DownloadLoanForm = () => {
                     <p>{guarantorResponse.knownDuration} years</p>
                   </div>
                 </div>
+                
               </div>
+              
               <div className="personal-Details">
                 <h3>DECLARATION</h3>
                 <p>
@@ -603,6 +657,7 @@ const DownloadLoanForm = () => {
                 </div>
               </div>
             </div>
+            
           </div>
           <button
             onClick={() => {

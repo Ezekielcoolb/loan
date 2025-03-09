@@ -458,7 +458,7 @@ const ActiveLoansTable = () => {
                       onClick={() => setRemitPop(false)}
                       className="upload-cancel-btn"
                     >
-                      Exist
+                      Exit
                     </button>
                     <button                       
                     className="upload-confirm-btn"
@@ -488,7 +488,7 @@ const ActiveLoansTable = () => {
                         onClick={() => setRemitPop(false)}
                         className="upload-cancel-btn"
                       >
-                        Exist
+                        Exit
                       </button>
               </div>
             </div>

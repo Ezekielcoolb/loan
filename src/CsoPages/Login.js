@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { login } from "../redux/slices/authSlice";
+import { clearMessage, login } from "../redux/slices/authSlice";
 import { ClipLoader } from "react-spinners";
 
 const CsoLoginRap = styled.div`
@@ -16,7 +16,14 @@ font-size: 16px;
 font-weight: 500;
 color: #005E7880;
 background-color: #f4f4f4;
-
+.message-para {
+  color: #005E78;
+  font-size: 14px;
+  font-weight: 600;
+  position: absolute;
+  right: 10px;
+  top: 40px;
+}
 input {
     width: 334px;
     color: #005E7880;
@@ -67,9 +74,10 @@ const CsoLogin = () => {
     const [password, setPassword] = useState('');
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const {token,  user, error } = useSelector((state) => state.auth);
+    const {token, message,  user, error } = useSelector((state) => state.auth);
       const [isLoading, setIsLoading] = useState(false)
   
+console.log(message);
 
     const handleLogin = () => {
       setIsLoading(true)
@@ -79,6 +87,13 @@ const CsoLogin = () => {
 
     };
     useEffect(() => {
+      if (message || error) {
+        setTimeout(() => {
+          dispatch(clearMessage());
+        }, 5000);
+      }
+    }, [message, error, dispatch]);
+    useEffect(() => {
         if (token) {
           navigate("/cso"); // Redirect to the protected route
         }
@@ -87,6 +102,9 @@ const CsoLogin = () => {
       
   return (
     <CsoLoginRap>
+      {message !==null ? (
+        <p className="message-para">{message}</p>
+      ): ""}
       <div className="all-login-div">
         <div className="loan-img">
             <img src="/images/login_img.png" alt="" />

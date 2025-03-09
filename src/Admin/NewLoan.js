@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchWaitingLoans, setPages } from "../redux/slices/LoanSlice";
+import { deleteLoan, fetchWaitingLoans, setPages } from "../redux/slices/LoanSlice";
 import { MoonLoader } from "react-spinners";
 
 const NewLoanRap = styled.div`
@@ -198,6 +198,8 @@ const NewLoan = () => {
   useEffect(() => {
     dispatch(fetchWaitingLoans({ page: currentPage }));
   }, [dispatch, currentPage]);
+
+
   
   const handlePageChange = (page) => {
     dispatch(setPages(page));
@@ -214,6 +216,13 @@ const NewLoan = () => {
       dispatch(setPages(currentPage + 1));
     }
   };
+
+  const handleDelete = (id) => {
+    if (window.confirm('Are you sure you want to delete this loan?')) {
+        dispatch(deleteLoan(id));
+    }
+};
+
   
   if (loading === "loading") return <p style={{display: "flex", 
     flexDirection: "column", 
@@ -243,6 +252,7 @@ const NewLoan = () => {
                     <th>Branch Associated</th>
                     <th>Status</th>
                     <th>Action</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -258,6 +268,7 @@ const NewLoan = () => {
                       <td>
                         <Link to={`/admin/loan/${loan._id}`}>View Details</Link>
                       </td>
+                      <td><button style={{background: "red", color: "white", padding: "10px", borderStyle: "none"}} onClick={() => handleDelete(loan._id)}>Delete</button></td>
                     </tr>
                   ))}
                 </tbody>

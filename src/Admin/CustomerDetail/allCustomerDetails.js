@@ -201,7 +201,7 @@ const CustomerDetailsInfo = () => {
           </div>
         )}
 
-        {activeLink === "details" && (
+        {/* {activeLink === "details" && (
           <div className="details">
             <h2>Customer Details</h2>
             <div className="left-loan-detail">
@@ -314,7 +314,7 @@ const CustomerDetailsInfo = () => {
               </div>
             </div>
           </div>
-        )}
+        )}  */}
       </div>
     </CustomerDetailRap>
   );

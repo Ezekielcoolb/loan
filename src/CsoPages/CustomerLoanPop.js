@@ -407,14 +407,14 @@ if (isValid) {
                 placeholder="Enter phone number in form of +234XXXXXXXXXX"
                 required
               />
-               <input
+               {/* <input
                 type="text"
                 name="customerDetails.phoneTwo"
                 value={formData.customerDetails.phoneTwo}
                 onChange={handleInputChange}
                 placeholder="Mobile No 2 in form of +234XXXXXXXXXX"
               
-              />
+              /> */}
                <input
                 type="text"
                 name="customerDetails.religion"
@@ -586,14 +586,14 @@ if (isValid) {
                 placeholder="Enter phone number in form of +234XXXXXXXXXX"
                 required
               />
-              <input
+              {/* <input
                 type="text"
                 name="guarantorDetails.phoneTwo"
                 value={formData.guarantorDetails.phoneTwo}
                 onChange={handleInputChange}
                 placeholder="Mobile No 2 in form of +234XXXXXXXXXX"
                
-              />
+              /> */}
               <input
                 type="email"
                 name="guarantorDetails.email"
@@ -688,7 +688,7 @@ if (isValid) {
             disabled={!isValid}
             style={{
               backgroundColor: isValid ? "#0c1d55" : "#727789",
-              cursor: !isValid ? "not-allowed" : "pointer",
+              cursor: loading || !isValid ? "not-allowed" : "pointer",
             }}
             >
               {loading ? 

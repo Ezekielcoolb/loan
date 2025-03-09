@@ -5,6 +5,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { PulseLoader } from "react-spinners";
 import styled from "styled-components";
 import { updateCsoPassword } from "../redux/slices/authSlice";
+import { updateCSODetails } from "../redux/slices/csoSlice";
+import axios from "axios";
 
 const ProfileRap = styled.div`
   padding: 20px;
@@ -21,16 +23,15 @@ const ProfileRap = styled.div`
     border-radius: 10px;
     cursor: pointer;
     color: #005e78;
-border: 1px solid #005e78;
-font-size: 16px;
-font-weight: 500;
+    border: 1px solid #005e78;
+    font-size: 16px;
+    font-weight: 500;
     width: 100px;
   }
   .log-out-cso:hover {
     border-style: none;
     color: #ffffff;
     background: #005e78;
-
   }
   .profile-1 label {
     color: #005e78;
@@ -50,7 +51,7 @@ font-weight: 500;
     gap: 10px;
     margin-top: 10px;
   }
-  .profile-image {
+  /* .profile-image {
     border: 4px solid #005e78;
     background: #d9d9d9;
     width: 170px;
@@ -59,7 +60,12 @@ font-weight: 500;
     display: flex;
     justify-content: center;
     align-items: center;
-  }
+  } */
+    .profile-image img {
+      border-radius: 50%;
+      width: 200px;
+      height: 200px;
+    }
   .profile-image img {
     width: 110px;
     height: 110px;
@@ -113,6 +119,14 @@ font-weight: 500;
     align-items: center;
     text-decoration: none;
   }
+  .profile-2 h2 {
+    font-size: 20px;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
 `;
 
 const CsoProfile = () => {
@@ -122,10 +136,22 @@ const CsoProfile = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [csoLoading, setCsoLoading] = useState(false);
   const [successPop, setSuccessPop] = useState(false);
-  const {token, user, csoSuccess } = useSelector((state) => state.auth);
-  
+  const [loanerImage, setLoanerIamge] = useState("");
+
+  const [csoSuccessPop, setCsoSuccessPop] = useState(false);
   const navigate = useNavigate();
+  const { token, user, csoSuccess } = useSelector((state) => state.auth);
+  const [formData, setFormData] = useState({
+    address: "",
+    phone: "",
+    city: "",
+    state: "",
+    country: "",
+    profileImg: "",
+  });
+console.log(formData);
 
   const submitValid =
     currentPassword !== "" &&
@@ -134,9 +160,43 @@ const CsoProfile = () => {
     currentPassword === user.password &&
     newPassword === confirmPassword;
 
+
+const csoSubmitValid = 
+      formData.address !== "" ||
+      formData.phone !== "" ||
+      formData.city !== "" || 
+      formData.state !== "" ||
+      formData.country !== "" ||
+      formData.profileImg !== ""
+
+
   const adminId = user?._id;
 
-  console.log(csoSuccess);
+  const handleSecondImage = async (e) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", e[0]);
+      formData.append("upload_preset", "ml_default");
+
+      const response = await axios.post(
+        `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
+        formData
+      );
+
+      const imageUrl = response.data.secure_url;
+      console.log(imageUrl);
+
+      setLoanerIamge(imageUrl);
+
+      // Update formData state
+      setFormData((prevData) => ({
+        ...prevData,
+        profileImg: imageUrl,
+      }));
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const handleGoBachHome = () => {
     navigate("/cso");
@@ -157,10 +217,37 @@ const CsoProfile = () => {
       }
     }
   };
-  const handleLogOut = () => {
-    window.location.reload()
 
-  }
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleCsoSubmit = async (e) => {
+    e.preventDefault();
+    console.log("start");
+  
+    if (csoSubmitValid) {
+      try {
+        await dispatch(updateCSODetails({ id: adminId, updatedData: formData }));
+        setCsoSuccessPop(true);
+        setFormData({
+          address: "",
+          phone: "",
+          city: "",
+          state: "",
+          country: "",
+          profileImg: "",
+        });
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  };
+  
+
+  const handleLogOut = () => {
+    window.location.reload();
+  };
   return (
     <ProfileRap>
       <Icon
@@ -206,6 +293,7 @@ const CsoProfile = () => {
           </label>
         </div>
         <div className="profile-2">
+          <h2>Update Profile</h2>
           <div>
             <h5>Security</h5>
             <p>Reset Password</p>
@@ -232,7 +320,8 @@ const CsoProfile = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
-            <button onClick={handleSubmit}
+            <button
+              onClick={handleSubmit}
               className="save-btn"
               disabled={!submitValid}
               style={{
@@ -249,23 +338,101 @@ const CsoProfile = () => {
               )}
             </button>
           </div>
+          <div>
+            <h5>CSO Details</h5>
+            <p>Change Your Details</p>
+          </div>
+          <div>
+            <form onSubmit={handleCsoSubmit}>
+              <input
+                type="text"
+                name="address"
+                placeholder="Address"
+                onChange={handleChange}
+              />
+              <input
+                type="text"
+                name="phone"
+                placeholder="Phone"
+                onChange={handleChange}
+              />
+              <input
+                type="text"
+                name="city"
+                placeholder="City"
+                onChange={handleChange}
+              />
+              <input
+                type="text"
+                name="state"
+                placeholder="State"
+                onChange={handleChange}
+              />
+              <input
+                type="text"
+                name="country"
+                placeholder="Country"
+                onChange={handleChange}
+              />
+              <div>
+                <p style={{marginBottom: "10px"}}>Upload your profile pictures</p>
+              <input
+                type="file"
+                id="upload-input"
+                accept="images/*"
+                onChange={(e) => handleSecondImage(e.target.files)}
+              />
+              </div>
+              <button
+                onClick={handleCsoSubmit}
+                type="submit"
+                className="save-btn"
+                disabled={!csoSubmitValid}
+                style={{
+                  backgroundColor: csoSubmitValid ? "#0c1d55" : "#727789",
+                  cursor: !csoSubmitValid ? "not-allowed" : "pointer",
+                  borderStyle: "none"
+                }}
+              >
+                {csoLoading ? (
+                  <>
+                    <PulseLoader color="white" size={10} />
+                  </>
+                ) : (
+                  "Update Profile"
+                )}
+              </button>
+            </form>
+          </div>
         </div>
-        <div className="profile-2"> 
-        <h5>Logout</h5>
-        <p>Click the button bellow to logout your account</p>
-        <button onClick={handleLogOut} className="log-out-cso">Logout</button>
-
+        <div className="profile-2">
+          <h5>Logout</h5>
+          <p>Click the button bellow to logout your account</p>
+          <button onClick={handleLogOut} className="log-out-cso">
+            Logout
+          </button>
         </div>
       </div>
       {successPop ? (
-      <div className="dropdown-container">
-        <div className="successPop">
+        <div className="dropdown-container">
+          <div className="successPop">
             <p>{csoSuccess}</p>
             <button onClick={() => setSuccessPop(false)}>Exit</button>
+          </div>
         </div>
-
-      </div>
-      ) : ""}
+      ) : (
+        ""
+      )}
+      {csoSuccessPop ? (
+        <div className="dropdown-container">
+          <div className="successPop">
+            <p>Profile updated successfully</p>
+            <button onClick={() => setCsoSuccessPop(false)}>Exit</button>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
     </ProfileRap>
   );
 };
