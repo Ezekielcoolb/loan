@@ -76,6 +76,9 @@ import ManagerBranches from "../ManagerPages/ManagerBranches";
 import ManagerBranchDetails from "../ManagerPages/ManagerBranchDetails";
 import ManagerSetting from "../ManagerPages/ManagerSetting";
 import Home from "../GuestPage/Home";
+import MonthRemittanceTable from "../Admin/test";
+import MinimalApplicationForm from "../CsoPages/MinimalLoanForm";
+import PreviousLoans from "../CsoPages/PreviousLoansPage";
 
 
 
@@ -113,7 +116,7 @@ export default function Routess() {
                         // {path: "/testDetails", element: <TargetForm  />},
                         // {path: "/calendar/test/:id", element: <LoanCalendar  />},
                         // {path: "/branches/:id", element: <CsoDetail  />},
-                        {path: "/admin/test", element: <GuarantorDetailsTest  />},
+                        {path: "/admin/test", element: <MonthRemittanceTable  />},
                         // {path: "/test", element: <Notifications  />},
                         {path: "/admin/customer/:bvn", element: <CustomerDetailsInfo />},
                         {path: "/admin/customer/calender/:bvn", element: <AdminCalendarPage />},
@@ -133,13 +136,14 @@ export default function Routess() {
                     children: [
                         {path: "/cso" , element: <CsoHome />},
                         {path: "/cso/customer-details/:id" , element: <CustomerDetailsPage />},
+                        {path: "/cso/minimalApplication/:id", element: <MinimalApplicationForm  />},
                         {path: "/cso/calendar/:id", element: <CalendarPage  />},
                         {path: "/cso/loans/:id/payment", element: <PaymentPage />},
                         {path: "/cso/loans-dashboard", element: <LoanCsoDashboard />},
                         {path: "/cso/loans-collections", element: <LoanCollections />},
                         {path: "/cso/csos-dashboard", element: <RemittanceUpload />},
                         {path: "/cso/csos-profile", element: <CsoProfile />},
-                       
+                        {path: "/cso/previousLoans/:id", element: <PreviousLoans />},
                     ]
                 },
                 {

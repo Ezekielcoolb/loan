@@ -120,7 +120,7 @@ export default function DisburseSidebar() {
           </div>
           
           <div className="help-center">
-              <img src="/images/help_center.png" alt="..."/>
+          <img src="/images/loan_logo.jpg" alt="..."/>
           </div>
         </div>
         <Closer

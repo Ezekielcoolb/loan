@@ -15,10 +15,11 @@ const GuarantorRap = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+
   padding: 50px;
   input,
   select {
-    width: 280pxpx;
+    width: 200px;
     height: 40px;
   border: none;
     border-bottom: 1px solid #d0d5dd;
@@ -27,8 +28,6 @@ const GuarantorRap = styled.div`
     display: flex;
     gap: 10px;
     flex-direction: column;
-    align-items: flex-end;
-    justify-content: space-between;
   }
   .checkbox {
     width: 18px !important;
@@ -38,7 +37,7 @@ const GuarantorRap = styled.div`
   form, .form-body{
     display: flex;
     flex-direction: column;
-    max-width: 500px;
+    align-items: flex-start;
     gap: 20px;
   }
   .upper-grand p {
@@ -186,6 +185,7 @@ const GuarantorForm = () => {
 
   return (
     <GuarantorRap>
+      <div style={{maxWidth: "500px"}}>
       <div className="upper-grand">
         <h1>JK POS SOLUTION ENTERPRISES</h1>
         <h2>Guarantor Form</h2>
@@ -294,6 +294,7 @@ const GuarantorForm = () => {
               
               </button>
       </form>
+      </div>
     </GuarantorRap>
   );
 };

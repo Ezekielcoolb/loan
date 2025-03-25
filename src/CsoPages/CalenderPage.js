@@ -174,7 +174,7 @@ const CalendarPage = () => {
           </div>
         </div>
         <h6>
-          Amount disbursed:
+        Loan + Interest:
           <span className="loan-span">
             {" "}
             {loan?.loanDetails?.amountToBePaid}{" "}
@@ -183,6 +183,10 @@ const CalendarPage = () => {
         <h6>
           Loan Balance:
           <span className="loan-span">{LoanBalance}</span>
+        </h6>
+        <h6>
+          Total Paid:
+          <span className="loan-span">{loan?.loanDetails?.amountPaidSoFar}</span>
         </h6>
 <div className="all-circle-div">
   <div className="circle-div">
@@ -233,17 +237,20 @@ const CalendarPage = () => {
             else if (isEndDate) backgroundColor = "#afaf5a";
             else if (isMissed) backgroundColor = "black"; // Set missed background to black
 
-            const buttonColor = isPaid
-              ? scheduleDate.toDateString() === today.toDateString()
-                ? "green"
-                : isFuture
-                ? "orange"
-                : "green"
-              : isMissed
-              ? "red"
-              : isPartial
-              ? "#e7c17b"
-              : "transparent";
+            const buttonColor =
+  isStartDate // No button color on the first day
+    ? "transparent"
+    : isPaid
+    ? scheduleDate.toDateString() === today.toDateString()
+      ? "green"
+      : isFuture
+      ? "orange"
+      : "green"
+    : isMissed
+    ? "red"
+    : isPartial
+    ? "#e7c17b"
+    : "transparent";
 
             const missedAmount = isMissed
               ? schedule.expectedAmount - schedule.amountPaid

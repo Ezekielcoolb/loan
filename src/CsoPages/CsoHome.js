@@ -13,7 +13,7 @@ import {
   setPage,
   updateGuarantorFormPic,
 } from "../redux/slices/LoanSlice";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { PulseLoader } from "react-spinners";
 
@@ -140,12 +140,25 @@ const HomeCsoRap = styled.div`
     font-size: 14px;
     font-weight: 600;
   }
-  .close-pop-btn {
+  .close-pop-btn, .previous-loans {
     border: 1px solid #005e78;
     width: 100px;
     height: 30px;
     border-radius: 10px;
     color: #005e78;
+  }
+  .previous-loans-div {
+    display: flex;
+    gap: 20px;
+  }
+  .previous-loans  {
+    width: 130px;
+    text-decoration: none;
+    background: #005e78;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   .page-div {
     display: flex;
@@ -215,6 +228,13 @@ const HomeCsoRap = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+  .images-container img {
+    height: 127px;
+    width: 120px;
+  }
+  .images-container p,  .images-container h4 {
+    max-width: 120px;
   }
 `;
 
@@ -313,11 +333,13 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
       setOpenGuarantorForm(true)
     } else if (loan?.status === "waiting for disbursement") {
       message = "Waiting for disbursement";
+      setCustomerId(loan?._id);
       color = "green"; // Color for waiting disbursement
     } else if (loan?.status === "rejected") {
       message = `Loan was rejected: ${loan?.rejectionReason}`;
+      setCustomerId(loan?._id);
       color = "red"; // Color for rejected loan
-    } else if (loan?.status === "active loan") {
+    } else if (loan?.status === "active loan" || loan?.status === "fully paid") {
       // Redirect to the customer details page if status is "active loan"
       navigate(`/cso/customer-details/${loan?._id}`);
     }
@@ -378,7 +400,7 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
           {loans && loans.length > 0 ? (
             <div>
               <div className="images-container">
-                {currentLoans?.reverse().map((loan, index) => (
+                {currentLoans?.slice().reverse().map((loan, index) => (
                   <li
                     className="images-mapped"
                     key={index}
@@ -400,7 +422,8 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
                     <div style={{
                       background: loan?.status === "waiting for approval" ? "green" :
                                   loan?.status === "waiting for disbursement" ? "orange" :
-                                  loan?.status === "rejected" ? "red" : "blue"
+                                  loan?.status === "rejected" ? "red" : 
+                                  loan?.status === "fully paid" ? "purple" : "blue"
                     }}   className="circle-div"></div>
                   </li>
                 ))}
@@ -466,13 +489,15 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
             </div>
             ) : ""}
 
-
+<div className="previous-loans-div">
             <button
               className="close-pop-btn"
               onClick={() => setPopupMessage(null)}
             >
               Close
             </button>
+            <Link to={`/cso/previousLoans/${customerId}`} className="previous-loans">Previous Loans</Link>
+            </div>
           </div>
         </div>
       )}

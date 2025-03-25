@@ -102,6 +102,9 @@ const AllCustomerTable = () => {
   const activeLoansCount = allLoans.filter(
     (loan) => loan.status === "active loan"
   ).length;
+  const fullyLoansCount = allLoans.filter(
+    (loan) => loan.status === "fully paid"
+  ).length;
   const pendingLoansCount = allLoans.filter(
     (loan) =>
       loan.status === "waiting for approval" ||
@@ -124,6 +127,9 @@ const AllCustomerTable = () => {
       </p>
       <p>Number of Active Loans:
         <span> {activeLoansCount} </span>
+         </p>
+         <p>Number of fully paid Loans:
+        <span> {fullyLoansCount} </span>
          </p>
       <p>Number of Pending Loans:
         <span> {pendingLoansCount} </span>
@@ -160,7 +166,7 @@ const AllCustomerTable = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {currentRows.map((loan, index) => (
+                    {currentRows.slice().reverse().map((loan, index) => (
                       <tr key={index}>
                         <td>
                           {loan.customerDetails.firstName}{" "}

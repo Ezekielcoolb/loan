@@ -23,25 +23,27 @@ const CsoNotifications = () => {
       {error && <p style={{ ...styles.message, color: "red" }}>Error: {error}</p>}
       
       {data && (
-        <>
-          {["loanSubmit", "approval", "rejection", "disbursement"].map(
-            (category) =>
-              data[category]?.length > 0 && (
-                <div key={category} style={styles.categoryContainer}>
-                  <h4 style={styles.categoryTitle}>{category}</h4>
-                  <ul style={styles.list}>
-                    {data[category].map((item, index) => (
-                      <li key={index} style={styles.listItem}>
-                        {item.message} <br />
-                        <small style={styles.date}>{new Date(item.date).toLocaleString()}</small>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )
-          )}
-        </>
-      )}
+  <>
+    {["loanSubmit", "approval", "rejection", "disbursement"].map((category) =>
+      data[category]?.length > 0 && (
+        <div key={category} style={styles.categoryContainer}>
+          <h4 style={styles.categoryTitle}>{category}</h4>
+          <ul style={styles.list}>
+            {data[category].slice().reverse().map((item, index) => (
+              <li key={index} style={styles.listItem}>
+                {item.message} <br />
+                <small style={styles.date}>
+                  {new Date(item.date).toLocaleString()}
+                </small>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    )}
+  </>
+)}
+
     </div>
   );
 };

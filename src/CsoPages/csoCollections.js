@@ -403,7 +403,7 @@ const ActiveLoansTable = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {customers.map((customer, index) => (
+                  {customers?.slice().reverse().map((customer, index) => (
                     <tr key={index}>
                       <td>{index + 1}</td>{" "}
                       {/* Serial number, starting from 1 */}
@@ -501,7 +501,7 @@ const ActiveLoansTable = () => {
         {confirm? (
          <div className="dropdown-container">
                 <div className="all-upload-pop">
-            <p className="prove">Are you uploading a prove of payment for {formatNumberWithCommas(totalAmountPaid)}</p>
+            <p className="prove">Are you uploading a proof of payment for {formatNumberWithCommas(totalAmountPaid)}</p>
             <div className="upload-btns">
             <button
                       className="upload-confirm-btn"

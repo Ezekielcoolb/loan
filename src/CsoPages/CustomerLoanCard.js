@@ -23,6 +23,9 @@ background: #005e78;
     font-size: 25px;
     color: #005e78;
   }
+  .cancel-icon {
+    padding-right: 10px;
+  }
   .pop-info {
     display: flex;
     flex-direction: column;
@@ -32,6 +35,7 @@ background: #005e78;
     background: #005e78;
     color: white;
     height: auto;
+    padding-top: 20px;
   }
   .pop-info button {
     color: #005e78;
@@ -119,6 +123,7 @@ const CustomerLoanCard = () => {
   const today = new Date();
 
   const dailyAmount = loan?.loanDetails?.amountToBePaid / 30;
+console.log(loan);
 
   // Custom function to format the date
   const formatDate = (date) => {
@@ -162,7 +167,15 @@ const CustomerLoanCard = () => {
           <h1>
             {loan?.customerDetails?.firstName} {loan?.customerDetails?.lastName}
           </h1>
-         
+          <div className="cancel-icon">
+                     <Icon
+                       onClick={handleMoveBack}
+                       icon="stash:times-circle"
+                       width="50"
+                       height="50"
+                       style={{ color: "#ffffff", cursor: "pointer" }}
+                     />
+                   </div>
         </div>
         <h6>
         Loan + Interest:
@@ -174,6 +187,10 @@ const CustomerLoanCard = () => {
         <h6>
           Loan Balance:
           <span className="loan-span">{LoanBalance}</span>
+        </h6>
+        <h6>
+          Total Paid:
+          <span className="loan-span">{loan?.loanDetails?.amountPaidSoFar}</span>
         </h6>
 <div className="all-circle-div">
   <div className="circle-div">

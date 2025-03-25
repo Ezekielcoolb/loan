@@ -582,6 +582,12 @@ const Csos = () => {
   const { branches } = useSelector((state) => state.branches);
   const [query, setQuery] = useState("");
 
+  const [dropdownOpen, setDropdownOpen] = useState(null);
+
+  const toggleDropdownActivate = (csoId) => {
+    setDropdownOpen(dropdownOpen === csoId ? null : csoId);
+  };
+
   const handleMatricOpen = (links) => {
     setMatricOpen(links);
   };
@@ -1157,154 +1163,142 @@ const Csos = () => {
                 </div>
               </div>
               <div className="table-container">
-                <div className="new-table-scroll">
-                  <div className="table-div-con">
-                    <table className="custom-table">
-                      <thead>
-                        <tr>
-                          <th style={{ width: "30px" }}>
-                            <input type="checkbox" />
-                          </th>
-                          <th>Name</th>
-                          <th>Email</th>
-                          <th>Phone Number</th>
-                          <th>Gender</th>
-                          <th>No of customer</th>
-                          <th>Branch</th>
-                          <th>Action</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredCso ? (
-                          filteredCso.map((caseItem) => (
-                            <tr
-                              key={caseItem?.id}
-                              onClick={() => handleRowClick(caseItem)}
-                              style={{ cursor: "pointer" }}
-                            >
-                              <td>
-                                <input
-                                  type="checkbox"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleRowClick(caseItem);
-                                  }}
-                                />
-                              </td>
-                              <td>
-                                {caseItem?.firstName} {caseItem?.lastName}
-                              </td>
-                              <td>{caseItem?.email}</td>
-                              <td>{caseItem?.phone}</td>
-                              <td>{caseItem?.status}</td>
-                              <td>{caseItem?.noCustomer}</td>
-                              <td>{caseItem?.branch}</td>
-                              <td>
-                                {" "}
-                                <Link
-                                  to={`/admin/csoDetails/${caseItem.workId}`}
-                                >
-                                  View Details
-                                </Link>
-                              </td>
-                              <td>
-                                {caseItem.isActive === true ? (
-                                  <button
-                                    className="button"
-                                    onClick={() =>
-                                      dispatch(deactivateCSO(caseItem._id))
-                                    }
-                                    disabled={isLoading}
-                                  >
-                                    {isLoading ? (
-                                      <PulseLoader color="white" size={10} />
-                                    ) : (
-                                      "Deactivate "
-                                    )}
-                                  </button>
-                                ) : (
-                                  <button
-                                    className="button"
-                                    onClick={() =>
-                                      dispatch(activateCSO(caseItem._id))
-                                    }
-                                    disabled={isLoading}
-                                  >
-                                    {isLoading ? (
-                                      <PulseLoader color="white" size={10} />
-                                    ) : (
-                                      "Activate"
-                                    )}
-                                  </button>
-                                )}
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan="10" className="no-case">
-                              <img src="/images/mask_img.png" alt="" />
-                              <h3>No cso found.</h3>
-                              <p style={{}}></p>
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                {/* Pagination Controls */}
-
-                <div className="pagination-div">
-                  <Link
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="next-page-link"
-                  >
-                    <Icon
-                      icon="formkit:arrowleft"
-                      width="18"
-                      height="18"
-                      style={{ color: "#636878" }}
-                    />
-                    Previous
-                  </Link>
-
-                  <div>
-                    {Array.from(
-                      { length: totalPages },
-                      (_, index) => index + 1
-                    ).map((pageNumber) => (
-                      <Link
-                        className="paginations"
-                        key={pageNumber}
-                        onClick={() => handlePageChange(pageNumber)}
-                        style={{
-                          color:
-                            pageNumber === currentPage ? "#030b26" : "#727789",
+      <div className="new-table-scroll">
+        <div className="table-div-con">
+          <table className="custom-table">
+            <thead>
+              <tr>
+                <th style={{ width: "30px" }}>
+                  <input type="checkbox" />
+                </th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Gender</th>
+                <th>Branch</th>
+                <th>Action</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredCso?.length > 0 ? (
+                filteredCso.map((caseItem) => (
+                  <tr key={caseItem?.id} onClick={() => handleRowClick(caseItem)} style={{ cursor: "pointer" }}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRowClick(caseItem);
+                        }}
+                      />
+                    </td>
+                    <td>{caseItem?.firstName} {caseItem?.lastName}</td>
+                    <td>{caseItem?.email}</td>
+                    <td>{caseItem?.phone}</td>
+                    <td>{caseItem?.status}</td>
+                    <td>{caseItem?.branch}</td>
+                    <td>
+                      <Link to={`/admin/csoDetails/${caseItem.workId}`}>View Details</Link>
+                    </td>
+                    <td style={{ position: "relative" }}>
+                      <button 
+                        style={{ background: "transparent", border: "none", cursor: "pointer" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleDropdownActivate(caseItem._id);
                         }}
                       >
-                        {pageNumber}
-                      </Link>
-                    ))}
-                  </div>
+                        &#8226;&#8226;&#8226;
+                      </button>
 
-                  <Link
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="next-page-link"
-                  >
-                    Next
-                    <Icon
-                      icon="formkit:arrowright"
-                      width="18"
-                      height="18"
-                      style={{ color: "#636878" }}
-                    />
-                  </Link>
-                </div>
-              </div>
+                      {dropdownOpen === caseItem._id && (
+                        <div 
+                          style={{
+                            position: "absolute",
+                            top: "100%",
+                            right: 0,
+                            background: "white",
+                            boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                            borderRadius: "5px",
+                            padding: "5px",
+                            zIndex: 10,
+                          }}
+                        >
+                          <button 
+                            className="button"
+                            onClick={() => {
+                              dispatch(caseItem.isActive ? deactivateCSO(caseItem._id) : activateCSO(caseItem._id));
+                              toggleDropdownActivate(null);
+                            }}
+                            disabled={isLoading}
+                            style={{
+                              background: caseItem.isActive ? "red" : "green",
+                              color: "white",
+                              padding: "10px",
+                              border: "none",
+                              width: "100%",
+                              cursor: "pointer",
+                            }}
+                          >
+                            {isLoading ? (
+                              <PulseLoader color="white" size={10} />
+                            ) : (
+                              caseItem.isActive ? "Deactivate" : "Activate"
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="10" className="no-case">
+                    <img src="/images/mask_img.png" alt="" />
+                    <h3>No CSO found.</h3>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="pagination-div">
+        <Link 
+          onClick={() => handlePageChange(currentPage - 1)} 
+          disabled={currentPage === 1} 
+          className="next-page-link"
+        >
+          <Icon icon="formkit:arrowleft" width="18" height="18" style={{ color: "#636878" }} />
+          Previous
+        </Link>
+
+        <div>
+          {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+            <Link
+              className="paginations"
+              key={pageNumber}
+              onClick={() => handlePageChange(pageNumber)}
+              style={{ color: pageNumber === currentPage ? "#030b26" : "#727789" }}
+            >
+              {pageNumber}
+            </Link>
+          ))}
+        </div>
+
+        <Link 
+          onClick={() => handlePageChange(currentPage + 1)} 
+          disabled={currentPage === totalPages} 
+          className="next-page-link"
+        >
+          Next
+          <Icon icon="formkit:arrowright" width="18" height="18" style={{ color: "#636878" }} />
+        </Link>
+      </div>
+    </div>
             </>
           )}
         </div>

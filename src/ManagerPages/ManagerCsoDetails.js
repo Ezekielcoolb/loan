@@ -313,6 +313,7 @@ const ManagerCsoDetails = () => {
     totalLoans,
     activeLoans,
     pendingLoans,
+    fullyPaidLoan,
     rejectedLoans,
     defaultingCustomers,
     noPaymentYesterday,
@@ -623,6 +624,10 @@ const ManagerCsoDetails = () => {
               <p className="p-2">
                 Approved loans
                 <span> {activeLoans}</span>
+              </p>
+              <p className="p-2">
+                Full Paid loans
+                <span> {fullyPaidLoan}</span>
               </p>
               <p className="p-3">
                 Pending Loans:

@@ -93,6 +93,7 @@ const ManagerLogin = () => {
       dispatch(managerAdminLogin({ email, password }));
       setIsLoading(false)
     };
+    
     useEffect(() => {
         if (token) {
            navigate("/manager")

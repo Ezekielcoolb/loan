@@ -128,7 +128,7 @@ const CustomerLoan = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {loans.map((loan, index) => (
+                  {loans.slice().reverse().map((loan, index) => (
                     <tr key={index}>
                       <td className="border p-2">
                         {loan?.customerDetails?.firstName}{" "}

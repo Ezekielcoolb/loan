@@ -71,7 +71,6 @@ const AdminCustomerTable = () => {
             <th>Amount Requested</th>
             <th>Amount Approved</th>
             <th>Action</th>
-            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -86,7 +85,6 @@ const AdminCustomerTable = () => {
               <td>{loan.loanDetails.amountApproved}</td>
               <td>  <Link to={`/admin/downloadLoanForm/${loan._id}`}>View Details</Link>
               </td>
-              <td><button style={{background: "red", color: "white", borderStyle: "none"}} onClick={() => handleDelete(loan._id)}>Delete</button></td>
             </tr>
           ))}
         </tbody>

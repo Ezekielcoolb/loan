@@ -237,7 +237,10 @@ const AdminCalendarPage = () => {
             else if (isEndDate) backgroundColor = "#afaf5a";
             else if (isMissed) backgroundColor = "black"; // Set missed background to black
 
-            const buttonColor = isPaid
+            const buttonColor =
+            isStartDate // No button color on the first day
+              ? "transparent"
+              : isPaid
               ? scheduleDate.toDateString() === today.toDateString()
                 ? "green"
                 : isFuture
