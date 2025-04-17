@@ -142,7 +142,9 @@ const CsoProfile = () => {
 
   const [csoSuccessPop, setCsoSuccessPop] = useState(false);
   const navigate = useNavigate();
-  const { token, user, csoSuccess } = useSelector((state) => state.auth);
+  const { token, csoSuccess } = useSelector((state) => state.auth);
+  const user = JSON.parse(localStorage.getItem("csoUser"));
+
   const [formData, setFormData] = useState({
     address: "",
     phone: "",
@@ -246,7 +248,8 @@ const csoSubmitValid =
   
 
   const handleLogOut = () => {
-    window.location.reload();
+    localStorage.removeItem("csoToken");
+    navigate("/")
   };
   return (
     <ProfileRap>

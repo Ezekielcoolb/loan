@@ -152,7 +152,7 @@ const MinimalApplicationForm = () => {
   const [businessInfo, setBusinessInfo] = useState(false);
   const [signImage, setSignImage] = useState("");
   const [loading, setLoading] = useState(false);
-  const { user } = useSelector((state) => state.auth);
+  const user = JSON.parse(localStorage.getItem("csoUser"));
   const loans = useSelector((state) => state.loan.loans);
   const successMessage = useSelector((state) => state.loan.successMessage);
   const loan = loans.find((loan) => loan._id === id);
@@ -268,7 +268,7 @@ const MinimalApplicationForm = () => {
     dispatch(fetchAllLoansByCsoId({ csoId }));
   }, [dispatch]);
 
-  const handleVisisble = () => {
+  const handleVisisbleNow = () => {
     navigate(`/cso/customer-details/${loan?._id}`);
   };
 
@@ -403,7 +403,7 @@ const MinimalApplicationForm = () => {
 
             <div className="cancel-btn">
               <Icon
-                onClick={handleVisisble}
+                onClick={handleVisisbleNow}
                 icon="stash:times-circle"
                 width="24"
                 height="24"

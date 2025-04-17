@@ -8,20 +8,31 @@ import {
   LinearScale,
   BarElement,
   LineElement,
+  LineController, // Add this
+  PointElement,
   Title,
   Tooltip,
   Legend,
 } from 'chart.js';
 import { fetchLoanProgressChart } from '../redux/slices/csoSlice';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, Title, Tooltip, Legend);
-
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  LineController, // Register this
+  PointElement,
+  Title,
+  Tooltip,
+  Legend
+);
 const LoanProgressChart = () => {
   const dispatch = useDispatch();
   const { monthlyLoanTarget, monthlyLoanCounts, status, error } = useSelector(
     (state) => state.cso
   );
-  const { user } = useSelector((state) => state.auth);
+  const user = JSON.parse(localStorage.getItem("csoUser"));
 
   const workId = user.workId;
 
@@ -109,7 +120,7 @@ const LoanProgressChart = () => {
   if (status === 'loading') return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
 
-  return <Bar data={data} options={options} />;
+  return <Bar key={JSON.stringify(data)} data={data} options={options} />;
 };
 
 export default LoanProgressChart;

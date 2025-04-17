@@ -27,6 +27,7 @@ import {
   calculateDefaultingCustomers,
   calculateNoPaymentYesterday,
   fetchAllLoansByCsoId,
+  fetchAllLoansByCsoIdLoanDashboardLoans,
   fetchCsoActiveLoans,
   fetchLoanAllTimeCounts,
   fetchPieRepaymentData,
@@ -325,6 +326,13 @@ const CsoLoanCollection = () => {
     activeLoans,
     fullyPaidLoan,
     pendingLoans,
+    csoLoanDashdordLoans,
+    csoDashboardTotalLoans,
+    csoDashboardActiveLoans,
+    csoDashboardFullPaidLoans,
+    csoFullyPaidLoansDashbord,
+    csoDashboardPendingLoans,
+    csoDashboardRejectedLoans,
     rejectedLoans,
     defaultingCustomers,
     noPaymentYesterday,
@@ -368,6 +376,11 @@ const CsoLoanCollection = () => {
     dispatch(fetchAllLoansByCsoId({ csoId, page }));
   }, [dispatch, page]);
 
+
+ useEffect(() => {
+    dispatch(fetchAllLoansByCsoIdLoanDashboardLoans(csoId));
+  }, [dispatch]);
+
   useEffect(() => {
     // Dispatch the action to fetch loans when the component mounts or date changes
     dispatch(fetchCsoActiveLoans({ csoId, date: selectedDate.toISOString() }));
@@ -399,6 +412,8 @@ const CsoLoanCollection = () => {
   useEffect(() => {
     dispatch(fetchLoanAllTimeCounts({ csoId }));
   }, [dispatch]);
+
+  
   useEffect(() => {
     dispatch(fetchRemittanceNewProgress(workId)); // Fetch remittance progress for this CSO
   }, [dispatch, workId]);
@@ -630,23 +645,23 @@ const CsoLoanCollection = () => {
             <div className="summary-loan">
               <p className="p-1">
                 Submitted Loan Applications
-                <span>{totalLoans}</span>
+                <span>{csoDashboardTotalLoans}</span>
               </p>
               <p className="p-2">
                 Approved loans
-                <span> {activeLoans}</span>
+                <span> {csoDashboardActiveLoans}</span>
               </p>
               <p className="p-2">
                 Full Paid loans
-                <span> {fullyPaidLoan}</span>
+                <span> {csoDashboardFullPaidLoans}</span>
               </p>
               <p className="p-3">
                 Pending Loans:
-                <span> {pendingLoans} </span>
+                <span> {csoDashboardPendingLoans} </span>
               </p>
               <p className="p-4">
                 Declined Loans:
-                <span> {rejectedLoans} </span>
+                <span> {csoDashboardRejectedLoans} </span>
               </p>
             </div>
             <div className="table-container">

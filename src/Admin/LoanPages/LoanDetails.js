@@ -363,6 +363,9 @@ const [isApproved, setIsApproved] = useState(false)
 const [isRejected, setIsRejected] = useState(false)
 
 
+const isValid =
+amountApproved !== "" 
+
 const handleIsApprove = () => {
   setIsApproved(!isApproved)
 }
@@ -621,7 +624,14 @@ const handleIsReject = () => {
                   onChange={(e) => setAmountApproved(e.target.value)}
                 />{" "}
                 <br />
-                <button className="approve" onClick={handleIsApprove}>
+                <button
+                 disabled={!isValid}
+                 className="approve"
+                 style={{
+                  backgroundColor: isValid ? "green" : "#727789",
+                  cursor:  !isValid ? "not-allowed" : "pointer",
+                }}
+                 onClick={handleIsApprove}>
                   Approve
                 </button>
               </div>

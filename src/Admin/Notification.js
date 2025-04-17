@@ -62,6 +62,7 @@ const Notifications = () => {
   const [currentPageApprove, setCurrentPageApprove] = useState(1);
   const [currentPagePay, setCurrentPagePay] = useState(1);
   const [currentPageDefault, setCurrentPageDefault] = useState(1);
+console.log(notifications);
 
   useEffect(() => {
     dispatch(fetchNotifications({ page, limit }));

@@ -247,7 +247,7 @@ margin: auto;
 const PreviousLoans = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const user = JSON.parse(localStorage.getItem("csoUser"));
   const loans = useSelector((state) => state.loan.loans);
   const { fullyPaidLoans, loading, error } = useSelector(
     (state) => state.loan || {}
@@ -334,32 +334,54 @@ console.log(fullyPaidLoans);
              <div className="">
              <div className="new-table-scroll">
                <div className="table-div-con">
-                 <table className="" border="1" cellPadding="10">
-                   <thead>
-                     <tr>
-                       <th>S/N</th> {/* Serial number column header */}
-                       <th>Date</th>
-                       {/* <th>Amount Requested</th> */}
-                       <th>Principal +  Interest</th>
-                       <th>Status</th>
-                     </tr>
-                   </thead>
-                   <tbody>
-                     {fullyPaidLoans?.map((customer, index) => (
-                       <tr key={index}>
-                         <td>{index + 1}</td>{" "}
-                         {/* Serial number, starting from 1 */}
-            <td>{customer?.disbursedAt ? new Date(customer.disbursedAt).toLocaleDateString('en-GB') : ''}</td>
-                         {/* <td>{customer?.loanDetails?.amountRequested}</td> */}
-                         <td>{customer?.loanDetails?.amountPaidSoFar}</td>
-                         <td>{customer.status}</td> {/* Display status */}
-                       </tr>
-                     ))}
-                   </tbody>
-                 </table>
+               <table className="" border="1" cellPadding="10">
+ <thead>
+   <tr>
+     <th>S/N</th> 
+     <th>Start Date</th>
+     <th>End Date</th>
+     <th>Loan Amount</th>
+     <th>Status</th>
+     <th>Defaults</th>
+     <th>Performance</th>
+   </tr>
+ </thead>
+ <tbody>
+   {fullyPaidLoans && fullyPaidLoans.length > 0 ? (
+     <>
+       {fullyPaidLoans.map((customer, index) => {
+         const repaymentSchedule = customer?.repaymentSchedule || [];
+         const sortedSchedule = [...repaymentSchedule].sort((a, b) => new Date(a.date) - new Date(b.date));
+         const startDate = sortedSchedule.length > 0 ? new Date(sortedSchedule[0].date).toLocaleDateString("en-GB") : "N/A";
+         const lastDate = sortedSchedule.length > 0 ? new Date(sortedSchedule[sortedSchedule.length - 1].date).toLocaleDateString("en-GB") : "N/A";
+         const pendingCount = repaymentSchedule.filter(p => p.status === "pending").length;
+         const days = 22
+         const performance = ((days - (pendingCount - 1))/days) * 100
+         const repaymentPercentage = performance < 0 ? 100 : Math.round(performance);
+
+         return (
+           <tr key={index}>
+             <td>{index + 1}</td>
+             <td>{startDate}</td>
+             <td>{lastDate}</td>
+             <td>{customer?.loanDetails?.amountApproved}</td>
+             <td>{customer.status}</td>
+             <td>{pendingCount - 1}</td>
+             <td>{repaymentPercentage}%</td>
+           </tr>
+         );
+       })}
+     </>
+   ) : (
+     ""
+   )}
+ </tbody>
+</table>
+
+
                </div>
              </div>
-            </div>
+           </div>
           ): 
           <p className="no-other-loans">No previous loan found</p>
           }

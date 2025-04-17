@@ -2,9 +2,9 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { disburseLoan, fetchWaitingDisbursementLoans } from "../redux/slices/LoanSlice";
+import { clearDisbursedMessages, disburseLoan, fetchWaitingDisbursementLoans } from "../redux/slices/LoanSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { MoonLoader } from "react-spinners";
+import { MoonLoader, PulseLoader } from "react-spinners";
 
 const NewLoanRap = styled.div`
   width: 100%;
@@ -74,6 +74,7 @@ const NewLoanRap = styled.div`
     font-size: 25px;
     font-weight: 700;
     max-width: 300px;
+    text-align: center;
   }
   .exist-btn {
     background: red;
@@ -92,8 +93,9 @@ const NewLoanRap = styled.div`
 
 const Disbursment = () => {
   const dispatch = useDispatch();
-  const { loans, loading } = useSelector((state) => state.loan);
+  const {dibursedSuccessMessage, loans, disburseloading, loading } = useSelector((state) => state.loan);
   const [isLoading, setIsLoading] = useState(false)
+console.log(dibursedSuccessMessage);
 
   useEffect(() => {
     dispatch(fetchWaitingDisbursementLoans());
@@ -102,8 +104,14 @@ const Disbursment = () => {
   const handleDisburse = (id) => {
     dispatch(disburseLoan(id));
     setIsLoading(true)
-    window.location.reload();
+    // window.location.reload();
   };
+
+  const handleCancel = () => {
+    dispatch(clearDisbursedMessages())
+        window.location.reload();
+
+  }
 
   if (loading === 'loading') return <p style={{display: "flex", 
     flexDirection: "column", 
@@ -146,7 +154,13 @@ const Disbursment = () => {
                         {loan?.status}
                       </td>
                       <td>
-              <button className="approve" onClick={() => handleDisburse(loan._id)}>Disburse</button>
+              <button className="approve" onClick={() => handleDisburse(loan._id)}>
+
+              {disburseloading ? 
+                                    <PulseLoader color="white" size={10} />
+                                      : "Disburse"
+                                }
+              </button>
             </td>
                     </tr>
                   ))}
@@ -157,7 +171,7 @@ const Disbursment = () => {
          
         </div>
       </div>
-      {isLoading ? (
+      {dibursedSuccessMessage ? (
       <div className="dropdown-container">
         <div className="all-dropdown-div">
             <div className="pay-green-circle">
@@ -168,8 +182,8 @@ const Disbursment = () => {
                                 style={{ color: "black" }}
                               />
                             </div>
-          <p>Disbursed successfully</p>
-          <button onClick={() => setIsLoading(false)} className="exist-btn">Exit</button>
+          <p>{dibursedSuccessMessage}</p>
+          <button onClick={handleCancel} className="exist-btn">Exit</button>
 
         </div>
       </div>

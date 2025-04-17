@@ -37,8 +37,9 @@ const CustomerPageDetailRap = styled.div`
     text-align: center;
   }
   .table-div-con {
-    min-width: 100%;
+    min-width: 700px !important;
     min-height: 400px;
+    padding: 0px 40px;
   }
   .customer-details-div {
     display: flex;
@@ -246,7 +247,7 @@ const CustomerPageDetailRap = styled.div`
 const CustomerDetailsPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const user = JSON.parse(localStorage.getItem("csoUser"));
 
   const loans = useSelector((state) => state.loan.loans);
   const { fullyPaidLoans, loading, error } = useSelector(
@@ -267,6 +268,7 @@ const CustomerDetailsPage = () => {
   useEffect(() => {
     dispatch(fetchAllLoansByCsoId({ csoId }));
   }, [dispatch]);
+console.log(loans);
 
   console.log(bvn);
   console.log(loan);
@@ -290,12 +292,30 @@ const CustomerDetailsPage = () => {
     dispatch(fetchFullyPaidLoansStart())
   }
   // Get today's amountPaid
-  const today = new Date().toISOString().split("T")[0]; // Format as YYYY-MM-DD
+  const today = new Date();
+  let adjustedDate = new Date(today); // Copy today's date
+  
+  // If today is Saturday (6), move back to Friday (5)
+  // If today is Sunday (0), move back to Friday (5)
+  if (today.getDay() === 6) {
+    adjustedDate.setDate(today.getDate() - 1);
+  } else if (today.getDay() === 0) {
+    adjustedDate.setDate(today.getDate() - 2);
+  }
+  
+  const formattedDate = adjustedDate.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+  
   const todayRepayment = loan?.repaymentSchedule.find(
-    (schedule) => schedule.date.split("T")[0] === today
+    (schedule) => schedule.date.split("T")[0] === formattedDate
   );
+  
+  console.log("Adjusted Date:", formattedDate);
+  console.log("Today's Repayment:", todayRepayment || "No repayment found");
+  
 
-  const dailyAmount = loan?.loanDetails?.amountToBePaid / 30;
+  
+
+  const dailyAmount = loan?.loanDetails?.amountToBePaid / 22;
 
   const AmountDue = dailyAmount - todayRepayment?.amountPaid;
 
@@ -356,6 +376,42 @@ const CustomerDetailsPage = () => {
       )
     : "Not Scheduled";
 
+    const getFormattedDate = (dateString) => {
+      const date = new Date(dateString);
+      const day = date.getDate();
+      const month = date.toLocaleString('en-US', { month: 'long' });
+      const year = date.getFullYear();
+    
+      const getOrdinal = (n) => {
+        if (n > 3 && n < 21) return 'th';
+        switch (n % 10) {
+          case 1: return 'st';
+          case 2: return 'nd';
+          case 3: return 'rd';
+          default: return 'th';
+        }
+      };
+    
+      return `${day}${getOrdinal(day)} ${month} ${year}`;
+    };
+
+    const lastDate = loan?.repaymentSchedule?.[loan?.repaymentSchedule?.length - 1]?.date;
+
+    const countPendingTillToday = loan?.repaymentSchedule?.filter(entry => {
+      const entryDate = new Date(entry.date);
+      const today = new Date();
+    
+      // Remove time part so we compare only the date
+      entryDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+    
+      return entry.status === "pending" && entryDate <= today;
+    }).length;
+    
+    console.log("Pending repayments up to today:", countPendingTillToday);
+    
+    
+    
   return (
     <CustomerPageDetailRap>
       <div className="loan-details-move-div">
@@ -401,6 +457,8 @@ const CustomerDetailsPage = () => {
                       <h4>{loan?.loanDetails?.amountApproved}</h4>
                       <p>Total Paid</p>
                       <h4>{loan?.loanDetails?.amountPaidSoFar}</h4>
+                      <p>No of Defaults</p>
+                      <h4>{countPendingTillToday - 1}</h4>
                     </>
                   ) : (
                     <h4>No Active Loan</h4>
@@ -426,39 +484,51 @@ const CustomerDetailsPage = () => {
             <div className="">
               <div className="new-table-scroll">
                 <div className="table-div-con">
-                  <table className="" border="1" cellPadding="10">
-                    <thead>
-                      <tr>
-                        <th>S/N</th> {/* Serial number column header */}
-                        <th>Date</th>
-                        {/* <th>Amount Requested</th> */}
-                        <th>Principal +  Interest</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {fullyPaidLoans && fullyPaidLoans.length > 0 ? (
-                        <>
-                      {fullyPaidLoans?.map((customer, index) => (
-                        <tr key={index}>
-                          <td>{index + 1}</td>{" "}
-                          {/* Serial number, starting from 1 */}
-                          <td>
-                            {customer?.disbursedAt
-                              ? new Date(
-                                  customer.disbursedAt
-                                ).toLocaleDateString("en-GB")
-                              : ""}
-                          </td>
-                          {/* <td>{customer?.loanDetails?.amountRequested}</td> */}
-                          <td>{customer?.loanDetails?.amountPaidSoFar}</td>
-                          <td>{customer.status}</td> {/* Display status */}
-                        </tr>
-                      ))}
-                      </>
-                      ): ""}
-                    </tbody>
-                  </table>
+                <table className="" border="1" cellPadding="10">
+  <thead>
+    <tr>
+      <th>S/N</th> 
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Loan Amount</th>
+      <th>Status</th>
+      <th>Defaults</th>
+      <th>Performance</th>
+    </tr>
+  </thead>
+  <tbody>
+    {fullyPaidLoans && fullyPaidLoans.length > 0 ? (
+      <>
+        {fullyPaidLoans.map((customer, index) => {
+          const repaymentSchedule = customer?.repaymentSchedule || [];
+          const sortedSchedule = [...repaymentSchedule].sort((a, b) => new Date(a.date) - new Date(b.date));
+          const startDate = sortedSchedule.length > 0 ? new Date(sortedSchedule[0].date).toLocaleDateString("en-GB") : "N/A";
+          const lastDate = sortedSchedule.length > 0 ? new Date(sortedSchedule[sortedSchedule.length - 1].date).toLocaleDateString("en-GB") : "N/A";
+          const pendingCount = repaymentSchedule.filter(p => p.status === "pending").length;
+          const days = 22
+          const performance = ((days - (pendingCount - 1))/days) * 100
+          const repaymentPercentage = performance < 0 ? 100 : Math.round(performance);
+
+          return (
+            <tr key={index}>
+              <td>{index + 1}</td>
+              <td>{startDate}</td>
+              <td>{lastDate}</td>
+              <td>{customer?.loanDetails?.amountApproved}</td>
+              <td>{customer.status}</td>
+              <td>{pendingCount - 1}</td>
+              <td>{repaymentPercentage}%</td>
+            </tr>
+          );
+        })}
+      </>
+    ) : (
+      ""
+    )}
+  </tbody>
+</table>
+
+
                 </div>
               </div>
             </div>
@@ -498,7 +568,7 @@ const CustomerDetailsPage = () => {
                   </div>
                   <div className="disbursement-info">
                     <h6>Payment End Date</h6>
-                    <h3>{repaymentEndDate}</h3>
+                    <h3>{getFormattedDate(lastDate)}</h3>
                   </div>
                 </div>
               </div>

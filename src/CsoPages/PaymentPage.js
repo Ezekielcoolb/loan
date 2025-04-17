@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { useNavigate, useParams } from "react-router-dom";
-import { fetchLoanById, makePayment } from "../redux/slices/LoanSlice";
+import { clearPaymentMessages, fetchLoanById, makePaymenting } from "../redux/slices/LoanSlice";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import styled from "styled-components";
 import axios from "axios";
@@ -95,7 +95,11 @@ const PaymentRap = styled.div`
     font-weight: 600;
     font-size: 16px;
   }
-  .pay-btn,
+  .pay-btn {
+    display: flex;
+    gap: 20px;
+  }
+  .pay-butn,
   .exist-btn {
     background: #005e78;
     width: 150px;
@@ -147,6 +151,11 @@ const PaymentPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const loan = useSelector((state) => state.loan.selectedLoan);
+    const { paymentloading, paymentError, paymentSuccess, status } = useSelector((state) => state.loan);
+  
+console.log(paymentSuccess, paymentError);
+
+
   const [amount, setAmount] = useState(null);
   const [isManual, setIsManual] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -163,7 +172,7 @@ const PaymentPage = () => {
   const isValid = amount !== null && amount !== NaN
   
 
-  const dailyAmount = loan?.loanDetails?.amountToBePaid / 30;
+  const dailyAmount = loan?.loanDetails?.amountToBePaid / 22;
 
   const AmountDue = dailyAmount - todayRepayment?.amountPaid;
 
@@ -200,7 +209,7 @@ const PaymentPage = () => {
   const handlePayment = () => {
     if (isValid) {
       setLoading(true);
-      dispatch(makePayment({ id, amount }));
+      dispatch(makePaymenting({ id, amount }));
       setAmount(null);
       setPay(true);
       setConfirm(false);
@@ -214,6 +223,10 @@ const PaymentPage = () => {
   const handleConfirm = () => {
     setConfirm(!confirm);
   };
+
+  const handleCancel = () => {
+    dispatch(clearPaymentMessages())
+  }
 
   return (
     <PaymentRap>
@@ -277,18 +290,23 @@ const PaymentPage = () => {
               <div className="dropdown-container">
                 <div className="pay-dropdown">
                   <p>Do you want to make a payment of {amount}</p>
-                  <div className="pop-btn">
-                    <button
-                      className="pay-btn"
-                      onClick={handlePayment}
-                     
-                    >
-                      {loading ? (
-                        <PulseLoader color="white" size={10} />
-                      ) : (
-                        " Make Payment"
-                      )}
-                    </button>
+                  <div className="pay-btn">
+
+                         <button type="submit"
+                         className="pay-butn"
+                                onClick={handlePayment}
+                                disabled={ paymentloading}
+                                style={{
+                                  cursor: paymentloading ? "not-allowed" : "pointer",
+                                }}
+                                >
+                                  {paymentloading ? 
+                                    <PulseLoader color="white" size={10} />
+                                      : "Make Payment"
+                                }
+                                  
+                                  </button>
+
                     <button onClick={() => setConfirm(false)} className="exist-btn">Cancel</button>
                   </div>
                 </div>
@@ -296,7 +314,15 @@ const PaymentPage = () => {
             ) : (
               ""
             )}
-            {pay ? (
+             {paymentloading ? (
+              <div className="dropdown-container">
+              <PulseLoader color="white" size={10} />
+
+              </div>
+            ) : (
+              ""
+            )}
+            {paymentSuccess ? (
               <div className="dropdown-container">
                 <div className="pay-dropdown">
                   <div className="pay-green-circle">
@@ -307,8 +333,8 @@ const PaymentPage = () => {
                       style={{ color: "black" }}
                     />
                   </div>
-                  <p>Payment made successfully</p>
-                  <button onClick={() => setPay(false)} className="exist-btn">Exit</button>
+                  <p>{paymentSuccess}</p>
+                  <button onClick={handleCancel} className="exist-btn">Exit</button>
                 </div>
               </div>
             ) : (

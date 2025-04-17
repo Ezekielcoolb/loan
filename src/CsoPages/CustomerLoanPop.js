@@ -81,7 +81,7 @@ const LoanApplicationForm = () => {
   const [otherImages, setOtherIamges] = useState("");
   const [signImage, setSignImage] = useState("");
   const [loading, setLoading] = useState(false)
-   const { user } = useSelector((state) => state.auth);
+  const user = JSON.parse(localStorage.getItem("csoUser"));
   const [formData, setFormData] = useState({
     csoId: user.workId,
     branch: user.branch,
@@ -147,7 +147,9 @@ const LoanApplicationForm = () => {
       signature: "",
     },
   });
-
+ const { submitloading, status, error } = useSelector(
+    (state) => state.loan
+  );
   const isValid = formData.customerDetails.firstName !== "" &&
                   formData.customerDetails.lastName !== "" &&
                   formData.customerDetails.middleName !== "" &&
@@ -685,13 +687,13 @@ if (isValid) {
               </div>
             <button type="submit"
             onClick={handleSubmit}
-            disabled={!isValid}
+            disabled={!isValid || submitloading}
             style={{
               backgroundColor: isValid ? "#0c1d55" : "#727789",
-              cursor: loading || !isValid ? "not-allowed" : "pointer",
+              cursor: submitloading || !isValid ? "not-allowed" : "pointer",
             }}
             >
-              {loading ? 
+              {submitloading ? 
                 <PulseLoader color="white" size={10} />
                   : "Confirm Application"
             }

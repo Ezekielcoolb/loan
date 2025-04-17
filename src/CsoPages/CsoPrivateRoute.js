@@ -5,7 +5,8 @@ import CsoFooter from './csoFooter';
 import CsoNav from './csoNav';
 
 const ProtectedRoute = () => {
-  const { token } = useSelector((state) => state.auth);
+  // const { token } = useSelector((state) => state.auth);
+  const token = localStorage.getItem("csoToken");
 
  return (
     token ?

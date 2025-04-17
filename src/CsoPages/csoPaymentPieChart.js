@@ -10,7 +10,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 const RepaymentPieChart = () => {
   const dispatch = useDispatch();
 
-  const { user } = useSelector((state) => state.auth);
+  const user = JSON.parse(localStorage.getItem("csoUser"));
 
   const { promptPayments, overduePayments, loading, error } = useSelector((state) => state.loan);
 

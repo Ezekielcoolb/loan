@@ -5,7 +5,7 @@ import { fetchCsoNotifications } from "../redux/slices/notificationSlice";
 const CsoNotifications = () => {
   const dispatch = useDispatch();
   const { data, loading, error } = useSelector((state) => state.notifications);
-  const { user } = useSelector((state) => state.auth);
+  const user = JSON.parse(localStorage.getItem("csoUser"));
 
   const workId = user.workId;
 

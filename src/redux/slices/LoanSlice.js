@@ -4,8 +4,8 @@ import axios from "axios";
 
 // Async Thunks for API Calls
 
-// const API_URL = "https://api.jksolutn.com/api/loan";
-const API_URL = "http://localhost:5000/api/loan";
+const API_URL = "https://api.jksolutn.com/api/loan";
+// const API_URL = "http://localhost:5000/api/loan";
 
 export const submitLoanApplication = createAsyncThunk(
   "loans/submitApplication",
@@ -26,7 +26,7 @@ export const fetchCustomersSummary = createAsyncThunk(
   async () => {
     try {
       const response = await fetch(`${API_URL}/customers/summary`);
-      console.log(response);
+      console.log(response.data);
 
       return await response.json();
     } catch (err) {
@@ -97,6 +97,8 @@ export const fetchWaitingDisbursementLoans = createAsyncThunk(
       const response = await axios.get(
         `${API_URL}/loaner/waiting-disbursement`
       );
+      console.log(response.data);
+      
       return response.data;
     } catch (err) {
       console.log(err);
@@ -171,7 +173,7 @@ export const fetchRejectedCustomers = createAsyncThunk(
   }
 );
 
-export const makePayment = createAsyncThunk(
+export const makePaymenting = createAsyncThunk(
   "loans/makePayment",
   async ({ id, amount }) => {
     try {
@@ -183,7 +185,8 @@ export const makePayment = createAsyncThunk(
 
       return response.data;
     } catch (err) {
-      console.log(err);
+      
+      return err.response.data;
     }
   }
 );
@@ -300,6 +303,18 @@ export const fetchAllLoansByCsoId = createAsyncThunk(
       `${API_URL}/getLoansByCsoId?csoId=${csoId}`
     );
     return response.data;
+  }
+);
+
+export const fetchAllLoansByCsoIdLoanDashboardLoans = createAsyncThunk(
+  'loans/fetchAllLoansByCsoIdLoanDashboardLoans',
+  async (csoId, thunkAPI) => {
+    try {
+      const response = await axios.get(`${API_URL}/fetchLoansByCso-loan-dashbord-loans/${csoId}`);
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data || 'Error fetching loans');
+    }
   }
 );
 
@@ -473,12 +488,30 @@ export const fetchDailDisbursedLoans = createAsyncThunk(
     }
   }
 );
+export const fetchLoanAppForms = createAsyncThunk(
+  'loanAppForms/fetchLoanAppForms',
+  async ({ csoId, date }, thunkAPI) => {
+    try {
+    const res = await axios.get(`${API_URL}/loan-form-app-by-date?csoId=${csoId}&date=${date}`);
+    console.log(res.data);
+    
+    return res.data;
+    } catch (err) {
+      console.error("Error fetching active loans:", err);
+      throw err;
+    }
+  }
+);   
+
+
 
 // Slice
 const loanSlice = createSlice({
   name: "loans",
   initialState: {
     loans: [],
+    loanAppForm: [],
+    dibursedSuccessMessage: "",
     total: 0,
     page: 1,
     totalPages: 0,
@@ -487,6 +520,14 @@ const loanSlice = createSlice({
     fullyPaidLoans: [], 
     summaries: [],
     details: [],
+    csoLoanDashdordLoans: [],
+    csoDashboardTotalLoans : 0,
+    disburseloading: false,
+    csoDashboardActiveLoans : 0,
+    csoDashboardFullPaidLoans : 0,
+    csoDashboardPendingLoans : 0,
+    csoDashboardRejectedLoans : 0,
+    csoFullyPaidLoansDashbord: null,
     pendingLoans: [],
     rejectedCustomers: [],
     selectedLoan: null,
@@ -510,7 +551,11 @@ const loanSlice = createSlice({
     activeDashboardLoans: [],
     pendingDashboardLoans: [],
     rejectedDashboardLoans: [],
+    paymentSuccess:"",
+    paymentError: "",
     loading: "idle",
+    submitloading: false,
+    paymentloading: false,
     error: null,
     filter: "all",
     promptPayments: 0,
@@ -520,8 +565,10 @@ const loanSlice = createSlice({
     monthCount: 0,
     weekCount: 0,
     fullyPaidLoan: 0,
+    csoFullyPaidLoas: null,
     successMessage: "",
     callCso: false,
+    apploading: false,
     callGuarantor: false,
     callCustomer: false,
     verifyCustomer: false,
@@ -535,6 +582,12 @@ const loanSlice = createSlice({
     },
     clearMessages: (state) => {
       state.successMessage = "";
+    },
+    clearPaymentMessages: (state) => {
+      state.paymentSuccess = "";
+    },
+    clearDisbursedMessages: (state) => {
+      state.dibursedSuccessMessage = "";
     },
     setPages(state, action) {
       state.currentPage = action.payload;
@@ -580,12 +633,35 @@ const loanSlice = createSlice({
       state.fullyPaidLoan = state.loans.filter(
         (loan) => loan.status === "fully paid"
       ).length;
+      state.csoFullyPaidLoas = state.loans.filter(
+        (loan) => loan.status === "fully paid"
+      )
       state.pendingLoans = state.loans.filter(
         (loan) =>
           loan.status === "waiting for approval" ||
           loan.status === "waiting for disbursement"
       ).length;
       state.rejectedLoans = state.loans.filter(
+        (loan) => loan.status === "rejected"
+      ).length;
+    },
+    calculateLoanStatsCsoLoanDashboard: (state) => {
+      state.csoDashboardTotalLoans = state.csoLoanDashdordLoans.length;
+      state.csoDashboardActiveLoans = state.csoLoanDashdordLoans.filter(
+        (loan) => loan.status === "active loan"
+      ).length;
+      state.csoDashboardFullPaidLoans = state.csoLoanDashdordLoans.filter(
+        (loan) => loan.status === "fully paid"
+      ).length;
+      state.csoFullyPaidLoansDashbord = state.csoLoanDashdordLoans.filter(
+        (loan) => loan.status === "fully paid"
+      )
+      state.csoDashboardPendingLoans = state.csoLoanDashdordLoans.filter(
+        (loan) =>
+          loan.status === "waiting for approval" ||
+          loan.status === "waiting for disbursement"
+      ).length;
+      state.csoDashboardRejectedLoans = state.csoLoanDashdordLoans.filter(
         (loan) => loan.status === "rejected"
       ).length;
     },
@@ -667,16 +743,44 @@ const loanSlice = createSlice({
     // Handle loading and data fetching for submitting loan
     builder
       .addCase(submitLoanApplication.pending, (state) => {
-        state.loading = true;
+        state.submitloading = true;
       })
       .addCase(submitLoanApplication.fulfilled, (state, action) => {
-        state.loading = false;
+        state.submitloading = false;
         state.loans.push(action.payload); // Add the new loan to the loans array
         state.successMessage = action.payload.message;
       })
       .addCase(submitLoanApplication.rejected, (state, action) => {
-        state.loading = false;
+        state.submitloading = false;
         state.error = action.error.message;
+      });
+
+      builder
+      .addCase(fetchAllLoansByCsoIdLoanDashboardLoans.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAllLoansByCsoIdLoanDashboardLoans.fulfilled, (state, action) => {
+        state.loading = false;
+        state.csoLoanDashdordLoans = action.payload;
+        loanSlice.caseReducers.calculateLoanStatsCsoLoanDashboard(state);
+      })
+      .addCase(fetchAllLoansByCsoIdLoanDashboardLoans.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch loans';
+      });
+
+      builder
+      .addCase(fetchLoanAppForms.pending, (state) => {
+        state.apploading = true;
+      })
+      .addCase(fetchLoanAppForms.fulfilled, (state, action) => {
+        state.loanAppForm = action.payload;
+        state.apploading = false;
+      })
+      .addCase(fetchLoanAppForms.rejected, (state, action) => {
+        state.error = action.error.message;
+        state.apploading = false;
       });
 
 
@@ -955,15 +1059,52 @@ const loanSlice = createSlice({
         state.loading = "failed";
       });
 
+      builder
+      .addCase(makePaymenting.pending, (state) => {
+        state.paymentloading = true;
+        state.paymentError = null;
+      })
+      .addCase(makePaymenting.fulfilled, (state, action) => {
+        state.paymentloading = false;
+        state.selectedLoan = action.payload;
+        state.paymentSuccess =  action.payload?.message || action.payload?.error
+      })
+      .addCase(makePaymenting.rejected, (state, action) => {
+        state.paymentloading = false;
+        state.paymentError = action.error;
+      });
+
+      builder
+  .addCase(disburseLoan.pending, (state) => {
+    state.disburseloading = true;
+    state.error = null;
+  })
+  .addCase(disburseLoan.fulfilled, (state, action) => {
+    state.disburseloading = false;
+
+    // Remove the disbursed loan from the list
+    state.loans = state.loans.filter(
+      (loan) => loan._id !== action.payload.loan._id
+    );
+
+    // Optional: show success message
+    state.dibursedSuccessMessage = action.payload.message;
+  })
+  .addCase(disburseLoan.rejected, (state, action) => {
+    state.disburseloading = false;
+    state.error = action.error.message || "Failed to disburse loan";
+  });
+
+
     builder
       .addCase(fetchWaitingDisbursementLoans.fulfilled, (state, action) => {
         state.loans = action.payload;
       })
-      .addCase(disburseLoan.fulfilled, (state, action) => {
-        state.loans = state.loans.filter(
-          (loan) => loan._id !== action.payload.loan._id
-        );
-      })
+      // .addCase(disburseLoan.fulfilled, (state, action) => {
+      //   state.loans = state.loans.filter(
+      //     (loan) => loan._id !== action.payload.loan._id
+      //   );
+      // })
       .addCase(fetchActiveCustomers.fulfilled, (state, action) => {
         state.activeCustomers = action.payload;
       })
@@ -982,9 +1123,7 @@ const loanSlice = createSlice({
       .addCase(fetchLoanByBvn.fulfilled, (state, action) => {
         state.selectedLoan = action.payload;
       })
-      .addCase(makePayment.fulfilled, (state, action) => {
-        state.selectedLoan = action.payload;
-      })
+     
 
       .addCase(approveLoan.fulfilled, (state, action) => {
         const index = state.loans.findIndex(
@@ -1067,7 +1206,10 @@ export const {
   previousWeek,
   setMonth,
   setYear,
+  clearDisbursedMessages,
+  clearPaymentMessages,
   calculateLoanStats,
+  calculateLoanStatsCsoLoanDashboard,
   calculateDefaultingCustomers,
   calculateNoPaymentYesterday,
   fetchFullyPaidLoansStart,

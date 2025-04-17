@@ -93,9 +93,15 @@ console.log(message);
         }, 5000);
       }
     }, [message, error, dispatch]);
+
+  
+
     useEffect(() => {
         if (token) {
+          
           navigate("/cso"); // Redirect to the protected route
+          localStorage.setItem("csoToken", token);
+          localStorage.setItem("csoUser", JSON.stringify(user));
         }
       }, [token, navigate]);
 

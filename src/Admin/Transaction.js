@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import AllCustomerTable from "./TransactionDetails/LoanApplication";
 import RemittanceTable from "./TransactionDetails/AllRemittance";
 import DailyDisbursementTable from "./TransactionDetails/DailyDisbursement";
+import DailyCollectionTable from "./TransactionDetails/DailyCollections";
 
 const TransactionRap = styled.div`
   .client-1 {
@@ -124,6 +125,7 @@ const AllTransactions = () => {
             </div>
             <div>
               {activeLinkDaily==="disburse" && <DailyDisbursementTable />}
+              {activeLinkDaily==="collect" && <DailyCollectionTable />}
             </div>
           </div>
           </>

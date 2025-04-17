@@ -31,6 +31,9 @@ export const fetchNotifications = createAsyncThunk(
         }
         return formattedCategory;
       });
+console.log(formattedNotifications);
+console.log(response.data);
+
 
       return formattedNotifications;
     } catch (error) {

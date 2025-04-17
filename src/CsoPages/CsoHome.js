@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
 import { Icon } from "@iconify/react/dist/iconify.js";
@@ -9,6 +9,7 @@ import {
 import LoanApplicationForm from "./CustomerLoanPop";
 import {
   fetchAllLoansByCsoId,
+  fetchFullyPaidLoansStart,
   searchCustomer,
   setPage,
   updateGuarantorFormPic,
@@ -16,10 +17,12 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { PulseLoader } from "react-spinners";
+import TopLoader from "../Preload/TopLoader";
 
 const HomeCsoRap = styled.div`
   color: #005e78;
-
+  background: #D9D9D9;
+  min-height: 100vh;
   .success-visible {
     background: #ffffff;
     padding: 20px;
@@ -140,7 +143,8 @@ const HomeCsoRap = styled.div`
     font-size: 14px;
     font-weight: 600;
   }
-  .close-pop-btn, .previous-loans {
+  .close-pop-btn,
+  .previous-loans {
     border: 1px solid #005e78;
     width: 100px;
     height: 30px;
@@ -151,7 +155,7 @@ const HomeCsoRap = styled.div`
     display: flex;
     gap: 20px;
   }
-  .previous-loans  {
+  .previous-loans {
     width: 130px;
     text-decoration: none;
     background: #005e78;
@@ -182,7 +186,7 @@ const HomeCsoRap = styled.div`
     height: 38px;
     padding: 0px 10px;
     border-radius: 10px;
-    }
+  }
   .file-upload {
     position: relative;
     display: inline-block;
@@ -223,8 +227,10 @@ const HomeCsoRap = styled.div`
   .no-cutomer {
     font-size: 25px;
     font-weight: 700;
-    height: 75vh;
+    height: 700px !important;
     width: 100%;
+    color: #005e78;
+
     display: flex;
     justify-content: center;
     align-items: center;
@@ -233,39 +239,37 @@ const HomeCsoRap = styled.div`
     height: 127px;
     width: 120px;
   }
-  .images-container p,  .images-container h4 {
+  .images-container p,
+  .images-container h4 {
     max-width: 120px;
   }
 `;
 
 const CsoHome = () => {
-  const { user } = useSelector((state) => state.auth);
+  // const { user } = useSelector((state) => state.auth);
+  const user = JSON.parse(localStorage.getItem("csoUser"));
+
   const { dropdowVisible, dropSuccessVisible } = useSelector(
     (state) => state.app
   );
   const [customerId, setCustomerId] = useState("");
   const [guarantorImage, setGuarantorImage] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const [openGuarantorForm, setOpenGuarantorForm] = useState(false)
+  const [openGuarantorForm, setOpenGuarantorForm] = useState(false);
   const itemsPerPage = 20;
   const [currentPage, setCurrentPage] = useState(1);
   const [popupMessage, setPopupMessage] = useState(null);
   const [popupColor, setPopupColor] = useState("#005e78");
-const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
+  const [successGuarantorForm, setSuccessGuarantorForm] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const { loans, status, error } = useSelector((state) => state.loan);
 
-  const { loans, status, error } = useSelector(
-    (state) => state.loan
-  );
-
-  console.log(loans);
-  
   const [query, setQuery] = useState("");
 
   const csoId = user.workId;
+  console.log(user);
 
   const handleChange = (e) => {
     setQuery(e.target.value);
@@ -281,11 +285,15 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
     dispatch(setDropSuccessVisible());
   };
 
- 
   useEffect(() => {
-    dispatch(fetchAllLoansByCsoId({ csoId }));
-  }, [dispatch]);
+    const fetchLoans = async () => {
+      await dispatch(fetchAllLoansByCsoId({ csoId }));
+    };
 
+    fetchLoans();
+  }, [csoId]);
+
+  const finalLoans = useMemo(() => loans, [loans]);
 
   const handleGuarantorImage = async (e) => {
     try {
@@ -309,28 +317,29 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
       setLoading(true);
       dispatch(
         updateGuarantorFormPic({ loanId: customerId, imageUrl: guarantorImage })
-
       );
 
       setLoading(false);
-      setPopupMessage(null)
-      setSuccessGuarantorForm(true)
-
+      setPopupMessage(null);
+      setSuccessGuarantorForm(true);
     } else {
       alert("Please provide an image URL");
     }
   };
   // Handle customer click for different statuses
-
+  const handleGoToPreviousLoans = () => {
+    navigate(`/cso/previousLoans/${customerId}`);
+    dispatch(fetchFullyPaidLoansStart());
+  };
   const handleCustomerClick = (loan) => {
     let message = "";
     let color = "";
     if (loan?.status === "waiting for approval") {
       message = "Waiting for approval";
       color = "#005e78"; // Color for waiting for approval
-      
+
       setCustomerId(loan?._id);
-      setOpenGuarantorForm(true)
+      setOpenGuarantorForm(true);
     } else if (loan?.status === "waiting for disbursement") {
       message = "Waiting for disbursement";
       setCustomerId(loan?._id);
@@ -339,7 +348,10 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
       message = `Loan was rejected: ${loan?.rejectionReason}`;
       setCustomerId(loan?._id);
       color = "red"; // Color for rejected loan
-    } else if (loan?.status === "active loan" || loan?.status === "fully paid") {
+    } else if (
+      loan?.status === "active loan" ||
+      loan?.status === "fully paid"
+    ) {
       // Redirect to the customer details page if status is "active loan"
       navigate(`/cso/customer-details/${loan?._id}`);
     }
@@ -350,12 +362,14 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
 
   // Calculate total pages
   const totalPages = Math.ceil(loans?.length / itemsPerPage);
+console.log(loans);
 
   // Get current items to display
   const currentLoans = loans?.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+  // console.log(currentLoans);
 
   // Handle pagination click
   const handlePageChange = (newPage) => {
@@ -363,7 +377,14 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
       setCurrentPage(newPage);
     }
   };
-
+  if (!finalLoans) {
+    return (
+      <div style={{ paddingTop: "50px" }}>
+        {" "}
+        <TopLoader />
+      </div>
+    );
+  }
   return (
     <HomeCsoRap>
       <div>
@@ -397,57 +418,72 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
             </div>
           </div>
           <ul>
-          {loans && loans.length > 0 ? (
-            <div>
-              <div className="images-container">
-                {currentLoans?.slice().reverse().map((loan, index) => (
-                  <li
-                    className="images-mapped"
-                    key={index}
-                    onClick={() => handleCustomerClick(loan)}
+            {loans && loans.length > 0 ? (
+              <div>
+                <div className="images-container">
+                  {currentLoans?.map((loan, index) => (
+                    <li
+                      className="images-mapped"
+                      key={loan._id}
+                      onClick={() => handleCustomerClick(loan)}
+                    >
+                      <img
+                        src={loan?.pictures?.customer}
+                        alt="Customer"
+                        width={100}
+                        height={100}
+                      />
+                      <h4 className="custom-name">
+                        {loan?.customerDetails?.firstName}{" "}
+                        {loan?.customerDetails?.lastName}
+                      </h4>
+                      <p className="custom-business">
+                        {loan?.businessDetails?.businessName}
+                      </p>
+                      <div
+                        style={{
+                          background:
+                            loan?.status === "waiting for approval"
+                              ? "green"
+                              : loan?.status === "waiting for disbursement"
+                              ? "orange"
+                              : loan?.status === "rejected"
+                              ? "red"
+                              : loan?.status === "fully paid"
+                              ? "purple"
+                              : "blue",
+                        }}
+                        className="circle-div"
+                      ></div>
+                    </li>
+                  ))}
+                </div>
+                {/* Pagination Buttons */}
+                <div className="page-div">
+                  <button
+                    className="page-btn"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
                   >
-                    <img
-                      src={loan?.pictures?.customer}
-                      alt="Customer"
-                      width={100}
-                      height={100}
-                    />
-                    <h4 className="custom-name">
-                      {loan?.customerDetails?.firstName}{" "}
-                      {loan?.customerDetails?.lastName}
-                    </h4>
-                    <p className="custom-business">
-                      {loan?.businessDetails?.businessName}
-                    </p>
-                    <div style={{
-                      background: loan?.status === "waiting for approval" ? "green" :
-                                  loan?.status === "waiting for disbursement" ? "orange" :
-                                  loan?.status === "rejected" ? "red" : 
-                                  loan?.status === "fully paid" ? "purple" : "blue"
-                    }}   className="circle-div"></div>
-                  </li>
-                ))}
+                    Prev
+                  </button>
+                  <span>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    className="page-btn"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
-               {/* Pagination Buttons */}
-      <div className="page-div">
-        <button  className="page-btn"
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          Prev
-        </button>
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
-        <button className="page-btn"
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-        >
-          Next
-        </button>
-      </div>
-            </div>
-            ): <p className="no-cutomer">No customer yet</p>}
+            ) : (
+              <div className="no-cutomer">
+                <p>No customer yet</p>{" "}
+              </div>
+            )}
           </ul>
         </div>
       </div>
@@ -463,54 +499,69 @@ const [successGuarantorForm, setSuccessGuarantorForm] = useState(false)
             >
               {popupMessage}
             </p>
-          {openGuarantorForm ? (
-            <div>
-              <div className="file-upload">
-                <input
-                  id="fileInput"
-                  type="file"
-                  capture="user"
-                  className="hidden-input"
-                  onChange={(e) => handleGuarantorImage(e.target.files)}
-                  required
-                />
-                <label htmlFor="fileInput" className="custom-file-upload">
-                  {guarantorImage || "Upload guarantor form"}
-                </label>{" "}
-                <br />
+            {openGuarantorForm ? (
+              <div>
+                <div className="file-upload">
+                  <input
+                    id="fileInput"
+                    type="file"
+                    capture="user"
+                    className="hidden-input"
+                    onChange={(e) => handleGuarantorImage(e.target.files)}
+                    required
+                  />
+                  <label htmlFor="fileInput" className="custom-file-upload">
+                    {guarantorImage || "Upload guarantor form"}
+                  </label>{" "}
+                  <br />
+                </div>
+                <button
+                  className="gurantor-form-btn"
+                  onClick={handleUpdate}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <PulseLoader color="white" size={10} />
+                  ) : (
+                    "Update Guarantor Form"
+                  )}
+                </button>
               </div>
-              <button className="gurantor-form-btn" onClick={handleUpdate} disabled={loading}>
-                {loading ? (
-                  <PulseLoader color="white" size={10} />
-                ) : (
-                  "Update Guarantor Form"
-                )}
-              </button>
-            </div>
-            ) : ""}
+            ) : (
+              ""
+            )}
 
-<div className="previous-loans-div">
-            <button
-              className="close-pop-btn"
-              onClick={() => setPopupMessage(null)}
-            >
-              Close
-            </button>
-            <Link to={`/cso/previousLoans/${customerId}`} className="previous-loans">Previous Loans</Link>
+            <div className="previous-loans-div">
+              <button
+                className="close-pop-btn"
+                onClick={() => setPopupMessage(null)}
+              >
+                Close
+              </button>
+              <button
+                onClick={handleGoToPreviousLoans}
+                className="previous-loans"
+              >
+                Previous Loans
+              </button>
             </div>
           </div>
         </div>
       )}
-{successGuarantorForm ? (
-<>
-<div className="dropdown-container">
-          <div className="success-visible">
-            <p>Guarantor's Form uploaded successfully</p>
-            <button onClick={() => setSuccessGuarantorForm(false)}>Exit</button>
+      {successGuarantorForm ? (
+        <>
+          <div className="dropdown-container">
+            <div className="success-visible">
+              <p>Guarantor's Form uploaded successfully</p>
+              <button onClick={() => setSuccessGuarantorForm(false)}>
+                Exit
+              </button>
+            </div>
           </div>
-        </div>
-</>
-) : ""}
+        </>
+      ) : (
+        ""
+      )}
       {dropSuccessVisible ? (
         <div className="dropdown-container">
           <div className="success-visible">

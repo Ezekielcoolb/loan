@@ -261,9 +261,13 @@ const CustomersDetails = () => {
   const { rejectedCustomers, pendingLoans, summaries, loans, loading, error } =
     useSelector((state) => state.loan);
 
+console.log(summaries);
+
   useEffect(() => {
     dispatch(fetchCustomersSummary());
   }, [dispatch]);
+
+
   useEffect(() => {
     dispatch(fetchCustomerActiveLoans());
   }, [dispatch]);
@@ -413,51 +417,66 @@ const CustomersDetails = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {summaries?.map((summary, index) => (
-                        <tr key={index}>
-                          <td>{summary.name}</td>
-                          <td>{summary.noOfLoansCollected}</td>
-                          <td>{summary.noOfDefaults}</td>
+                    {summaries?.map((summary, index) => (
+  summary?.activeLoans?.length ? (
+    summary.activeLoans.map((items, i) => (
+      <tr key={`${index}-${i}`}>
+        <td>{summary.name}</td>
+        <td>{summary.noOfLoansCollected}</td>
+        <td>{summary.noOfDefaults}</td>
+        <td>{items.loanDetails.amountDisbursed}</td>
+        <td>{items.loanDetails.amountToBePaid}</td>
+        <td>{items.loanDetails.amountPaidSoFar}</td>
+        <td>
+          {items.loanDetails.amountToBePaid - items.loanDetails.amountPaidSoFar}
+        </td>
+        <td>{new Date(items.disbursedAt).toLocaleDateString()}</td>
+        <td>
+          {items.repaymentSchedule?.length
+            ? new Date(items.repaymentSchedule[items.repaymentSchedule.length - 1].date).toLocaleDateString()
+            : "N/A"}
+        </td>
+        <td
+          style={{
+            color:
+              new Date() > new Date(items.repaymentSchedule?.[items.repaymentSchedule.length - 1]?.date)
+                ? "red"
+                : "green",
+          }}
+        >
+          {new Date() > new Date(items.repaymentSchedule?.[items.repaymentSchedule.length - 1]?.date)
+            ? "Defaulting"
+            : "Not defaulting yet"}
+        </td>
+        <td
+          style={{
+            color: "#030b26",
+            fontWeight: "700",
+          }}
+        >
+          {summary.performance}%
+        </td>
+        <td>
+          <Link to={`/admin/customer/${summary.bvn}`}>
+            View Details
+          </Link>
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr key={index}>
+      <td>{summary.name}</td>
+      <td>{summary.noOfLoansCollected}</td>
+      <td>{summary.noOfDefaults}</td>
+      <td colSpan="8">No Active Loans</td>
+      <td>{summary.performance}%</td>
+      <td>
+        <Link to={`/admin/customer/${summary.bvn}`}>View Details</Link>
+      </td>
+    </tr>
+  )
+))}
 
-                          <td>{summary.currentLoan?.amountDisbursed}</td>
-                          <td>{summary.currentLoan?.amountToBePaid}</td>
-                          <td>{summary.currentLoan?.amountPaidSoFar}</td>
-                          <td>
-                            {summary.currentLoan?.amountToBePaid -
-                              summary.currentLoan?.amountPaidSoFar}
-                          </td>
-                          <td>{summary.currentLoan?.startDate}</td>
-                          <td>{summary.currentLoan?.endDate}</td>
-                          <td
-                            style={{
-                              color:
-                                summary.currentLoan?.currentLoanStatus ===
-                                "Not defaulting yet"
-                                  ? "green"
-                                  : summary.currentLoan?.currentLoanStatus ===
-                                    "Defaulting"
-                                  ? "red"
-                                  : "blue",
-                            }}
-                          >
-                            {summary.currentLoan?.currentLoanStatus}
-                          </td>
-                          <td
-                            style={{
-                              color: "#030b26",
-                              fontWeight: "700",
-                            }}
-                          >
-                            {summary.performance}%
-                          </td>
-                          <td>
-                            <Link to={`/admin/customer/${summary.bvn}`}>
-                              View Details
-                            </Link>
-                          </td>
-     
-                        </tr>
-                      ))}
                     </tbody>
                   </table>
                 </div>

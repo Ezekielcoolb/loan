@@ -132,14 +132,14 @@ const DashboardRap = styled.div`
 
 const CsoDashboard = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const user = JSON.parse(localStorage.getItem("csoUser"));
   const {  progressData, loading, error } = useSelector(
     (state) => state.cso
   );
   const { remittanceProgress} = useSelector(
     (state) => state.remittance
   );
-  const {weekCount, todayCount, yesterdayCount, monthCount, customers } = useSelector(
+  const {fullyPaidLoan, weekCount, todayCount, yesterdayCount, monthCount, customers } = useSelector(
     (state) => state.loan
   );
 

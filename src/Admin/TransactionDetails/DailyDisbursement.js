@@ -51,6 +51,7 @@ const DailyDisbursementTable = () => {
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [page, setPage] = useState(1);
+console.log(dailyDisbursedLoans);
 
   useEffect(() => {
     dispatch(fetchDailDisbursedLoans({ year, month, page }));
@@ -103,6 +104,7 @@ const DailyDisbursementTable = () => {
             <th className="border p-2">Customer</th>
             <th className="border p-2">Amount</th>
             <th className="border p-2">Loan Type</th>
+            <th className="border p-2">Admin and Application Fees</th>
             <th className="border p-2">Date Disbursed</th>
           </tr>
         </thead>
@@ -113,6 +115,7 @@ const DailyDisbursementTable = () => {
                 <td className="border p-2">{loan.customerDetails.firstName} {loan.customerDetails.lastName}</td>
                 <td className="border p-2">{loan.loanDetails.amountDisbursed}</td>
                 <td className="border p-2">{loan.loanDetails.loanType}</td>
+                <td className="border p-2">{loan.loanDetails.loanAppForm}</td>
                 <td className="border p-2">{new Date(loan.disbursedAt).toLocaleDateString()}</td>
               </tr>
             ))

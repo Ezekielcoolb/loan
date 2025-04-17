@@ -89,6 +89,48 @@ background: transparent;
  left: 0;
  z-index: 9999 !important;
 }
+.total-here-now {
+  font-size: 30px;
+  color: #0C1D55;
+  font-weight: 900;
+}
+.collect-upper-admin {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.collect-upper-admin h2 {
+  font-size: 20px;
+  color: #0C1D55;
+  font-weight: 600;
+}
+.collect-upper-admin button {
+  width: 150px;
+  height: 40px;
+  border-radius: 10px;
+  font-size: 18px;
+font-weight: 500;
+}
+.collect-upper-admin-month, .collect-upper-admin-week {
+  display: flex;
+  gap: 20px;
+}
+.collect-upper-admin-month button {
+  background: #0C1D55;
+  border: none;
+  color: white;
+}
+.collect-upper-admin-week button {
+  background: transparent;
+  color: #0C1D55;
+  border: 1px solid #0C1D55;
+}
+.text-right {
+  font-size: 18px;
+  color: #0C1D55;
+  font-weight: 600;
+}
 .icon-admin-menu {
   display: none ;
 }

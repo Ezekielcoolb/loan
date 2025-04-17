@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Calendar from "react-calendar"; // Import the calendar
 import { FaCalendarAlt } from "react-icons/fa"; // Import calendar icon
-import { fetchCsoActiveLoans } from "../redux/slices/LoanSlice";
+import {
+  fetchCsoActiveLoans,
+  fetchLoanAppForms,
+} from "../redux/slices/LoanSlice";
 import "react-calendar/dist/Calendar.css"; // Import calendar styles
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
@@ -11,7 +14,8 @@ import { uploadRemittance } from "../redux/slices/csoSlice";
 import { PulseLoader } from "react-spinners";
 
 const CollectionRap = styled.div`
-padding-bottom: 20px;
+min-height: 100vh;
+  padding-bottom: 20px;
   color: #005e78;
   th,
   td,
@@ -224,13 +228,17 @@ padding-bottom: 20px;
 
 const ActiveLoansTable = () => {
   const dispatch = useDispatch();
-  const { customers, loading, error } = useSelector((state) => state.loan);
-  const { user } = useSelector((state) => state.auth);
+  const { customers, loanAppForm, loading, error } = useSelector(
+    (state) => state.loan
+  );
+  const user = JSON.parse(localStorage.getItem("csoUser"));
 
   const csoId = user.workId;
   const [selectedDate, setSelectedDate] = useState(new Date()); // State for selected date
   const [showCalendar, setShowCalendar] = useState(false); // State for calendar visibility
   const [totalAmountPaid, setTotalAmountPaid] = useState(0); // State for total amount paid
+  const [totalAdminFee, setAdminFee] = useState(0);
+  const [overallTotal, setOverallTotal] = useState(0);
   const { isUploading, uploaded } = useSelector((state) => state.cso);
   const [imageUrl, setImageUrl] = useState("");
   const [time, setTime] = useState(86400); // Timer starts at 24 hours in seconds
@@ -238,10 +246,10 @@ const ActiveLoansTable = () => {
   const [uploadRemmit, setUploadRemitt] = useState("");
   const [remitPop, setRemitPop] = useState(false);
   const currenttoday = new Date().toDateString();
-  const [confirm, setConfirm] =useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [confirm, setConfirm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  
+  console.log(customers);
 
   // Timer logic
   useEffect(() => {
@@ -290,6 +298,10 @@ const ActiveLoansTable = () => {
     dispatch(fetchCsoActiveLoans({ csoId, date: selectedDate.toISOString() }));
   }, [dispatch, csoId, selectedDate]);
 
+  useEffect(() => {
+    dispatch(fetchLoanAppForms({ csoId, date: selectedDate.toISOString() }));
+  }, [dispatch, csoId, selectedDate]);
+
   // Calculate total amount paid for the selected date
   useEffect(() => {
     if (customers) {
@@ -299,6 +311,20 @@ const ActiveLoansTable = () => {
       setTotalAmountPaid(totalPaid); // Update total amount paid
     }
   }, [customers, selectedDate]);
+
+  useEffect(() => {
+    const totalPaid = totalAdminFee + totalAmountPaid;
+    setOverallTotal(totalPaid);
+  }, [totalAdminFee, totalAmountPaid]);
+
+  useEffect(() => {
+    if (loanAppForm) {
+      const totalPaid = loanAppForm.reduce((sum, customer) => {
+        return sum + customer.amount;
+      }, 0);
+      setAdminFee(totalPaid); // Update total amount paid
+    }
+  }, [loanAppForm, selectedDate]);
 
   // Function to format numbers with commas
   const formatNumberWithCommas = (number) => {
@@ -331,10 +357,9 @@ const ActiveLoansTable = () => {
 
   const handleUpload = () => {
     if (imageUrl) {
-     
-      dispatch(uploadRemittance({ amount: totalAmountPaid, workId, imageUrl }));
-      setConfirm(false)
-      setIsLoading(true)
+      dispatch(uploadRemittance({ amount: overallTotal, workId, imageUrl }));
+      setConfirm(false);
+      setIsLoading(true);
     }
   };
 
@@ -348,9 +373,9 @@ const ActiveLoansTable = () => {
     setRemitPop(!remitPop);
   };
   const handleConfirm = () => {
-    setConfirm(true)
-    setRemitPop(false)
-  }
+    setConfirm(true);
+    setRemitPop(false);
+  };
 
   return (
     <CollectionRap>
@@ -403,27 +428,79 @@ const ActiveLoansTable = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {customers?.slice().reverse().map((customer, index) => (
-                    <tr key={index}>
-                      <td>{index + 1}</td>{" "}
-                      {/* Serial number, starting from 1 */}
-                      <td>{customer.customerName}</td>
-                      <td>{customer.amountDue}</td>
-                      <td>{customer.amountPaidOnSelectedDate}</td>
-                      <td>{customer.status}</td> {/* Display status */}
-                    </tr>
-                  ))}
+                  {customers
+                    ?.slice()
+                    .reverse()
+                    .map((customer, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>{" "}
+                        {/* Serial number, starting from 1 */}
+                        <td>{customer.customerName}</td>
+                        <td>{customer.amountDue}</td>
+                        <td>{customer.amountPaidOnSelectedDate}</td>
+                     {/*   <td>
+                          {new Date(customer.disbursedAt).toLocaleDateString(
+                            "en-CA"
+                          ) ===
+                          new Date(customer.selectedDate).toLocaleDateString(
+                            "en-CA"
+                          )
+                            ? "No default yet"
+                            : customer?.status}
+                        </td>{" "}  */}
+                        {/* Display status */}
+                        <td>{customer?.status}</td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
           </div>
         </div>
 
+        <h2 style={{ textAlign: "center", marginTop: "20px" }}>
+          Admin and Application Fees
+        </h2>
+        <div className="">
+          <div className="new-table-scroll">
+            <table className="" border="1" cellPadding="10">
+              <thead>
+                <tr>
+                  <th>S/N</th> {/* Serial number column header */}
+                  <th>Customer Name</th>
+                  <th>Admin fee</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loanAppForm
+                  ?.slice()
+                  .reverse()
+                  .map((customer, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>{" "}
+                      {/* Serial number, starting from 1 */}
+                      <td>{customer.customerName}</td>
+                      <td>{customer.amount}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
         <div className="all-summary">
           <h4>Daily Summary</h4>
           <div className="summary-div">
             <h6>Total Amount Collected</h6>
             <span> {formatNumberWithCommas(totalAmountPaid)}</span>
+          </div>
+          <div className="summary-div">
+            <h6>Total Admin and Application Fee</h6>
+            <span> {formatNumberWithCommas(totalAdminFee)}</span>
+          </div>
+
+          <div className="summary-div">
+            <h2>Overall Total =</h2>
+            <h2>{formatNumberWithCommas(totalAdminFee + totalAmountPaid)}</h2>
           </div>
         </div>
         <div className="remmit-div">
@@ -440,6 +517,16 @@ const ActiveLoansTable = () => {
                   <div className="summary-div">
                     <h6>Total Amount Collected</h6>
                     <span> {formatNumberWithCommas(totalAmountPaid)}</span>
+                  </div>
+                  <div className="summary-div">
+                    <h6>Total Admin and Application Fee</h6>
+                    <span> {formatNumberWithCommas(totalAdminFee)}</span>
+                  </div>
+                  <div className="summary-div">
+                    <h2>Overall Total =</h2>
+                    <h2>
+                      {formatNumberWithCommas(totalAdminFee + totalAmountPaid)}
+                    </h2>
                   </div>
                   <div className="file-upload">
                     <input
@@ -460,52 +547,9 @@ const ActiveLoansTable = () => {
                     >
                       Exit
                     </button>
-                    <button                       
-                    className="upload-confirm-btn"
-                    onClick={handleConfirm}
-                     disabled={
-                      !imageUrl || isUploading || uploaded || time === 0
-                    }
-                    style={{
-                      background:
-                        !imageUrl || isUploading || uploaded || time === 0
-                          ? "  #749eaa"
-                          : "#005e78",
-                    }}
-                    >Upload</button>
-
-                    
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="dropdown-container">
-              <div className="all-upload-pop">
-                <h2 style={{
-                  textAlign: "center"
-                }}>Collections have been remitted for today</h2>
-                  <button
-                        onClick={() => setRemitPop(false)}
-                        className="upload-cancel-btn"
-                      >
-                        Exit
-                      </button>
-              </div>
-            </div>
-            )}
-          </>
-        ) : (
-         ""
-        )}
-
-        {confirm? (
-         <div className="dropdown-container">
-                <div className="all-upload-pop">
-            <p className="prove">Are you uploading a proof of payment for {formatNumberWithCommas(totalAmountPaid)}</p>
-            <div className="upload-btns">
-            <button
+                    <button
                       className="upload-confirm-btn"
-                      onClick={handleUpload}
+                      onClick={handleConfirm}
                       disabled={
                         !imageUrl || isUploading || uploaded || time === 0
                       }
@@ -516,36 +560,98 @@ const ActiveLoansTable = () => {
                             : "#005e78",
                       }}
                     >
-                      {isUploading
-                        ? <PulseLoader color="white" size={10} />
-                        : uploaded
-                        ? "Uploaded"
-                        : "Yes"}
+                      Upload
                     </button>
-                    <button onClick={() => setConfirm(false)} className="upload-cancel-btn">Cancel</button>
-          </div>
-          </div>
-          </div>
-        ): ""}
-      </div>
-        {isLoading ? (
-                    <div className="dropdown-container">
-                      <div className="pay-dropdown">
-                        <div className="pay-green-circle">
-                          <Icon
-                            icon="twemoji:check-mark"
-                            width="40"
-                            height="40"
-                            style={{ color: "black" }}
-                          />
-                        </div>
-                        <p>Remittance uploaded successfully</p>
-                        <button onClick={() => setIsLoading(false)} className="upload-cancel-btn">Exit</button>
-                      </div>
-                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="dropdown-container">
+                <div className="all-upload-pop">
+                  <h2
+                    style={{
+                      textAlign: "center",
+                    }}
+                  >
+                    Collections have been remitted for today
+                  </h2>
+                  <button
+                    onClick={() => setRemitPop(false)}
+                    className="upload-cancel-btn"
+                  >
+                    Exit
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          ""
+        )}
+
+        {confirm ? (
+          <div className="dropdown-container">
+            <div className="all-upload-pop">
+              <p className="prove">
+                Are you uploading a proof of payment for{" "}
+                {formatNumberWithCommas(totalAdminFee + totalAmountPaid)}
+              </p>
+              <div className="upload-btns">
+                <button
+                  className="upload-confirm-btn"
+                  onClick={handleUpload}
+                  disabled={!imageUrl || isUploading || uploaded || time === 0}
+                  style={{
+                    background:
+                      !imageUrl || isUploading || uploaded || time === 0
+                        ? "  #749eaa"
+                        : "#005e78",
+                  }}
+                >
+                  {isUploading ? (
+                    <PulseLoader color="white" size={10} />
+                  ) : uploaded ? (
+                    "Uploaded"
                   ) : (
-                    ""
+                    "Yes"
                   )}
+                </button>
+                <button
+                  onClick={() => setConfirm(false)}
+                  className="upload-cancel-btn"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          ""
+        )}
+      </div>
+      {isLoading ? (
+        <div className="dropdown-container">
+          <div className="pay-dropdown">
+            <div className="pay-green-circle">
+              <Icon
+                icon="twemoji:check-mark"
+                width="40"
+                height="40"
+                style={{ color: "black" }}
+              />
+            </div>
+            <p>Remittance uploaded successfully</p>
+            <button
+              onClick={() => setIsLoading(false)}
+              className="upload-cancel-btn"
+            >
+              Exit
+            </button>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
     </CollectionRap>
   );
 };

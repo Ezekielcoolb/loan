@@ -58,7 +58,7 @@ const CsoNavRap = styled.div`
 
 
 const CsoNav = () => {
-    const { user } = useSelector((state) => state.auth);
+  const user = JSON.parse(localStorage.getItem("csoUser"));
   const navigate = useNavigate()
 
 
@@ -90,12 +90,14 @@ const CsoNav = () => {
                                 height="24"
                                 style={{ color: "white" }}
                               />
+
                               {openNotification? ( 
                               <div className="the-notification">
                                   <CsoNotifications />
                               </div>
                               ): ""}
                             </div>
+                            
                           </div>
                         )}
         </CsoNavRap>

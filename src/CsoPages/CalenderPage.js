@@ -119,7 +119,7 @@ const CalendarPage = () => {
 
   const today = new Date();
 
-  const dailyAmount = loan?.loanDetails?.amountToBePaid / 30;
+  const dailyAmount = loan?.loanDetails?.amountToBePaid / 22;
 
   // Custom function to format the date
   const formatDate = (date) => {
@@ -220,6 +220,7 @@ const CalendarPage = () => {
             gap: "2px",
           }}
         >
+          
           {loan?.repaymentSchedule?.map((schedule, index) => {
             const scheduleDate = new Date(schedule.date);
             const isStartDate =

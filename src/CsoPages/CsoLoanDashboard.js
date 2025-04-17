@@ -4,8 +4,10 @@ import { useDispatch, useSelector } from "react-redux";
 
 import {
   calculateDefaultingCustomers,
+  calculateLoanStatsCsoLoanDashboard,
   calculateNoPaymentYesterday,
   fetchAllLoansByCsoId,
+  fetchAllLoansByCsoIdLoanDashboardLoans,
   fetchLoanDashboardLoans,
 } from "../redux/slices/LoanSlice";
 import { Icon } from "@iconify/react/dist/iconify.js";
@@ -190,7 +192,6 @@ const LoanCsoRap = styled.div`
   }
   .cancle-icon {
     display: flex;
-   
   }
   .table-header h2 {
     background: #005e78;
@@ -206,10 +207,19 @@ const LoanCsoRap = styled.div`
 
 const LoanCsoDashboard = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const user = JSON.parse(localStorage.getItem("csoUser"));
   const {
     loans,
     totalLoans,
+    fullyPaidLoan,
+    csoLoanDashdordLoans,
+    csoDashboardTotalLoans,
+    csoDashboardActiveLoans,
+    csoDashboardFullPaidLoans,
+    csoFullyPaidLoansDashbord,
+    csoDashboardPendingLoans,
+    csoDashboardRejectedLoans,
+    csoFullyPaidLoas,
     activeLoans,
     pendingLoans,
     rejectedLoans,
@@ -222,23 +232,34 @@ const LoanCsoDashboard = () => {
     status,
     error,
   } = useSelector((state) => state.loan);
+  // console.log(csoLoanDashdordLoans);
+  // console.log(totalLoans);
+  
+  // console.log(csoDashboardTotalLoans);
+  
 
   const [showDefaultingCustomers, setShowDefaultingCustomers] = useState(false);
   const [showYesDefaultingCustomers, setShowYesDefaultingCustomers] =
     useState(false);
+  const [fullyPaidShow, setFullyPaidShow] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [approved, setApproved] = useState(false);
   const [pending, setPending] = useState(false);
   const [rejected, setRejected] = useState(false);
+  const [fully, setFully] = useState(false);
 
   const handleSubmitted = () => {
     setSubmitted(!submitted);
   };
-
+  const handleShowFullyPaid = () => {
+    setFullyPaidShow(!fullyPaidShow);
+  };
   const handleApproved = () => {
     setApproved(!approved);
   };
-
+  const handleFully = () => {
+    setFully(!fully);
+  };
   const handlePending = () => {
     setPending(!pending);
   };
@@ -248,16 +269,20 @@ const LoanCsoDashboard = () => {
   };
 
   const handleAllDrop = () => {
-    setSubmitted(false)
-    setApproved(false)
-    setPending(false)
-    setRejected(false)
-  }
- 
+    setSubmitted(false);
+    setApproved(false);
+    setPending(false);
+    setRejected(false);
+  };
 
   const csoId = user.workId;
   useEffect(() => {
     dispatch(fetchAllLoansByCsoId({ csoId }));
+  }, [dispatch]);
+
+
+  useEffect(() => {
+    dispatch(fetchAllLoansByCsoIdLoanDashboardLoans(csoId));
   }, [dispatch]);
 
   useEffect(() => {
@@ -265,6 +290,12 @@ const LoanCsoDashboard = () => {
       dispatch(fetchLoanDashboardLoans(csoId));
     }
   }, [dispatch, csoId]);
+
+  // useEffect(() => {
+   
+  //     dispatch(calculateLoanStatsCsoLoanDashboard())
+    
+  // }, [dispatch]);
 
   const handleShowDefaultingCustomers = () => {
     dispatch(calculateDefaultingCustomers());
@@ -284,46 +315,47 @@ const LoanCsoDashboard = () => {
 
   const renderTable = (data, title, columns) => (
     <div className="dropdown-container">
-              <div className="all-dropdown-div">
-      <div className="table-header">
-        {" "}
-        <Icon className="cancle-icon"
-          onClick={handleAllDrop}
-          icon="stash:times-circle"
-          width="24"
-          height="24"
-          style={{ color: "#005e78", cursor: "pointer" }}
-        />
-        <h2>{title}</h2>
-      </div>
-      <div className="new-table-scroll">
-        <div className="table-div-con">
-          <table border="1">
-            <thead>
-              <tr>
-                {columns.map((col) => (
-                  <th key={col}>{col}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.length === 0 ? (
-                <tr>
-                  <td colSpan={columns.length}>No data available</td>
-                </tr>
-              ) : (
-                data.map((loan) => (
-                  <tr key={loan.sn}>
-                    {columns.map((col) => (
-                      <td key={col}>{loan[col.toLowerCase()] || "N/A"}</td>
-                    ))}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      <div className="all-dropdown-div">
+        <div className="table-header">
+          {" "}
+          <Icon
+            className="cancle-icon"
+            onClick={handleAllDrop}
+            icon="stash:times-circle"
+            width="24"
+            height="24"
+            style={{ color: "#005e78", cursor: "pointer" }}
+          />
+          <h2>{title}</h2>
         </div>
-      </div>
+        <div className="new-table-scroll">
+          <div className="table-div-con">
+            <table border="1">
+              <thead>
+                <tr>
+                  {columns.map((col) => (
+                    <th key={col}>{col}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {data.length === 0 ? (
+                  <tr>
+                    <td colSpan={columns.length}>No data available</td>
+                  </tr>
+                ) : (
+                  data.map((loan) => (
+                    <tr key={loan.sn}>
+                      {columns.map((col) => (
+                        <td key={col}>{loan[col.toLowerCase()] || "N/A"}</td>
+                      ))}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -333,7 +365,6 @@ const LoanCsoDashboard = () => {
       <div className="all-loan">
         <div className="home-first-div">
           <h2>Loans</h2>
-          
         </div>
 
         <div className="loan-summary">
@@ -341,23 +372,28 @@ const LoanCsoDashboard = () => {
           <div className="summary-loan">
             <p onClick={handleSubmitted} className="p-1">
               Submitted Loan Applications
-              <span>{totalLoans}</span>
+              <span>{csoDashboardTotalLoans}</span>
             </p>
             <p onClick={handleApproved} className="p-2">
               Approved loans
-              <span> {activeLoans}</span>
+              <span> {csoDashboardActiveLoans}</span>
             </p>
             <p onClick={handlePending} className="p-3">
               Pending Loans:
-              <span> {pendingLoans} </span>
+              <span> {csoDashboardPendingLoans} </span>
             </p>
             <p onClick={handleRejected} className="p-4">
               Declined Loans:
-              <span> {rejectedLoans} </span>
+              <span> {csoDashboardRejectedLoans} </span>
+            </p>
+            <p  className="p-2">
+              Fully Paid Loans:
+              <span> {csoDashboardFullPaidLoans} </span>
             </p>
           </div>
           <div className="btns">
             <button onClick={handleNoPaymentYesterday}>Late Payment</button>
+            <button onClick={handleShowFullyPaid}>Fully Paid Loans</button>
             <button onClick={handleShowDefaultingCustomers}>
               Past Due Loans
             </button>
@@ -457,7 +493,7 @@ const LoanCsoDashboard = () => {
                     <h3>Late Payment Loans</h3>
                     <div className="cancel-btn">
                       <Icon
-                        onClick={() => setShowDefaultingCustomers(false)}
+                        onClick={() => setShowYesDefaultingCustomers(false)}
                         icon="stash:times-circle"
                         width="24"
                         height="24"
@@ -469,48 +505,171 @@ const LoanCsoDashboard = () => {
                 </div>
               </div>
             )}
+
+            {fullyPaidShow ? (
+              <div className="dropdown-container">
+                <div className="all-dropdown-div">
+                <div className="default-head">
+                  <h3>Fully Paid Loans</h3>
+                  <div className="cancel-btn">
+                    <Icon
+                      onClick={() => handleShowFullyPaid(false)}
+                      icon="stash:times-circle"
+                      width="24"
+                      height="24"
+                      style={{ color: "#005e78", cursor: "pointer" }}
+                    />
+                  </div>
+                  </div>
+                  <div className="new-table-scroll">
+                    <table className="" border="1" cellPadding="10">
+                      <thead>
+                        <tr>
+                          <th>S/N</th> {/* Serial number column header */}
+                          <th>Customer Name</th>
+                          <th>Loan Amount</th>
+                          <th>Start Date</th>
+                          <th>End Date</th>
+                          <th>Defaulted</th>
+                          <th>Performance</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {csoFullyPaidLoansDashbord && csoFullyPaidLoansDashbord?.length > 0 ? (
+                          <>
+                            {csoFullyPaidLoansDashbord?.map((customer, index) => {
+                              const repaymentSchedule =
+                                customer?.repaymentSchedule || [];
+                              const sortedSchedule = [
+                                ...repaymentSchedule,
+                              ].sort(
+                                (a, b) => new Date(a.date) - new Date(b.date)
+                              );
+                              const startDate =
+                                sortedSchedule.length > 0
+                                  ? new Date(
+                                      sortedSchedule[0].date
+                                    ).toLocaleDateString("en-GB")
+                                  : "N/A";
+                              const lastDate =
+                                sortedSchedule.length > 0
+                                  ? new Date(
+                                      sortedSchedule[
+                                        sortedSchedule.length - 1
+                                      ].date
+                                    ).toLocaleDateString("en-GB")
+                                  : "N/A";
+                              const pendingCount = repaymentSchedule.filter(
+                                (p) => p.status === "pending"
+                              ).length;
+                              const days = 22;
+                              const performance =
+                                ((days - (pendingCount - 1)) / days) * 100;
+                              const repaymentPercentage =
+                                performance < 0 ? 100 : Math.round(performance);
+
+                              return (
+                                <tr key={index}>
+                                  <td>{index + 1}</td>
+                                  <td>
+                                    {customer?.customerDetails?.firstName}{" "}
+                                    {customer?.customerDetails?.lastName}
+                                  </td>
+                                  <td>
+                                    {customer?.loanDetails?.amountApproved}
+                                  </td>
+                                  <td>{startDate}</td>
+                                  <td>{lastDate}</td>
+                                  <td>{pendingCount - 1}</td>
+                                  <td>{repaymentPercentage}%</td>
+                                </tr>
+                              );
+                            })}
+                          </>
+                        ) : (
+                          <tr>
+                            <td colSpan="5">No fully paid loans</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
           </div>
         </div>
         <div></div>
       </div>
 
       <div>
-        {submitted? (<>
-        {renderTable(allDahboardLoans, "Submitted Loans", [
-          "SN",
-          "Name",
-          "AmountRequested",
-          "Date",
-          "Status",
-        ])}
-        </>): ""}
-         {approved? (<>
-        {renderTable(activeDashboardLoans, "Approved Loans", [
-          "SN",
-          "Name",
-          "AmountRequested",
-          "AmountApproved",
-          "Date",
-        ])}
-        </>): ""}
-         {pending? (<>
-        {renderTable(pendingDashboardLoans, "Pending Loans", [
-          "SN",
-          "Name",
-          "AmountRequested",
-          "Date",
-          "Status",
-        ])}
-        </>): ""}
-         {rejected? (<>
-        {renderTable(rejectedDashboardLoans, "Declined Loans", [
-          "SN",
-          "Name",
-          "AmountRequested",
-          "Date",
-          "RejectionReason",
-        ])}
-        </>): ""}
+        {submitted ? (
+          <>
+            {renderTable(allDahboardLoans, "Submitted Loans", [
+              "SN",
+              "Name",
+              "AmountRequested",
+              "Date",
+              "Status",
+            ])}
+          </>
+        ) : (
+          ""
+        )}
+        {approved ? (
+          <>
+            {renderTable(activeDashboardLoans, "Approved Loans", [
+              "SN",
+              "Name",
+              "AmountRequested",
+              "AmountApproved",
+              "Date",
+            ])}
+          </>
+        ) : (
+          ""
+        )}
+        {pending ? (
+          <>
+            {renderTable(pendingDashboardLoans, "Pending Loans", [
+              "SN",
+              "Name",
+              "AmountRequested",
+              "Date",
+              "Status",
+            ])}
+          </>
+        ) : (
+          ""
+        )}
+        {rejected ? (
+          <>
+            {renderTable(rejectedDashboardLoans, "Declined Loans", [
+              "SN",
+              "Name",
+              "AmountRequested",
+              "Date",
+              "RejectionReason",
+            ])}
+          </>
+        ) : (
+          ""
+        )}
+        {/* {fully ? (
+          <>
+            {renderTable(csoFullyPaidLoansDashbord, "Fully Paid Loans", [
+              "SN",
+              "Name",
+              "AmountRequested",
+              "Date",
+              "RejectionReason",
+            ])}
+          </>
+        ) : (
+          ""
+        )} */}
       </div>
     </LoanCsoRap>
   );
