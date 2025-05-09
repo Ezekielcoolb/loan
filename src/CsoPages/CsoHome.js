@@ -10,7 +10,10 @@ import LoanApplicationForm from "./CustomerLoanPop";
 import {
   fetchAllLoansByCsoId,
   fetchFullyPaidLoansStart,
+  fetchLoansByCsoForHome,
   searchCustomer,
+  searchCustomerCsoHome,
+  setCsoHomePage,
   setPage,
   updateGuarantorFormPic,
 } from "../redux/slices/LoanSlice";
@@ -18,6 +21,8 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { PulseLoader } from "react-spinners";
 import TopLoader from "../Preload/TopLoader";
+import { fetchOutstandingLoans } from "../redux/slices/otherLoanSlice";
+import { fetchCsoByWorkId } from "../redux/slices/csoSlice";
 
 const HomeCsoRap = styled.div`
   color: #005e78;
@@ -26,6 +31,7 @@ const HomeCsoRap = styled.div`
   .success-visible {
     background: #ffffff;
     padding: 20px;
+    margin: 20px;
   }
   .success-visible p {
     color: #005e78;
@@ -264,17 +270,26 @@ const CsoHome = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { loans, status, error } = useSelector((state) => state.loan);
+  const { loans, csoHomepage, csoHometotalPages, csoHomeloans,  status, error } = useSelector((state) => state.loan);
+  const { outstandingLoans, totalOutstandingLoans } = useSelector(state => state.otherLoan);
+  const { specificCso } = useSelector((state) => state.cso);
 
+
+console.log(csoHomeloans, csoHometotalPages)
   const [query, setQuery] = useState("");
 
   const csoId = user.workId;
+  const workId = user.workId;
+const defaultingTarget = specificCso?.defaultingTarget;
+
+
   console.log(user);
 
   const handleChange = (e) => {
-    setQuery(e.target.value);
-    if (e.target.value.trim() !== "") {
-      dispatch(searchCustomer(e.target.value));
+    const value = e.target.value;
+    setQuery(value);
+    if (value.trim() !== "") {
+      dispatch(searchCustomerCsoHome({ query: value, csoId }));
     }
   };
   const handleVisisble = () => {
@@ -293,7 +308,21 @@ const CsoHome = () => {
     fetchLoans();
   }, [csoId]);
 
-  const finalLoans = useMemo(() => loans, [loans]);
+
+  useEffect(() => {
+    dispatch(fetchLoansByCsoForHome({ csoId, page: csoHomepage }));
+  }, [dispatch, csoId, csoHomepage]);
+
+  useEffect(() => {
+    if (csoId) dispatch(fetchOutstandingLoans(csoId));
+  }, [csoId, dispatch]);
+
+  useEffect(() => {
+    if (workId) dispatch(fetchCsoByWorkId(workId));
+  }, [workId, dispatch]);
+
+
+  const finalLoans = useMemo(() => csoHomeloans, [csoHomeloans]);
 
   const handleGuarantorImage = async (e) => {
     try {
@@ -361,11 +390,11 @@ const CsoHome = () => {
   };
 
   // Calculate total pages
-  const totalPages = Math.ceil(loans?.length / itemsPerPage);
-console.log(loans);
+  const totalPages = Math.ceil(csoHomeloans?.length / itemsPerPage);
+console.log(csoHomeloans);
 
   // Get current items to display
-  const currentLoans = loans?.slice(
+  const currentLoans = csoHomeloans?.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -385,6 +414,21 @@ console.log(loans);
       </div>
     );
   }
+
+
+  const handleNext = () => {
+    if (csoHomepage < csoHometotalPages) {
+      dispatch(setCsoHomePage(csoHomepage + 1));
+    }
+  };
+
+  const handlePrev = () => {
+    if (csoHomepage > 1) {
+      dispatch(setCsoHomePage(csoHomepage - 1));
+    }
+  };
+
+
   return (
     <HomeCsoRap>
       <div>
@@ -418,10 +462,10 @@ console.log(loans);
             </div>
           </div>
           <ul>
-            {loans && loans.length > 0 ? (
+            {csoHomeloans && csoHomeloans.length > 0 ? (
               <div>
                 <div className="images-container">
-                  {currentLoans?.map((loan, index) => (
+                  {csoHomeloans?.map((loan, index) => (
                     <li
                       className="images-mapped"
                       key={loan._id}
@@ -460,23 +504,34 @@ console.log(loans);
                 </div>
                 {/* Pagination Buttons */}
                 <div className="page-div">
-                  <button
+                  {/* <button
                     className="page-btn"
-                    onClick={() => handlePageChange(currentPage - 1)}
+                    onClick={() => handlePrev(currentPage - 1)}
                     disabled={currentPage === 1}
                   >
                     Prev
-                  </button>
-                  <span>
-                    Page {currentPage} of {totalPages}
-                  </span>
+                  </button> */}
                   <button
+                  className="page-btn"
+                   onClick={handlePrev}
+                    disabled={csoHomepage === 1}>Prev</button>
+
+
+                  <span>
+                    Page {csoHomepage} of {csoHometotalPages}
+                  </span>
+                  {/* <button
                     className="page-btn"
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                   >
                     Next
-                  </button>
+                  </button> */}
+                  <button 
+                   className="page-btn"
+                  onClick={handleNext} 
+                  disabled={csoHomepage === csoHometotalPages}>
+                    Next</button>
                 </div>
               </div>
             ) : (
@@ -487,7 +542,25 @@ console.log(loans);
           </ul>
         </div>
       </div>
-      {dropdowVisible ? <LoanApplicationForm /> : ""}
+
+    
+      {dropdowVisible && (
+  totalOutstandingLoans > defaultingTarget && defaultingTarget !==0 ? (
+    <div className="dropdown-container">
+      <div className="success-visible">
+        <p style={{ color: "red" }}>
+          You have exceeded your defaulting target of<span style={{
+            fontWeight: "900",
+            fontSize: "20px",
+          }}> {defaultingTarget} </span>. Try to clear the defaults in order to submit new loans. <br /> Thanks.
+        </p>
+        <button onClick={handleVisisble}>Exit</button>
+      </div>
+    </div>
+  ) : (
+    <LoanApplicationForm />
+  )
+)}
       {/* Conditional Popup Display */}
       {popupMessage && (
         <div className="pop-container">

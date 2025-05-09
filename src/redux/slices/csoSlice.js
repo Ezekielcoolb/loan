@@ -18,6 +18,9 @@ export const fetchCso = createAsyncThunk(
   }
 );
 
+
+
+
 // Async thunk to create a new branch
 export const createCso = createAsyncThunk("cso/createCso", async (csoData) => {
   try {
@@ -159,14 +162,78 @@ export const searchCso = createAsyncThunk("cso/searchCso", async (query) => {
   return data;
 });
 
+
+// Update only the defaultingTarget
+export const updateDefaultingTarget = createAsyncThunk(
+  'csos/updateDefaultingTarget',
+  async ({ id, defaultingTarget }) => {
+    const res = await axios.put(`${API_URL}/csos-defaultTarget-set/${id}`, { defaultingTarget });
+    console.log(res.data);
+    toast.success(res.data.message);
+    return res.data;
+  }
+);
+
+export const fetchAllTheCsos = createAsyncThunk('csos/fetchAllTheCsos', async () => {
+  const res = await axios.get(`${API_URL}/fetct-all-csos`);
+  return res.data;
+});
+
+export const fetchCsoByWorkId = createAsyncThunk(
+  "cso/fetchByWorkId",
+  async (workId, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(`${API_URL}/fecth-specific-cso/${workId}`);
+
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.error || "Failed to fetch CSO"
+      );
+    }
+  }
+);
+
+export const fetchForAdminUpdateCSO = createAsyncThunk(
+  'cso/fetchForAdminUpdateCSO',
+  async (workId, thunkAPI) => {
+    try {
+      const response = await axios.get(`${API_URL}/get-cso-for-admin-editing/${workId}`);
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response.data.message);
+    }
+  }
+);
+
+
+export const updateByAdminCSO = createAsyncThunk(
+  'cso/updateByAdminCSO',
+  async ({ workId, updateFields }, thunkAPI) => {
+    try {
+      const response = await axios.put(`${API_URL}/update-cso-by-the-admin/${workId}`, updateFields);
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response.data.message);
+    }
+  }
+);
+
+
+
 const csoSlice = createSlice({
   name: "cso",
   initialState: {
     totalcso: 0,
     totalPages: 1,
     isLoading: false,
+    loading: false,
+    updatingCsoloading: false,
     currentPage: 1,
     cso: [],
+    specifiedCso: null,
+    specificCso: null,
+    specifiedCsoTwo: null,
     transactions: [],
     status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
     error: null,
@@ -175,10 +242,13 @@ const csoSlice = createSlice({
     progressData: null,
     monthlyTarget: 0,
     payments: [],
+    list: [],
     monthlyLoanTarget: 0,
     monthlyLoanCounts: [],
     remmitdata: [],
+    targetMessage: null,
     successMessage: null,
+    updateCsoSuccessMessage: "",
     selectedCSO: null,
     remmitCsoData: [],
     selectedRemiteDate: format(new Date(), "yyyy-MM-dd"),
@@ -195,9 +265,16 @@ const csoSlice = createSlice({
     setSelectedCSO: (state, action) => {
       state.selectedCSO = action.payload;
     },
+    
     clearMessages: (state) => {
       state.error = null;
       state.successMessage = null;
+    },
+    clearTargetMessageMessages: (state) => {
+      state.targetMessage = null;
+    },
+    clearUpdateSuccessMessages: (state) => {
+      state.updateCsoSuccessMessage = "";
     },
   },
   extraReducers: (builder) => {
@@ -220,6 +297,75 @@ const csoSlice = createSlice({
       // Handle createCso
       .addCase(createCso.fulfilled, (state, action) => {
         state.cso.push(action.payload);
+      });
+
+      builder
+  .addCase(fetchForAdminUpdateCSO.pending, (state) => {
+    state.loading = true;
+    state.error = null;
+  })
+  .addCase(fetchForAdminUpdateCSO.fulfilled, (state, action) => {
+    state.loading = false;
+    state.specifiedCso = action.payload;
+  })
+  .addCase(fetchForAdminUpdateCSO.rejected, (state, action) => {
+    state.loading = false;
+    state.error = action.payload;
+  });
+
+  builder
+  .addCase(updateByAdminCSO.pending, (state) => {
+    state.updatingCsoloading = true;
+    state.error = null;
+    state.success = false;
+  })
+  .addCase(updateByAdminCSO.fulfilled, (state, action) => {
+    state.updatingCsoloading = false;
+    state.specifiedCso = action.payload.cso;
+    state.updateCsoSuccessMessage = action.payload.message
+    state.success = true;
+  })
+  .addCase(updateByAdminCSO.rejected, (state, action) => {
+    state.updatingCsoloading = false;
+    state.error = action.payload;
+    state.success = false;
+  });
+
+
+      builder
+      .addCase(fetchCsoByWorkId.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCsoByWorkId.fulfilled, (state, action) => {
+        state.loading = false;
+        state.specificCso = action.payload;
+      })
+      .addCase(fetchCsoByWorkId.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+      builder
+      .addCase(fetchAllTheCsos.pending, state => {
+        state.loading = true;
+      })
+      .addCase(fetchAllTheCsos.fulfilled, (state, action) => {
+        state.list = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchAllTheCsos.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(updateDefaultingTarget.fulfilled, (state, action) => {
+        const updated = action.payload;
+        const index = state.list.findIndex(cso => cso._id === updated._id);
+        if (index !== -1) {
+          state.list[index] = updated;
+        }
+        state.targetMessage = action.payload.message;
+
       });
 
       builder
@@ -357,5 +503,5 @@ const csoSlice = createSlice({
       });
   },
 });
-export const { resetUploadState, setSelectedRemmitDate, setSelectedCSO, clearMessages } = csoSlice.actions;
+export const {clearTargetMessageMessages, clearUpdateSuccessMessages, resetUploadState, setSelectedRemmitDate, setSelectedCSO, clearMessages } = csoSlice.actions;
 export default csoSlice.reducer;

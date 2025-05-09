@@ -313,11 +313,53 @@ console.log(loans);
   console.log("Today's Repayment:", todayRepayment || "No repayment found");
   
 
+  function countWeekdaysSinceFirstRepayment(schedule) {
+    if (!schedule?.length) return 0;
   
+    const firstDate = new Date(schedule[0].date);
+    const today = new Date();
+  
+    let count = 0;
+    const current = new Date(firstDate);
+    current.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+  
+    while (current <= today) {
+      const day = current.getDay();
+      if (day !== 0 && day !== 6) {
+        count++;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+  
+    // If first status is pending, subtract 1 day
+    if (schedule[0].status === 'pending') {
+      count = Math.max(0, count - 1);
+    }
+  
+    return count;
+  }
+  
+  const repaymentSchedule = loan?.repaymentSchedule
 
+  console.log("Repayment Schedule:", repaymentSchedule);
+  
+  // const today = new Date();
+  
+  const daysToShow = countWeekdaysSinceFirstRepayment(repaymentSchedule);
+  console.log("Days to show:", daysToShow);
+
+  console.log(`Display ${daysToShow} days of repayment.`);
+      
   const dailyAmount = loan?.loanDetails?.amountToBePaid / 22;
 
-  const AmountDue = dailyAmount - todayRepayment?.amountPaid;
+  const totalDue = dailyAmount * daysToShow;
+  
+  let AmountDue = totalDue - loan?.loanDetails?.amountPaidSoFar;
+  
+  // Ensure AmountDue is not negative
+  AmountDue = AmountDue < 0 ? 0 : AmountDue;
+  
 
   const LoanBalance =
     loan?.loanDetails?.amountToBePaid - loan?.loanDetails?.amountPaidSoFar;

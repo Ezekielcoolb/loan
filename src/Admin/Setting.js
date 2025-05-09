@@ -7,6 +7,7 @@ import { fetchAllBranches, setBranchTargets, setYearlyTargets } from "../redux/s
 import TargetForm from "./Target";
 import { updateSupperAdminPassword } from "../redux/slices/authSlice";
 import { PulseLoader } from "react-spinners";
+import { clearTargetMessageMessages, fetchAllTheCsos, updateDefaultingTarget } from "../redux/slices/csoSlice";
 
 const SettingRap = styled.div`
   font-family: "Onest";
@@ -482,9 +483,24 @@ const Setting = () => {
   const [successPop, setSuccessPop] = useState(false)
     const {adminToken,  superUser, success, error } = useSelector((state) => state.auth);
 
+    const { list: csos, targetMessage, loading } = useSelector((state) => state.cso);
+console.log(csos)
+console.log(targetMessage)
+
+useEffect(() => {
+  dispatch(fetchAllTheCsos());
+}, [dispatch]);
+
+
+
+    const [selectedId, setSelectedId] = useState('');
+    const [target, setTarget] = useState('');
+
 
   const isValid = yearlyLoanTarget !=="" || yearlyDisbursementTarget !== ""
   const valid = selectedBranch !== "" && loanTarget !== "" || disbursementTarget !== ""
+  const targetvalid = target !== ""
+ 
 
   const submitValid = currentPassword !=="" && 
                       newPassword !=="" &&
@@ -578,6 +594,13 @@ console.log(success);
     setCurrentPassword("")
     setConfirmPassword("")
   }
+
+  const handleCSoTargetSubmit = (e) => {
+    e.preventDefault();
+    if (!selectedId || !target) return;
+    dispatch(updateDefaultingTarget({ id: selectedId, defaultingTarget: Number(target) }));
+    setTarget('');
+  };
 
 
   return (
@@ -673,7 +696,40 @@ console.log(success);
                   }} onClick={handleBranchSubmit}>Save</Link>
         
             </div>
-          
+            <div className="target-loan">
+            <h4>Set Defaulting Loan Target For CSOs</h4>
+            <div>
+          <label>Select CSO:</label>
+          <select
+            value={selectedId}
+            onChange={(e) => setSelectedId(e.target.value)}
+            className="border p-2 w-full"
+          >
+            <option value="">-- Choose a CSO --</option>
+            {csos.map((cso) => (
+              <option key={cso._id} value={cso._id}>
+                {cso.firstName} {cso.lastName} ({cso.branch})
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>Defaulting Target:</label>
+          <input
+            type="number"
+            className="border p-2 w-full"
+            value={target}
+            onChange={(e) => setTarget(e.target.value)}
+            placeholder="Enter target (e.g. 50000)"
+          />
+        </div>
+
+            <Link className="pro-save-btn"
+                  style={{
+                    backgroundColor: targetvalid ? "#030b26" : "#727789",
+                  }} onClick={handleCSoTargetSubmit}>Save</Link>
+        
+            </div>
           </div>
         )}
 
@@ -1015,6 +1071,15 @@ console.log(success);
 
       </div>
       ) : ""}
+
+      {targetMessage && targetMessage !== null ? (
+<div className="dropdown-container">
+  <div className="successPop">
+    <p>{targetMessage}</p>
+    <button onClick={() => dispatch(clearTargetMessageMessages())}>Exit</button>
+  </div>
+</div>
+      ): ""}
     </SettingRap>
   );
 };

@@ -1116,11 +1116,13 @@ console.log(formData);
                             <input type="checkbox" />
                           </th>
                           <th>Name</th>
-                          <th>Email</th>
-                          <th>Phone Number</th>
-                          <th>Gender</th>
-                          <th>No of customer</th>
-                          <th>Branch</th>
+                <th>Email</th>
+                {/* <th>Phone Number</th>
+                <th>Gender</th> */}
+                <th>Branch</th>
+                <th>Default Limit Target</th>
+                <th>Loan Target</th>
+                <th>Disbursement Target</th>
                           <th>Action</th>
                         </tr>
                       </thead>
@@ -1145,10 +1147,12 @@ console.log(formData);
                                 {caseItem?.firstName} {caseItem?.lastName}
                               </td>
                               <td>{caseItem?.email}</td>
-                              <td>{caseItem?.phone}</td>
-                              <td>{caseItem?.status}</td>
-                              <td>{caseItem?.noCustomer}</td>
-                              <td>{caseItem?.branch}</td>
+                    {/* <td>{caseItem?.phone}</td> */}
+                    {/* <td>{caseItem?.status}</td> */}
+                    <td>{caseItem?.branch}</td>
+                    <td>{caseItem?.defaultingTarget}</td>
+                    <td>{caseItem?.loanTarget}</td>
+                    <td>{caseItem?.disbursementTarget}</td>
                               <td>
                                 {" "}
                                 <Link to={`/manager/csoDetails/${caseItem.workId}`}>

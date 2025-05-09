@@ -4,7 +4,7 @@ import Calendar from "react-calendar"; // Import the calendar
 
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
-import { Pie, Bar } from "react-chartjs-2";
+import { Pie, Bar, Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -18,10 +18,13 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import {
+  clearUpdateSuccessMessages,
   fetchallgetRemittances,
+  fetchForAdminUpdateCSO,
   fetchLoanProgress,
   fetchLoanProgressChart,
   setSelectedRemmitDate,
+  updateByAdminCSO,
 } from "../../redux/slices/csoSlice";
 import {
   calculateDefaultingCustomers,
@@ -34,8 +37,9 @@ import {
   setPage,
 } from "../../redux/slices/LoanSlice";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { MoonLoader } from "react-spinners";
+import { MoonLoader, PulseLoader } from "react-spinners";
 import { fetchRemittanceNewProgress } from "../../redux/slices/remittanceSlice";
+import { fetchOutstandingProgressChart } from "../../redux/slices/otherLoanSlice";
 
 ChartJS.register(
   ArcElement,
@@ -302,7 +306,124 @@ const CollectRap = styled.div`
     width: 500px;
     margin-top: 20px;
   }
+  .detail-in {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 30px;
+    min-height: 100vh;
+  }
+  .detail-in  button {
+    color: #ffffff;
+    font-weight: 500;
+    height: 40px;
+    background: #030b26;
+    border-radius: 10px;
+    border: none;
+    width: 120px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .detail-in-sub p {
+    color: #727789;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .detail-in-sub h6 {
+    font-size: 16px;
+    color: #030b26;
+    font-weight: 600;
+  }
+  .detail-in-sub {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: 50%;
+    justify-content: space-between;
+  }
+  .update-show-drop {
+    background: #ffffff;
+    border-radius: 10px;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+  .update-show-drop-header h4 {
+    font-size: 16px;
+    color: #030b26;
+    font-weight: 600;
+  }
+  .update-show-drop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #d0d5dd;
+
+  }
+  .update-show-drop-body input,  .update-show-drop-body select {
+width: 300px;
+height: 40px;
+padding-left: 15px;
+border-radius: 10px;
+border: 1px solid #d0d5dd;
+
+  }
+  .update-show-drop-body button  {
+    color: #ffffff;
+    font-weight: 500;
+    height: 40px;
+    background: #030b26;
+    border-radius: 10px;
+    border: none;
+    width: 120px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .update-show-drop-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+  }
 `;
+const ChartWrapper = styled.div`
+  height: 300px;
+  width: 100%;
+  canvas {
+    max-height: 300px !important;
+  }
+`;
+
+const ChartRapper = styled.div`
+  h2 {
+    color: #005e78;
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 30px;
+  }
+  padding: 0px;
+  margin: 0px;
+`;
+
+const FlexContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 20px;
+`;
+
+const TextInfo = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 20px;
+
+  p {
+    color: #005e78;
+  }
+`;
+
+
 
 const CsoLoanCollection = () => {
   const dispatch = useDispatch();
@@ -316,7 +437,17 @@ const CsoLoanCollection = () => {
   const [selectedDate, setSelectedDate] = useState(new Date()); // State for selected date
   const [showCalendar, setShowCalendar] = useState(false); // State for calendar visibility
   const [totalAmountPaid, setTotalAmountPaid] = useState(0);
+  const [updatecsoShow, setUpdateCsoShow] = useState(false);
 
+
+  const handleUpdateCsoShow = () => {
+    setUpdateCsoShow(!updatecsoShow)
+  }
+  const {
+    totalOutstandingChart,
+    defaultingTargetChart,
+    percentageChart,
+  } = useSelector((state) => state.otherLoan);
   const [dayPicker, setDayPicker] = useState("today");
 
   const csoId = id;
@@ -355,9 +486,58 @@ const CsoLoanCollection = () => {
     progressData,
     monthlyLoanCounts,
     loading,
+    specifiedCso,
+    updatingCsoloading,
+    specifiedCsoTwo,
+    updateCsoSuccessMessage,
   } = useSelector((state) => state.cso);
 
   const { remittanceProgress } = useSelector((state) => state.remittance);
+
+  const [form, setForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    branch: '',
+    address: '',
+    status: '',
+    guaratorEmail: '',
+    guaratorName: '',
+    guaratorPhone: '',
+    guaratorAddress: '',
+  });
+
+  useEffect(() => {
+    if (specifiedCso) {
+      setForm({
+        firstName: specifiedCso.firstName || '',
+        lastName: specifiedCso.lastName || '',
+        email: specifiedCso.email || '',
+        phone: specifiedCso.phone || '',
+        branch: specifiedCso.branch || '',
+        address: specifiedCso.address || '',
+        status: specifiedCso.status || '',
+        guaratorEmail: specifiedCso.guaratorEmail || '',
+        guaratorName: specifiedCso.guaratorName || '',
+        guaratorPhone: specifiedCso.guaratorPhone || '',
+        guaratorAddress: specifiedCso.guaratorAddress || '',
+      });
+    }
+  }, [specifiedCso]);
+
+  console.log(specifiedCso);
+  console.log(updatingCsoloading);
+  console.log(specifiedCso);
+  console.log(updateCsoSuccessMessage);
+  
+  
+
+   useEffect(() => {
+      if (csoId) {
+        dispatch(fetchOutstandingProgressChart(csoId));
+      }
+    }, [csoId, dispatch]);
 
   useEffect(() => {
     dispatch(fetchallgetRemittances({ workId, date: selectedRemiteDate }));
@@ -366,6 +546,13 @@ const CsoLoanCollection = () => {
   useEffect(() => {
     dispatch(fetchLoanProgress(workId));
     dispatch(fetchRemittanceNewProgress(workId)); // Fetch remittance progress for this CSO
+  }, [dispatch, workId]);
+
+
+  useEffect(() => {
+    if (workId) {
+      dispatch(fetchForAdminUpdateCSO(workId));
+    }
   }, [dispatch, workId]);
 
   useEffect(() => {
@@ -579,6 +766,76 @@ const CsoLoanCollection = () => {
     },
   };
 
+
+
+  const getColor = () => {
+    if (percentageChart < 50) return '#4CAF50';
+    if (percentageChart < 90) return '#FFC107';
+    return '#F44336';
+  };
+
+  // Handle edge case: no target
+  const isZeroTarget = defaultingTargetChart === 0;
+  const adjustedPercentage = isZeroTarget
+    ? 0
+    : Math.min((totalOutstandingChart / defaultingTargetChart) * 100, 100);
+
+  const chartNewData = {
+    labels: ['Outstanding', 'Remaining'],
+    datasets: [
+      {
+        data: isZeroTarget ? [0, 100] : [adjustedPercentage, 100 - adjustedPercentage],
+        backgroundColor: isZeroTarget ? ['#e0e0e0', '#e0e0e0'] : [getColor(), '#e0e0e0'],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    maintainAspectRatio: false,
+    cutout: '75%',
+    plugins: {
+      legend: {
+        display: true,
+        position: 'bottom',
+        align: 'center',
+        labels: {
+          boxWidth: 15,
+          padding: 10,
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context) {
+            const index = context.dataIndex;
+            if (isZeroTarget) {
+              return 'No target set';
+            }
+            if (index === 0) {
+              return `Outstanding: ₦${totalOutstandingChart.toLocaleString()}`;
+            } else {
+              const remaining = defaultingTargetChart - totalOutstandingChart;
+              return `Remaining: ₦${remaining.toLocaleString()}`;
+            }
+          },
+        },
+      },
+    },
+  };
+
+
+
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = () => {
+    setUpdateCsoShow(false)
+    dispatch(updateByAdminCSO({ workId, updateFields: form }));
+  };
+  
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
   if (!progressData)
@@ -635,6 +892,14 @@ const CsoLoanCollection = () => {
             onClick={() => handleLinkClick("remmitance")}
           >
             Remmitance
+          </Link>
+          <Link
+            className={`cso-link ${
+              activeLink === "details" ? "active" : ""
+            }`}
+            onClick={() => handleLinkClick("details")}
+          >
+            Details
           </Link>
         </div>
       </div>
@@ -1211,9 +1476,9 @@ const CsoLoanCollection = () => {
                   </>
                 )}
               </div>
-              <div style={{ maxWidth: "350px", margin: "auto" }}>
-                <Pie
-                  data={chartData}
+              <div style={{ maxWidth: "350px",}}>
+                {/* <Pie
+                  data={chartNewData}
                   options={{
                     plugins: {
                       legend: {
@@ -1241,7 +1506,29 @@ const CsoLoanCollection = () => {
                       },
                     },
                   }}
-                />
+                /> */}
+                 <ChartRapper>
+                      <div>
+                        <h2 className="text-lg font-bold mb-2">Default Limit Tracker</h2>
+                        <TextInfo>
+                          <p>
+                            Outstanding: <br /> ₦{totalOutstandingChart.toLocaleString()}
+                          </p>
+                          <p>
+                            Target: <br /> ₦{defaultingTargetChart.toLocaleString()}
+                          </p>
+                        </TextInfo>
+                        {status === 'loading' ? (
+                          <p>Loading...</p>
+                        ) : (
+                          <FlexContainer>
+                            <ChartWrapper>
+                              <Doughnut data={chartNewData} options={chartOptions} />
+                            </ChartWrapper>
+                          </FlexContainer>
+                        )}
+                      </div>
+                    </ChartRapper>
               </div>
               <div>
                 <Bar data={data} options={options} />
@@ -1303,7 +1590,110 @@ const CsoLoanCollection = () => {
             </div>
           </>
         )}
+
+        {activeLink === "details" && (
+          <>
+          <div className="detail-in">
+            <div className="detail-in-sub">
+              <p>Name</p>
+              <h6>{specifiedCso?.lastName} {specifiedCso?.firstName}</h6>
+            </div>
+            <div className="detail-in-sub">
+              <p>Email</p>
+              <h6>{specifiedCso?.email} </h6>
+            </div>
+            <div className="detail-in-sub">
+              <p>Phone Number</p>
+              <h6>{specifiedCso?.phone} </h6>
+            </div>
+            <div className="detail-in-sub">
+              <p>Gender</p>
+              <h6>{specifiedCso?.status} </h6>
+            </div>
+            <div className="detail-in-sub">
+              <p>Address</p>
+              <h6>{specifiedCso?.address} </h6>
+            </div>
+            <div className="detail-in-sub">
+              <p>Guarantor Name</p>
+              <h6>{specifiedCso?.guaratorName} </h6>
+            </div>
+            <div className="detail-in-sub">
+              <p>Guarantor Email</p>
+              <h6>{specifiedCso?.guaratorEmail} </h6>
+            </div>
+            <div className="detail-in-sub">
+              <p>Guarantor Address</p>
+              <h6>{specifiedCso?.guaratorAddress} </h6>
+            </div>
+            <div className="detail-in-sub">
+              <p>Guarantor Number</p>
+              <h6>{specifiedCso?.guaratorPhone} </h6>
+            </div>
+            <button onClick={handleUpdateCsoShow}>Update Cso</button>
+          </div>
+          </>
+        )}
       </div>
+
+      {updatecsoShow ? (
+        <>
+        <div className="dropdown-container">
+          <div className="update-show-drop">
+            <div className="update-show-drop-header">
+              <h4>Edit Profile</h4>
+                 <Icon
+                                onClick={handleUpdateCsoShow}
+                                icon="uil:times"
+                                width="16"
+                                height="16"
+                                style={{ color: "black", cursor: "pointer" }}
+                              />
+            </div>
+            <div className="update-show-drop-body">
+              <h6>Cso Information</h6>
+            <input name="firstName" value={form.firstName} onChange={handleChange} placeholder="First Name" />
+      <input name="lastName" value={form.lastName} onChange={handleChange} placeholder="Last Name" />
+      <input name="email" value={form.email} onChange={handleChange} placeholder="Email" />
+      <select name="status" value={form.status} onChange={handleChange}>
+  <option value="">Select Gender</option>
+  <option value="Male">Male</option>
+  <option value="Female">Female</option>
+</select>
+      <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone" />
+      <input name="branch" value={form.branch} onChange={handleChange} placeholder="Branch" />
+      <input name="address" value={form.address} onChange={handleChange} placeholder="Address" />
+      <h6>Cso Guarantor Information</h6>
+      <input name="guaratorName" value={form.guaratorName} onChange={handleChange} placeholder="Enter Guuarantor's Name" />
+      <input name="guaratorEmail" value={form.guaratorEmail} onChange={handleChange} placeholder="Enter Guarantor's Email" />
+      <input name="guaratorAddress" value={form.guaratorAddress} onChange={handleChange} placeholder="Enter Guarantor's Address" />
+      <input name="guaratorPhone" value={form.guaratorPhone} onChange={handleChange} placeholder="Enter Guarantor's Number" />
+
+      <button onClick={handleSubmit}>Save Changes</button>
+            </div>
+          </div>
+        </div>
+        </>
+      ): ""}
+
+      {updateCsoSuccessMessage && updateCsoSuccessMessage !== undefined && updateCsoSuccessMessage !== null ? (
+<>
+<div className="dropdown-container">
+  <div className="update-show-drop">
+<div className="update-show-drop-body">
+  <p>{updateCsoSuccessMessage}</p>
+  <button onClick={() => dispatch(clearUpdateSuccessMessages())}>Exit</button>
+  </div>
+  </div>
+  </div>
+</>
+      ): ""}
+
+      {updatingCsoloading ? (
+<div className="dropdown-container">
+  <PulseLoader color="white" size={10} />
+</div>
+      ): ""}
     </CollectRap>
   );
 };

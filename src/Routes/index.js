@@ -1,6 +1,7 @@
 import { useRoutes } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import TopLoader from "../Preload/TopLoader";
+import OutstandingDoughnutChart from "../CsoPages/csoTest";
 
 const AdminDashboardLayout = lazy(() => import("../Controller/adminController"));
 const AdminDashboard = lazy(() => import("../Admin/AdminDashboard"));
@@ -128,6 +129,7 @@ export default function Routess() {
                         { path: "/cso/loans-collections", element: <LoanCollections /> },
                         { path: "/cso/csos-dashboard", element: <RemittanceUpload /> },
                         { path: "/cso/csos-profile", element: <CsoProfile /> },
+                        { path: "/cso/csos-test", element: <OutstandingDoughnutChart /> },
                         { path: "/cso/previousLoans/:id", element: <PreviousLoans /> },
                     ],
                 },

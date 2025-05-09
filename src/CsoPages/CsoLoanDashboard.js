@@ -12,6 +12,7 @@ import {
 } from "../redux/slices/LoanSlice";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import styled from "styled-components";
+import { fetchOutstandingLoans } from "../redux/slices/otherLoanSlice";
 
 const LoanCsoRap = styled.div`
   height: 100vh;
@@ -153,7 +154,23 @@ const LoanCsoRap = styled.div`
   .all-dropdown-div {
     width: 333px !important;
     padding: 15px;
+    overflow-y: auto;
+    max-height: 600px;
+    scrollbar-width: thin;
+    scrollbar-color: #aaa transparent;
   }
+  .all-dropdown-div::-webkit-scrollbar {
+  width: 2px; /* smaller width */
+}
+
+.all-dropdown-div::-webkit-scrollbar-track {
+  background: transparent; /* or a subtle background */
+}
+
+.all-dropdown-div::-webkit-scrollbar-thumb {
+  background-color: #aaa; /* or any color that fits your UI */
+  border-radius: 10px;
+}
   .default-head {
     display: flex;
 
@@ -203,6 +220,13 @@ const LoanCsoRap = styled.div`
     font-size: 16px;
     margin-top: 10px;
   }
+  .total-here-now , .text-right{
+    font-weight: 800 !important;
+  }
+  .total-here-now {
+    font-size: 18px !important;
+    text-align: right !important;
+  }
 `;
 
 const LoanCsoDashboard = () => {
@@ -247,7 +271,19 @@ const LoanCsoDashboard = () => {
   const [pending, setPending] = useState(false);
   const [rejected, setRejected] = useState(false);
   const [fully, setFully] = useState(false);
+  const [defaultLoans, setDefaultLoans] = useState(false);
 
+  const { outstandingLoans, totalOutstandingLoans, loading } = useSelector(state => state.otherLoan);
+
+
+
+console.log(outstandingLoans);
+
+
+  const handleDefaultLoansShow = () => {
+    setDefaultLoans(!defaultLoans);
+  }
+  
   const handleSubmitted = () => {
     setSubmitted(!submitted);
   };
@@ -290,6 +326,10 @@ const LoanCsoDashboard = () => {
       dispatch(fetchLoanDashboardLoans(csoId));
     }
   }, [dispatch, csoId]);
+
+  useEffect(() => {
+    if (csoId) dispatch(fetchOutstandingLoans(csoId));
+  }, [csoId, dispatch]);
 
   // useEffect(() => {
    
@@ -386,14 +426,14 @@ const LoanCsoDashboard = () => {
               Declined Loans:
               <span> {csoDashboardRejectedLoans} </span>
             </p>
-            <p  className="p-2">
+            <p onClick={handleShowFullyPaid} className="p-2">
               Fully Paid Loans:
               <span> {csoDashboardFullPaidLoans} </span>
             </p>
           </div>
           <div className="btns">
             <button onClick={handleNoPaymentYesterday}>Late Payment</button>
-            <button onClick={handleShowFullyPaid}>Fully Paid Loans</button>
+            <button onClick={handleDefaultLoansShow}>Defaults</button>
             <button onClick={handleShowDefaultingCustomers}>
               Past Due Loans
             </button>
@@ -585,6 +625,71 @@ const LoanCsoDashboard = () => {
                                 </tr>
                               );
                             })}
+                          </>
+                        ) : (
+                          <tr>
+                            <td colSpan="5">No fully paid loans</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
+              {defaultLoans ? (
+              <div className="dropdown-container">
+                <div className="all-dropdown-div">
+                <div className="default-head">
+                  <h3>Default Customers</h3>
+                  <div className="cancel-btn">
+                    <Icon
+                      onClick={() => handleDefaultLoansShow(false)}
+                      icon="stash:times-circle"
+                      width="24"
+                      height="24"
+                      style={{ color: "#005e78", cursor: "pointer" }}
+                    />
+                  </div>
+                  </div>
+                  <div className="new-table-scroll">
+                    <table className="" border="1" cellPadding="10">
+                      <thead>
+                        <tr>
+                          <th>S/N</th> {/* Serial number column header */}
+                          <th>Customer Name</th>
+                          <th>Default Amount</th>
+                          
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {outstandingLoans && outstandingLoans?.length > 0 ? (
+                          <>
+                            {outstandingLoans?.map((customer, index) => {
+                              
+
+                              return (
+                                <tr key={index}>
+                                  <td>{index + 1}</td>
+                                  <td>
+                                    {customer?.customer}
+                                  </td>
+                                  <td style={{
+                                    textAlign: "right",
+                                  }}>
+                                    {customer?.outstanding}
+                                  </td>
+                                 
+                                 
+                                </tr>
+                              );
+                            })}
+                            <tr className="">
+              <td colSpan="2" className=" text-right">Total</td>
+              <td className="total-here-now">₦{totalOutstandingLoans.toLocaleString()}</td>
+            </tr>
                           </>
                         ) : (
                           <tr>

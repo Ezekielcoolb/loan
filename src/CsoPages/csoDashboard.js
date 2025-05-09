@@ -16,6 +16,7 @@ import LoanProgressChart from "./csoLoanChart";
 import RepaymentPieChart from "./csoPaymentPieChart";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchRemittanceNewProgress } from "../redux/slices/remittanceSlice";
+import CsoOutstandingDoughnutChart from "./csoDefaultingTargetChart";
 
 const DashboardRap = styled.div`
   background: #d9d9d9;
@@ -624,7 +625,8 @@ const CsoDashboard = () => {
          
         </div>
         <div>
-          <RepaymentPieChart />
+          <CsoOutstandingDoughnutChart />
+          {/* <RepaymentPieChart /> */}
         </div>
         <div>
           <LoanProgressChart />

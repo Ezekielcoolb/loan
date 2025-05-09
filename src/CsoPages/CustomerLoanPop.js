@@ -152,15 +152,11 @@ const LoanApplicationForm = () => {
   );
   const isValid = formData.customerDetails.firstName !== "" &&
                   formData.customerDetails.lastName !== "" &&
-                  formData.customerDetails.middleName !== "" &&
                   formData.customerDetails.email !== "" &&
                   formData.customerDetails.phoneOne !== "" &&
                   formData.customerDetails.address !== "" &&
-                  formData.customerDetails.city !== "" &&
-                  formData.customerDetails.state !== "" &&
                   formData.customerDetails.bvn !== "" &&
                   formData.customerDetails.dateOfBirth !== "" &&
-                  formData.customerDetails.religion !== "" &&
                   formData.customerDetails.NextOfKin !== "" &&
                   formData.customerDetails.NextOfKinNumber !== "" &&
                   formData.businessDetails.natureOfBusiness !== "" &&

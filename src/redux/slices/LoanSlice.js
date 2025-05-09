@@ -391,6 +391,22 @@ export const searchCustomer = createAsyncThunk(
     return data;
   }
 );
+
+
+export const searchCustomerCsoHome = createAsyncThunk(
+  "customer/searchCustomerCsoHome",
+  async ({ query, csoId }) => {
+    const response = await fetch(`${API_URL}//search-cso-loan?query=${query}&csoId=${csoId}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch customer");
+    }
+    const data = await response.json();
+    return data;
+  }
+);
+
+
+
 export const searchActiveCustomer = createAsyncThunk(
   "customer/searchActiveCustomer",
   async (query) => {
@@ -504,6 +520,19 @@ export const fetchLoanAppForms = createAsyncThunk(
 );   
 
 
+export const fetchLoansByCsoForHome = createAsyncThunk(
+  'loans/fetchLoansByCsoForHome',
+  async ({ csoId, page }, thunkAPI) => {
+    try {
+    const res = await axios.get(`${API_URL}/cso-loans-for-home/${csoId}?page=${page}`);
+    return res.data;
+    } catch (err) {
+      console.error("Error fetching active loans:", err);
+      throw err;
+    }
+  }
+);
+
 
 // Slice
 const loanSlice = createSlice({
@@ -575,10 +604,16 @@ const loanSlice = createSlice({
     dailyDisbursedLoans: [],
     dailyDisbursedTotalPages: 1,
     dailyDisbursedCurrentPage: 1,
+    csoHomeloans: [],
+    csoHomepage: 1,
+    csoHometotalPages: 0,
   },
   reducers: {
     setPage: (state, action) => {
       state.page = action.payload;
+    },
+    setCsoHomePage: (state, action) => {
+      state.csoHomepage = action.payload;
     },
     clearMessages: (state) => {
       state.successMessage = "";
@@ -755,6 +790,22 @@ const loanSlice = createSlice({
         state.error = action.error.message;
       });
 
+
+      builder
+      .addCase(fetchLoansByCsoForHome.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchLoansByCsoForHome.fulfilled, (state, action) => {
+        state.loading = false;
+        state.csoHomeloans = action.payload.loans;
+        state.csoHometotalPages = action.payload.totalPages;
+      })
+      .addCase(fetchLoansByCsoForHome.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+
       builder
       .addCase(fetchAllLoansByCsoIdLoanDashboardLoans.pending, (state) => {
         state.loading = true;
@@ -824,6 +875,19 @@ const loanSlice = createSlice({
         state.loans = action.payload;
       })
       .addCase(searchCustomer.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+
+      builder
+      .addCase(searchCustomerCsoHome.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(searchCustomerCsoHome.fulfilled, (state, action) => {
+        state.loading = false;
+        state.csoHomeloans = action.payload;
+      })
+      .addCase(searchCustomerCsoHome.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });
@@ -1215,6 +1279,7 @@ export const {
   fetchFullyPaidLoansStart,
   fetchFullyPaidLoansSuccess,
   fetchFullyPaidLoansFailure,
+  setCsoHomePage,
   setLoan,
 } = loanSlice.actions;
 export default loanSlice.reducer;

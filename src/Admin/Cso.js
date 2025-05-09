@@ -568,6 +568,9 @@ const Csos = () => {
   const limit = 10;
   console.log(successMessage);
 
+  console.log(cso);
+  
+
   const [filter, setFilter] = useState("all");
   const [activeLink, setActiveLink] = useState("cso");
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -1173,9 +1176,12 @@ const Csos = () => {
                 </th>
                 <th>Name</th>
                 <th>Email</th>
-                <th>Phone Number</th>
-                <th>Gender</th>
+                {/* <th>Phone Number</th>
+                <th>Gender</th> */}
                 <th>Branch</th>
+                <th>Default Limit Target</th>
+                <th>Loan Target</th>
+                <th>Disbursement Target</th>
                 <th>Action</th>
                 <th>Action</th>
               </tr>
@@ -1195,9 +1201,12 @@ const Csos = () => {
                     </td>
                     <td>{caseItem?.firstName} {caseItem?.lastName}</td>
                     <td>{caseItem?.email}</td>
-                    <td>{caseItem?.phone}</td>
-                    <td>{caseItem?.status}</td>
+                    {/* <td>{caseItem?.phone}</td> */}
+                    {/* <td>{caseItem?.status}</td> */}
                     <td>{caseItem?.branch}</td>
+                    <td>{caseItem?.defaultingTarget}</td>
+                    <td>{caseItem?.loanTarget}</td>
+                    <td>{caseItem?.disbursementTarget}</td>
                     <td>
                       <Link to={`/admin/csoDetails/${caseItem.workId}`}>View Details</Link>
                     </td>
@@ -1244,7 +1253,7 @@ const Csos = () => {
                             {isLoading ? (
                               <PulseLoader color="white" size={10} />
                             ) : (
-                              caseItem.isActive ? "Deactivate" : "Activate"
+                              caseItem.isActive ? "Suspend" : "Activate"
                             )}
                           </button>
                         </div>

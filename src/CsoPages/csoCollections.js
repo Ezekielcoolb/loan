@@ -449,7 +449,10 @@ const ActiveLoansTable = () => {
                             : customer?.status}
                         </td>{" "}  */}
                         {/* Display status */}
-                        <td>{customer?.status}</td>
+                        <td>
+                          
+                          {customer?.loanStatus === "rejected" ? "Rejected" :  customer?.loanStatus === "fully paid" ? "Fully Paid" : `${customer?.status}` }
+                          </td>
                       </tr>
                     ))}
                 </tbody>

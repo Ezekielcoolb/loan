@@ -35,10 +35,43 @@ export const fetchDailyPayments = createAsyncThunk(
   }
 );
 
+export const fetchOutstandingLoans = createAsyncThunk(
+  'loans/fetchOutstanding',
+  async (csoId) => {
+try {
+    const res = await axios.get(`${API_URL}/fetch-loan-outstanding/${csoId}`);
+    console.log(res.data);
+    
+    return res.data;
+} catch (err) {
+  console.log(err);
+}
+  } 
+);
+
+export const fetchOutstandingProgressChart = createAsyncThunk(
+  'loanStats/fetchOutstandingProgressChart',
+  async (csoId) => {
+    try {
+    const res = await axios.get(`${API_URL}/loan-outstanding-progress-chartbar/${csoId}`);
+    console.log(res.data);
+    
+    return res.data;
+    }  catch (err) {
+      console.log(err);
+    }
+  }
+);
+
 const OtherLoanslice = createSlice({
   name: 'dailyPayments',
   initialState: {
     data: [],
+    totalOutstandingChart: 0,
+    defaultingTargetChart: 0,
+    percentageChart: 0,
+    outstandingLoans: [],
+    totalOutstandingLoans: 0,
     status: 'idle',
     error: null,
     currentMonth,
@@ -82,6 +115,38 @@ const OtherLoanslice = createSlice({
       })
       .addCase(fetchDailyPayments.rejected, (state, action) => {
         state.status = 'failed';
+        state.error = action.error.message;
+      });
+
+
+      builder
+      .addCase(fetchOutstandingProgressChart.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchOutstandingProgressChart.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.totalOutstandingChart = action.payload.totalOutstanding;
+        state.defaultingTargetChart = action.payload.defaultingTarget;
+        state.percentageChart = action.payload.percentage;
+      })
+      .addCase(fetchOutstandingProgressChart.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message;
+      });
+
+
+      builder
+      .addCase(fetchOutstandingLoans.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOutstandingLoans.fulfilled, (state, action) => {
+        state.loading = false;
+        state.outstandingLoans = action.payload.loans;
+        state.totalOutstandingLoans = action.payload.totalOutstanding;
+      })
+      .addCase(fetchOutstandingLoans.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.error.message;
       });
   },
