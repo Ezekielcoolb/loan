@@ -91,14 +91,9 @@ const LoanApplicationForm = () => {
       lastName: "",
       middleName: "",
       dateOfBirth: "",
-      email: "",
       phoneOne: "",
-      phoneTwo: "",
       address: "",
-      city: "",
-      state: "",
       bvn: null,
-      religion: "",
       NextOfKin: "",
       NextOfKinNumber: ""
     },
@@ -152,7 +147,6 @@ const LoanApplicationForm = () => {
   );
   const isValid = formData.customerDetails.firstName !== "" &&
                   formData.customerDetails.lastName !== "" &&
-                  formData.customerDetails.email !== "" &&
                   formData.customerDetails.phoneOne !== "" &&
                   formData.customerDetails.address !== "" &&
                   formData.customerDetails.bvn !== "" &&
@@ -356,14 +350,14 @@ if (isValid) {
                 placeholder="Date of Birth"
                 required
               />
-              <input
+              {/* <input
                 type="email"
                 name="customerDetails.email"
                 value={formData.customerDetails.email}
                 onChange={handleInputChange}
                 placeholder="Email"
                 required
-              />
+              /> */}
             
               <input
                 type="text"
@@ -373,22 +367,22 @@ if (isValid) {
                 placeholder="Address"
                 required
               />
-               <input
+               {/* <input
                 type="text"
                 name="customerDetails.city"
                 value={formData.customerDetails.city}
                 onChange={handleInputChange}
                 placeholder="City"
                 required
-              />
-               <input
+              /> */}
+               {/* <input
                 type="text"
                 name="customerDetails.state"
                 value={formData.customerDetails.state}
                 onChange={handleInputChange}
                 placeholder="State"
                 required
-              />
+              /> */}
               <input
                 type="number"
                 name="customerDetails.bvn"
@@ -413,14 +407,14 @@ if (isValid) {
                 placeholder="Mobile No 2 in form of +234XXXXXXXXXX"
               
               /> */}
-               <input
+               {/* <input
                 type="text"
                 name="customerDetails.religion"
                 value={formData.customerDetails.religion}
                 onChange={handleInputChange}
                 placeholder="Religion"
               
-              />
+              /> */}
               <input
                 type="text"
                 name="customerDetails.NextOfKin"
