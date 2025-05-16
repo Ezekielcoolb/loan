@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
   approveLoan,
+  fetchCustomerDetails,
   fetchWaitingLoans,
   rejectLoan,
   updateCallStatus,
@@ -21,6 +22,11 @@ const LoanDetailRap = styled.div`
   h4 {
     font-size: 16px;
     font-weight: 600;
+    color: #030b26;
+  }
+  .count {
+     font-size: 20px;
+    font-weight: 700;
     color: #030b26;
   }
   h5 {
@@ -361,8 +367,20 @@ const [approveLoading, setApprovedLoading] = useState(false)
 const [rejectLoading, setRejectLoading] = useState(false)
 const [isApproved, setIsApproved] = useState(false)
 const [isRejected, setIsRejected] = useState(false)
+  const { details } = useSelector((state) => state.loan);
 
 
+  console.log(details);
+  const filteredLoansDetails = details?.filter(
+  (loan) =>
+    loan?.status?.toLowerCase() === "fully paid" ||
+    loan?.status?.toLowerCase() === "active loan"
+);
+
+const count = filteredLoansDetails?.length;
+
+console.log("Filtered Loan Count:", count);
+const bvn = loan?.customerDetails?.bvn
 const isValid =
 amountApproved !== "" 
 
@@ -405,6 +423,12 @@ const handleIsReject = () => {
     }
   }, [loan, dispatch]);
 
+
+  
+    useEffect(() => {
+      dispatch(fetchCustomerDetails(bvn));
+    }, [dispatch, bvn]);
+
   const handleOpenApprove = () => {
     setApproveOpen(!approveOpen);
     setRejectOpen(false);
@@ -426,6 +450,10 @@ const handleIsReject = () => {
     setIsRejected(false)
     setRejectLoading(true)
   };
+
+  const handleMoveToCustomerInfo = () => {
+    navigate(`/admin/new-customer/${loan?.customerDetails?.bvn}`)
+  }
 
   if (!loan) return <p>Loading loan details...</p>; // Show a loader until the loan is found
 
@@ -464,7 +492,7 @@ const handleIsReject = () => {
               <span>Address:</span> {loan?.customerDetails?.address}
             </p>
             <p>
-              <span>BVN:</span> {loan?.customerDetails?.bvn}
+              <span>NIN:</span> {loan?.customerDetails?.bvn}
             </p>
           </div>
           <div className="inner-details">
@@ -494,6 +522,8 @@ const handleIsReject = () => {
             <p>
               <span>Loan Type:</span> {loan?.loanDetails?.loanType}
             </p>
+             <p>
+<span>Date Submitted:</span> {new Date(loan?.createdAt).toLocaleDateString('en-GB')}            </p>
           </div>
           <div className="inner-details">
             <h4>Bank Details</h4>
@@ -595,9 +625,15 @@ const handleIsReject = () => {
               <p>Call Guarantor for his/her consent</p>
               <Button onClick={() => setPopup('callGuarantor')} active={callGuarantor} disabled={callGuarantor}>Call </Button>
               </div>
-            <div className="inner-verify">
-              <p>Verify past loan performanse</p>
+            {/* <div className="inner-verify">
+              <p>Verify past loan performance</p>
               <Button onClick={() => setPopup('verifyCustomer')} active={verifyCustomer} disabled={verifyCustomer}>Verify </Button>
+              </div> */}
+              <div className="inner-verify">
+              <p>Number of previous loans: <span className="count">{count}</span></p>
+              {count > 0 ? (
+              <Button onClick={handleMoveToCustomerInfo} active={verifyCustomer} disabled={verifyCustomer}>View </Button>
+              ): ""}
               </div>
             <p>
               Click <Link to={`/admin/guarantorDetails/${id}`}>here</Link> to confirm if guarantor fill the guarantor

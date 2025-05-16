@@ -693,7 +693,7 @@ console.log(outstandingLoans);
                           </>
                         ) : (
                           <tr>
-                            <td colSpan="5">No fully paid loans</td>
+                            <td colSpan="5">No defaults loans</td>
                           </tr>
                         )}
                       </tbody>

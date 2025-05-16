@@ -2,13 +2,55 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { clearDisbursedMessages, disburseLoan, fetchWaitingDisbursementLoans } from "../redux/slices/LoanSlice";
+import {
+  clearDisbursedMessages,
+  disburseLoan,
+  fetchDisbursedLoansByDate,
+  fetchWaitingDisbursementLoans,
+  setDisbursedSelectedDate,
+} from "../redux/slices/LoanSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { MoonLoader, PulseLoader } from "react-spinners";
 
 const NewLoanRap = styled.div`
   width: 100%;
   padding: 20px;
+   .client-1 {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #d0d5dd;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 15px;
+  }
+  .upperLink {
+    display: flex;
+    gap: 20px;
+  }
+  .client-link {
+    padding: 20px 20px;
+    text-decoration: none;
+    color: #727789;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent; /* Default underline */
+    transition: all 0.3s ease;
+  }
+  .client-link.active {
+    font-weight: 600;
+    font-size: 14px;
+    border-bottom: 2px solid black; /* Black underline for the active link */
+    color: #030b26;
+  }
+
+  .client-link:hover {
+    color: #555; /* Optional hover effect */
+  }
+  .client-link-container {
+    display: flex;
+    justify-content: flex-start;
+  }
   h4 {
     font-size: 16px;
     font-weight: 600;
@@ -28,12 +70,9 @@ const NewLoanRap = styled.div`
     color: #030b26;
   }
 
-   
-
-  
   .approve,
   .reject {
-   border-style: none;
+    border-style: none;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -67,7 +106,6 @@ const NewLoanRap = styled.div`
     flex-direction: column;
     gap: 20px;
     align-items: center;
-
   }
   .all-dropdown-div p {
     color: #0c1d55;
@@ -87,15 +125,31 @@ const NewLoanRap = styled.div`
     font-weight: 600;
     font-size: 16px;
   }
+  .find-lawyer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .disbursed-cal input {
+    border: 1px solid #d0d5dd;
+    border-radius: 10px;
+    height: 30px;
+    padding: 0px 15px;
+  }
 `;
-
-
 
 const Disbursment = () => {
   const dispatch = useDispatch();
-  const {dibursedSuccessMessage, loans, disburseloading, loading } = useSelector((state) => state.loan);
-  const [isLoading, setIsLoading] = useState(false)
-console.log(dibursedSuccessMessage);
+    const [activeLink, setActiveLink] = useState("new");
+       const [showCalendar, setShowCalendar] = useState(false);
+
+    const handleLinkClick = (link) => {
+    setActiveLink(link);
+  };
+  const { dibursedSuccessMessage, loans, selectedDisburseDate, dailyDisburseLoans, disburseloading, loading } =
+    useSelector((state) => state.loan);
+  const [isLoading, setIsLoading] = useState(false);
+  console.log(dibursedSuccessMessage);
 
   useEffect(() => {
     dispatch(fetchWaitingDisbursementLoans());
@@ -103,23 +157,68 @@ console.log(dibursedSuccessMessage);
 
   const handleDisburse = (id) => {
     dispatch(disburseLoan(id));
-    setIsLoading(true)
+    setIsLoading(true);
     // window.location.reload();
   };
 
   const handleCancel = () => {
-    dispatch(clearDisbursedMessages())
-        window.location.reload();
+    dispatch(clearDisbursedMessages());
+    window.location.reload();
+  };
 
-  }
 
-  if (loading === 'loading') return <p style={{display: "flex", 
-    flexDirection: "column", 
-    height: "90vh",
-    justifyContent: "center",
-   alignItems: "center"}} > <MoonLoader /></p>;;
+  useEffect(() => {
+    dispatch(fetchDisbursedLoansByDate(selectedDisburseDate));
+  }, [selectedDisburseDate, dispatch]);
+
+  const handleDateChange = (e) => {
+    dispatch(setDisbursedSelectedDate(e.target.value));
+  };
+
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  };
+
+  if (loading === "loading")
+    return (
+      <p
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          height: "90vh",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        {" "}
+        <MoonLoader />
+      </p>
+    );
   return (
     <NewLoanRap>
+       <div className="client-1">
+              <div className="client-link-container">
+                <Link
+                  className={`client-link ${
+                    activeLink === "new" ? "active" : ""
+                  }`}
+                  onClick={() => handleLinkClick("new")}
+                >
+                  New Loans
+                </Link>
+                <Link
+                  className={`client-link ${
+                    activeLink === "previous" ? "active" : ""
+                  }`}
+                  onClick={() => handleLinkClick("previous")}
+                >
+                  Previously Disbursed
+                </Link>
+                
+              </div>
+            </div>
+            {activeLink==="new" && (
       <div>
         <div className="find-lawyer-header">
           <h2>Loan Disbursement</h2>
@@ -141,53 +240,117 @@ console.log(dibursedSuccessMessage);
                 </thead>
                 <tbody>
                   {loans?.map((loan) => (
-                    <tr
-                      key={loan?.id}
-                    
-                    >
-                       <td>{`${loan?.customerDetails?.firstName} ${loan?.customerDetails?.lastName}`}</td>
-                       <td className="amount-approved">{loan?.loanDetails?.amountApproved}</td>
-                       <td>{loan?.bankDetails?.accountName} </td>
+                    <tr key={loan?.id}>
+                      <td>{`${loan?.customerDetails?.firstName} ${loan?.customerDetails?.lastName}`}</td>
+                      <td className="amount-approved">
+                        {loan?.loanDetails?.amountApproved}
+                      </td>
+                      <td>{loan?.bankDetails?.accountName} </td>
                       <td>{loan?.bankDetails?.accountNo} </td>
                       <td>{loan?.bankDetails?.bankName} </td>
-                      <td style={{color: "green"}}>
-                        {loan?.status}
-                      </td>
+                      <td style={{ color: "green" }}>{loan?.status}</td>
                       <td>
-              <button className="approve" onClick={() => handleDisburse(loan._id)}>
-
-              {disburseloading ? 
-                                    <PulseLoader color="white" size={10} />
-                                      : "Disburse"
-                                }
-              </button>
-            </td>
+                        <button
+                          className="approve"
+                          onClick={() => handleDisburse(loan._id)}
+                        >
+                          {disburseloading ? (
+                            <PulseLoader color="white" size={10} />
+                          ) : (
+                            "Disburse"
+                          )}
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </div>
-         
         </div>
       </div>
-      {dibursedSuccessMessage ? (
-      <div className="dropdown-container">
-        <div className="all-dropdown-div">
-            <div className="pay-green-circle">
-                              <Icon
-                                icon="twemoji:check-mark"
-                                width="40"
-                                height="40"
-                                style={{ color: "black" }}
-                              />
-                            </div>
-          <p>{dibursedSuccessMessage}</p>
-          <button onClick={handleCancel} className="exist-btn">Exit</button>
+      )}
+{activeLink === "previous" && (
+  <div className="p-4">
+ <div className="find-lawyer-header">
+          <h2>Disbursed Loans</h2>
+           <div className="disbursed-cal">
+      <button
+        onClick={() => setShowCalendar((prev) => !prev)}
+        className="bg-blue-500 text-white px-3 py-1 rounded"
+      >
+        📅
+      </button>
+      {showCalendar && (
+        <input
+          type="date"
+          value={selectedDisburseDate}
+          onChange={handleDateChange}
+          className="border px-2 py-1 rounded"
+        />
+      )}
+      <span className="ml-2 text-gray-600">{formatDate(selectedDisburseDate)}</span>
+    </div>
+        </div>
+   
 
+  <div className="table-container">
+          <div className="new-table-scroll">
+            <div className="table-div-con">
+              <table className="custom-table">
+      <thead className="bg-gray-100">
+        <tr>
+          <th className="border px-2 py-1">Customer Name</th>
+          <th className="border px-2 py-1">Amount Approved</th>
+          <th className="border px-2 py-1">Account Name</th>
+          <th className="border px-2 py-1">Bank</th>
+          <th className="border px-2 py-1">Account No</th>
+          <th>Date Disbursed</th>
+        </tr>
+      </thead>
+      <tbody>
+        {dailyDisburseLoans?.map((loan, idx) => (
+          <tr key={idx} className="text-center">
+            <td className="border px-2 py-1">
+              {loan.customerDetails.firstName} {loan.customerDetails.lastName}
+            </td>
+            <td className="border px-2 py-1">
+              ₦{loan.loanDetails.amountApproved.toLocaleString()}
+            </td>
+            <td className="border px-2 py-1">{loan.bankDetails.accountName}</td>
+            <td className="border px-2 py-1">{loan.bankDetails.bankName}</td>
+            <td className="border px-2 py-1">{loan.bankDetails.accountNo}</td>
+            <td>{new Date(loan?.disbursedAt).toLocaleDateString('en-GB')}  </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    </div>
+    </div>
+    </div>
+  </div>
+)}
+
+      {dibursedSuccessMessage ? (
+        <div className="dropdown-container">
+          <div className="all-dropdown-div">
+            <div className="pay-green-circle">
+              <Icon
+                icon="twemoji:check-mark"
+                width="40"
+                height="40"
+                style={{ color: "black" }}
+              />
+            </div>
+            <p>{dibursedSuccessMessage}</p>
+            <button onClick={handleCancel} className="exist-btn">
+              Exit
+            </button>
+          </div>
         </div>
-      </div>
-      ): ""}
+      ) : (
+        ""
+      )}
     </NewLoanRap>
   );
 };

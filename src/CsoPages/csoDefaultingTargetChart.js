@@ -129,7 +129,7 @@ const CsoOutstandingDoughnutChart = () => {
             Outstanding: <br /> ₦{totalOutstandingChart.toLocaleString()}
           </p>
           <p>
-            Target: <br /> ₦{defaultingTargetChart.toLocaleString()}
+            Limit: <br /> ₦{defaultingTargetChart.toLocaleString()}
           </p>
         </TextInfo>
         {status === 'loading' ? (

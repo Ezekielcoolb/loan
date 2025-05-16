@@ -26,7 +26,7 @@ import { fetchCsoByWorkId } from "../redux/slices/csoSlice";
 
 const HomeCsoRap = styled.div`
   color: #005e78;
-  background: #D9D9D9;
+  background: #d9d9d9;
   min-height: 100vh;
   .success-visible {
     background: #ffffff;
@@ -270,18 +270,19 @@ const CsoHome = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { loans, csoHomepage, csoHometotalPages, csoHomeloans,  status, error } = useSelector((state) => state.loan);
-  const { outstandingLoans, totalOutstandingLoans } = useSelector(state => state.otherLoan);
+  const { loans, csoHomepage, csoHometotalPages, csoHomeloans, status, error } =
+    useSelector((state) => state.loan);
+  const { outstandingLoans, totalOutstandingLoans } = useSelector(
+    (state) => state.otherLoan
+  );
   const { specificCso } = useSelector((state) => state.cso);
 
-
-console.log(csoHomeloans, csoHometotalPages)
+  console.log(totalOutstandingLoans);
   const [query, setQuery] = useState("");
 
   const csoId = user.workId;
   const workId = user.workId;
-const defaultingTarget = specificCso?.defaultingTarget;
-
+  const defaultingTarget = specificCso?.defaultingTarget;
 
   console.log(user);
 
@@ -308,7 +309,6 @@ const defaultingTarget = specificCso?.defaultingTarget;
     fetchLoans();
   }, [csoId]);
 
-
   useEffect(() => {
     dispatch(fetchLoansByCsoForHome({ csoId, page: csoHomepage }));
   }, [dispatch, csoId, csoHomepage]);
@@ -320,7 +320,6 @@ const defaultingTarget = specificCso?.defaultingTarget;
   useEffect(() => {
     if (workId) dispatch(fetchCsoByWorkId(workId));
   }, [workId, dispatch]);
-
 
   const finalLoans = useMemo(() => csoHomeloans, [csoHomeloans]);
 
@@ -391,7 +390,7 @@ const defaultingTarget = specificCso?.defaultingTarget;
 
   // Calculate total pages
   const totalPages = Math.ceil(csoHomeloans?.length / itemsPerPage);
-console.log(csoHomeloans);
+  console.log(csoHomeloans);
 
   // Get current items to display
   const currentLoans = csoHomeloans?.slice(
@@ -415,7 +414,6 @@ console.log(csoHomeloans);
     );
   }
 
-
   const handleNext = () => {
     if (csoHomepage < csoHometotalPages) {
       dispatch(setCsoHomePage(csoHomepage + 1));
@@ -428,6 +426,9 @@ console.log(csoHomeloans);
     }
   };
 
+  const formatNumberWithCommas = (number) => {
+    return new Intl.NumberFormat().format(number);
+  };
 
   return (
     <HomeCsoRap>
@@ -512,10 +513,12 @@ console.log(csoHomeloans);
                     Prev
                   </button> */}
                   <button
-                  className="page-btn"
-                   onClick={handlePrev}
-                    disabled={csoHomepage === 1}>Prev</button>
-
+                    className="page-btn"
+                    onClick={handlePrev}
+                    disabled={csoHomepage === 1}
+                  >
+                    Prev
+                  </button>
 
                   <span>
                     Page {csoHomepage} of {csoHometotalPages}
@@ -527,11 +530,13 @@ console.log(csoHomeloans);
                   >
                     Next
                   </button> */}
-                  <button 
-                   className="page-btn"
-                  onClick={handleNext} 
-                  disabled={csoHomepage === csoHometotalPages}>
-                    Next</button>
+                  <button
+                    className="page-btn"
+                    onClick={handleNext}
+                    disabled={csoHomepage === csoHometotalPages}
+                  >
+                    Next
+                  </button>
                 </div>
               </div>
             ) : (
@@ -543,24 +548,30 @@ console.log(csoHomeloans);
         </div>
       </div>
 
-    
-      {dropdowVisible && (
-  totalOutstandingLoans > defaultingTarget && defaultingTarget !==0 ? (
-    <div className="dropdown-container">
-      <div className="success-visible">
-        <p style={{ color: "red" }}>
-          You have exceeded your defaulting target of<span style={{
-            fontWeight: "900",
-            fontSize: "20px",
-          }}> {defaultingTarget} </span>. Try to clear the defaults in order to submit new loans. <br /> Thanks.
-        </p>
-        <button onClick={handleVisisble}>Exit</button>
-      </div>
-    </div>
-  ) : (
-    <LoanApplicationForm />
-  )
-)}
+      {dropdowVisible &&
+        (totalOutstandingLoans > defaultingTarget && defaultingTarget !== 0 ? (
+          <div className="dropdown-container">
+            <div className="success-visible">
+              <p style={{ color: "red" }}>
+                You have exceeded your defaulting limit of
+                <span
+                  style={{
+                    fontWeight: "900",
+                    fontSize: "20px",
+                  }}
+                >
+                  {" "}
+                  {formatNumberWithCommas(defaultingTarget)}{" "}
+                </span>
+                . Try to clear the defaults in order to submit new loans. <br />{" "}
+                Thanks.
+              </p>
+              <button onClick={handleVisisble}>Exit</button>
+            </div>
+          </div>
+        ) : (
+          <LoanApplicationForm />
+        ))}
       {/* Conditional Popup Display */}
       {popupMessage && (
         <div className="pop-container">

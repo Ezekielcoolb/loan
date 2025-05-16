@@ -342,7 +342,7 @@ console.log(loan);
                   <p>{loan?.customerDetails.email}</p>
                 </div>
                 <div className="form-body-info-sub">
-                  <h5>BVN:</h5>
+                  <h5>NIN:</h5>
                   <p>{loan?.customerDetails.bvn}</p>
                 </div>
               </div>

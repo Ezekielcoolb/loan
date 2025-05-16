@@ -22,10 +22,10 @@ export const submitLoanApplication = createAsyncThunk(
 );
 
 export const fetchCustomersSummary = createAsyncThunk(
-  "customer/fetchSummaries",
+  "customer/fetchCustomersSummary",
   async () => {
     try {
-      const response = await fetch(`${API_URL}/customers/summary`);
+      const response = await fetch(`${API_URL}/customers-loan-summary-all`);
       console.log(response.data);
 
       return await response.json();
@@ -174,7 +174,7 @@ export const fetchRejectedCustomers = createAsyncThunk(
 );
 
 export const makePaymenting = createAsyncThunk(
-  "loans/makePayment",
+  "loans/makePaymenting",
   async ({ id, amount }) => {
     try {
       const response = await axios.post(`${API_URL}/loans/${id}/payment`, {
@@ -396,7 +396,7 @@ export const searchCustomer = createAsyncThunk(
 export const searchCustomerCsoHome = createAsyncThunk(
   "customer/searchCustomerCsoHome",
   async ({ query, csoId }) => {
-    const response = await fetch(`${API_URL}//search-cso-loan?query=${query}&csoId=${csoId}`);
+    const response = await fetch(`${API_URL}/search-cso-loan?query=${query}&csoId=${csoId}`);
     if (!response.ok) {
       throw new Error("Failed to fetch customer");
     }
@@ -533,7 +533,17 @@ export const fetchLoansByCsoForHome = createAsyncThunk(
   }
 );
 
-
+export const fetchDisbursedLoansByDate = createAsyncThunk(
+  'disbursedLoans/fetchDisbursedLoansByDate',
+  async (date, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/daily-loan-disbursed-admin?date=${date}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Error fetching loans');
+    }
+  }
+);
 // Slice
 const loanSlice = createSlice({
   name: "loans",
@@ -549,6 +559,9 @@ const loanSlice = createSlice({
     fullyPaidLoans: [], 
     summaries: [],
     details: [],
+    disburserloading: false,
+    dailyDisburseLoans: [],
+     selectedDisburseDate: new Date().toISOString().split('T')[0], // default today
     csoLoanDashdordLoans: [],
     csoDashboardTotalLoans : 0,
     disburseloading: false,
@@ -607,8 +620,12 @@ const loanSlice = createSlice({
     csoHomeloans: [],
     csoHomepage: 1,
     csoHometotalPages: 0,
+    summaryloading: "idle"
   },
   reducers: {
+     setDisbursedSelectedDate: (state, action) => {
+      state.selectedDisburseDate = action.payload;
+    },
     setPage: (state, action) => {
       state.page = action.payload;
     },
@@ -790,6 +807,19 @@ const loanSlice = createSlice({
         state.error = action.error.message;
       });
 
+       builder
+      .addCase(fetchDisbursedLoansByDate.pending, (state) => {
+        state.disburserloading = true;
+        state.error = null;
+      })
+      .addCase(fetchDisbursedLoansByDate.fulfilled, (state, action) => {
+        state.disburserloading = false;
+        state.dailyDisburseLoans = action.payload;
+      })
+      .addCase(fetchDisbursedLoansByDate.rejected, (state, action) => {
+        state.disburserloading = false;
+        state.error = action.payload;
+      });
 
       builder
       .addCase(fetchLoansByCsoForHome.pending, (state) => {
@@ -1059,15 +1089,18 @@ const loanSlice = createSlice({
 
     builder
       .addCase(fetchCustomersSummary.pending, (state) => {
-        state.loading = true;
+        state.summaryloading = "loading";
       })
       .addCase(fetchCustomersSummary.fulfilled, (state, action) => {
         state.summaries = action.payload;
-        state.loading = false;
+        state.summaryloading = "succeeded";
       })
       .addCase(fetchCustomersSummary.rejected, (state) => {
-        state.loading = false;
-      })
+        state.summaryloading = "failed";
+      });
+
+      builder
+
       .addCase(fetchCustomerDetails.pending, (state) => {
         state.loading = true;
       })
@@ -1270,6 +1303,7 @@ export const {
   previousWeek,
   setMonth,
   setYear,
+  setDisbursedSelectedDate,
   clearDisbursedMessages,
   clearPaymentMessages,
   calculateLoanStats,

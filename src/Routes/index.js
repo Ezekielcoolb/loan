@@ -2,6 +2,8 @@ import { useRoutes } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import TopLoader from "../Preload/TopLoader";
 import OutstandingDoughnutChart from "../CsoPages/csoTest";
+import NewCustomerDetailsInfo from "../Admin/LoanPages/NewLoanCustomerDetails";
+import NewAdminCalendarPage from "../Admin/LoanPages/NewLoanCalendarCard";
 
 const AdminDashboardLayout = lazy(() => import("../Controller/adminController"));
 const AdminDashboard = lazy(() => import("../Admin/AdminDashboard"));
@@ -105,7 +107,9 @@ export default function Routess() {
                         { path: "/admin/disbursement", element: <Disbursment /> },
                         { path: "/admin/test", element: <MonthRemittanceTable /> },
                         { path: "/admin/customer/:bvn", element: <CustomerDetailsInfo /> },
-                        { path: "/admin/customer/calender/:bvn", element: <AdminCalendarPage /> },
+                          { path: "/admin/new-customer/:bvn", element: <NewCustomerDetailsInfo /> },
+                        { path: "/admin/customer/calender/:id", element: <AdminCalendarPage /> },
+                        { path: "/admin/new-loan-customer/calender/:id", element: <NewAdminCalendarPage /> },
                         { path: "/admin/calendar/:id", element: <CalendarPage /> },
                         { path: "/admin/csoDetails/:id", element: <CsoLoanCollection /> },
                         { path: "/admin/loan/:id", element: <LoanDetails /> },

@@ -74,7 +74,7 @@ const CustomerDetailRap = styled.div`
   }
 `;
 
-const CustomerDetailsInfo = () => {
+const NewCustomerDetailsInfo = () => {
   const [activeLink, setActiveLink] = useState("transaction");
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -93,29 +93,21 @@ const CustomerDetailsInfo = () => {
   console.log(details[0]?.customerDetails?.bvn);
 
  
-  const handleMoveBack = () => {
-    navigate(`/admin/customerdetails`);
-  };
+ 
 
   return (
     <CustomerDetailRap>
       <div className="client-1">
        
         <div className="client-link-container">
-        <Icon
-                      onClick={handleMoveBack}
-                      icon="formkit:arrowleft"
-                      width="30"
-                      height="30"
-                      style={{ color: "black", cursor: "pointer" }}
-                    />
+       
           <Link
             className={`client-link ${
               activeLink === "transaction" ? "active" : ""
             }`}
             onClick={() => handleLinkClick("transaction")}
           >
-            Customer Transactions
+            Previous Loans
           </Link>
           {/* <Link
             to={`/admin/customer/calender/${details[0]?.customerDetails?.bvn}`}
@@ -139,7 +131,7 @@ const CustomerDetailsInfo = () => {
       <div>
         {activeLink === "transaction" && (
           <div className="custom-1">
-            <h2>Customer Loan Details</h2>
+            <h2>{details[0]?.customerDetails?.lastName} {details[0]?.customerDetails?.firstName}'s Loan Details</h2>
             <div className="table-container">
               <div className="new-table-scroll">
                 <div className="table-div-con">
@@ -191,14 +183,14 @@ const CustomerDetailsInfo = () => {
                             <td>{new Date(endDate).toLocaleDateString()}</td>
                             <td>{loan.status}</td>
                             <td>{loanPerformance}</td>
-                            <td>    {loan.status==="fully paid" || loan.status==="active loan" ? ( 
-                                                            <Link
-                                        to={`/admin/customer/calender/${loan?._id}`}
-                                       
-                                      >
-                                        View Loan Card
-                                      </Link>
-                                      ): <p>No Loan Card</p>} 
+                            <td>  {loan.status==="fully paid" || loan.status==="active loan" ? ( 
+                                <Link
+            to={`/admin/new-loan-customer/calender/${loan?._id}`}
+           
+          >
+            View Loan Card
+          </Link>
+          ): <p>No Loan Card</p>} 
           </td>
                           </tr>
                         );
@@ -330,4 +322,4 @@ const CustomerDetailsInfo = () => {
   );
 };
 
-export default CustomerDetailsInfo;
+export default NewCustomerDetailsInfo;

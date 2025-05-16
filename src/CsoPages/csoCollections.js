@@ -12,9 +12,10 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import axios from "axios";
 import { uploadRemittance } from "../redux/slices/csoSlice";
 import { PulseLoader } from "react-spinners";
+import { Link, useNavigate } from "react-router-dom";
 
 const CollectionRap = styled.div`
-min-height: 100vh;
+  min-height: 100vh;
   padding-bottom: 20px;
   color: #005e78;
   th,
@@ -224,9 +225,17 @@ min-height: 100vh;
     justify-content: center;
     align-items: center;
   }
+  .view-detail-btn {
+    background: transparent;
+    border: 1px solid #005e78;
+    color: #005e78;
+    padding: 5px 10px;
+    border-radius: 100px;
+  }
 `;
 
 const ActiveLoansTable = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { customers, loanAppForm, loading, error } = useSelector(
     (state) => state.loan
@@ -376,6 +385,12 @@ const ActiveLoansTable = () => {
     setConfirm(true);
     setRemitPop(false);
   };
+  const handleGoToCustomerPage = (id) => {
+    navigate(`/cso/customer-details/${id}`);
+  };
+  const handleGoToPreviousLoanPage = (id) => {
+    navigate(`/cso/previousLoans/${id}`);
+  };
 
   return (
     <CollectionRap>
@@ -425,6 +440,7 @@ const ActiveLoansTable = () => {
                     <th>Amount Due</th>
                     <th>Amount Paid</th>
                     <th>Status</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -438,7 +454,7 @@ const ActiveLoansTable = () => {
                         <td>{customer.customerName}</td>
                         <td>{customer.amountDue}</td>
                         <td>{customer.amountPaidOnSelectedDate}</td>
-                     {/*   <td>
+                        {/*   <td>
                           {new Date(customer.disbursedAt).toLocaleDateString(
                             "en-CA"
                           ) ===
@@ -450,9 +466,24 @@ const ActiveLoansTable = () => {
                         </td>{" "}  */}
                         {/* Display status */}
                         <td>
-                          
-                          {customer?.loanStatus === "rejected" ? "Rejected" :  customer?.loanStatus === "fully paid" ? "Fully Paid" : `${customer?.status}` }
+                          {customer?.loanStatus === "rejected"
+                            ? "Rejected"
+                            : customer?.loanStatus === "fully paid"
+                            ? "Fully Paid"
+                            : `${customer?.status}`}
+                        </td>
+                        {customer?.loanStatus !== "fully paid" && (
+                          <td>
+                            <button
+                              className="view-detail-btn"
+                              onClick={() =>
+                                handleGoToCustomerPage(customer?.id)
+                              }
+                            >
+                              View Details
+                            </button>
                           </td>
+                        )}
                       </tr>
                     ))}
                 </tbody>

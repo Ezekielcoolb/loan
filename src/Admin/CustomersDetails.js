@@ -258,7 +258,7 @@ const CustomersDetails = () => {
   const [query, setQuery] = useState("");
 
   const dispatch = useDispatch();
-  const { rejectedCustomers, pendingLoans, summaries, loans, loading, error } =
+  const { rejectedCustomers, pendingLoans, summaries, loans, summaryloading, error } =
     useSelector((state) => state.loan);
 
 console.log(summaries);
@@ -308,6 +308,14 @@ console.log(summaries);
         dispatch(searchPendingCustomer(e.target.value));
       }
     };
+
+      
+      if (summaryloading === "loading") return <p style={{display: "flex", 
+        flexDirection: "column", 
+        height: "90vh",
+        justifyContent: "center",
+       alignItems: "center"}} > <MoonLoader /></p>;;
+      if (summaryloading === "failed") return <p>Error loading loans</p>;
 
   return (
     <BranchCustomerRap>
@@ -417,36 +425,30 @@ console.log(summaries);
                       </tr>
                     </thead>
                     <tbody>
-                    {summaries?.map((summary, index) => (
-  summary?.activeLoans?.length ? (
-    summary.activeLoans.map((items, i) => (
-      <tr key={`${index}-${i}`}>
+                    {summaries?.slice()
+                    .reverse().map((summary, index) => (
+      <tr key={index}>
         <td>{summary.name}</td>
-        <td>{summary.noOfLoansCollected}</td>
+        <td>{summary.totalNoOfLoans}</td>
         <td>{summary.noOfDefaults}</td>
-        <td>{items.loanDetails.amountDisbursed}</td>
-        <td>{items.loanDetails.amountToBePaid}</td>
-        <td>{items.loanDetails.amountPaidSoFar}</td>
+        <td>{summary?.activeLoan?.loanDetails.amountDisbursed}</td>
+        <td>{summary?.activeLoan?.loanDetails.amountToBePaid}</td>
+        <td>{summary?.activeLoan?.loanDetails.amountPaidSoFar}</td>
         <td>
-          {items.loanDetails.amountToBePaid - items.loanDetails.amountPaidSoFar}
+          {summary?.activeLoan?.loanDetails.amountToBePaid - summary?.activeLoan?.loanDetails.amountPaidSoFar}
         </td>
-        <td>{new Date(items.disbursedAt).toLocaleDateString()}</td>
+        <td>{new Date(summary?.activeLoan?.disbursedAt).toLocaleDateString()}</td>
         <td>
-          {items.repaymentSchedule?.length
-            ? new Date(items.repaymentSchedule[items.repaymentSchedule.length - 1].date).toLocaleDateString()
+          {summary?.activeLoan?.repaymentSchedule?.length
+            ? new Date(summary?.activeLoan?.repaymentSchedule[summary?.activeLoan?.repaymentSchedule.length - 1].date).toLocaleDateString()
             : "N/A"}
         </td>
         <td
           style={{
-            color:
-              new Date() > new Date(items.repaymentSchedule?.[items.repaymentSchedule.length - 1]?.date)
-                ? "red"
-                : "green",
+           color: summary?.status ==="No open loan" ? "green" : summary?.status ==="Not defaulting yet" ? "blue" : "red"
           }}
         >
-          {new Date() > new Date(items.repaymentSchedule?.[items.repaymentSchedule.length - 1]?.date)
-            ? "Defaulting"
-            : "Not defaulting yet"}
+          {summary?.status}
         </td>
         <td
           style={{
@@ -462,20 +464,8 @@ console.log(summaries);
           </Link>
         </td>
       </tr>
-    ))
-  ) : (
-    <tr key={index}>
-      <td>{summary.name}</td>
-      <td>{summary.noOfLoansCollected}</td>
-      <td>{summary.noOfDefaults}</td>
-      <td colSpan="8">No Active Loans</td>
-      <td>{summary.performance}%</td>
-      <td>
-        <Link to={`/admin/customer/${summary.bvn}`}>View Details</Link>
-      </td>
-    </tr>
-  )
-))}
+    ))}
+ 
 
                     </tbody>
                   </table>

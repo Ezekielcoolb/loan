@@ -388,7 +388,7 @@ if (isValid) {
                 name="customerDetails.bvn"
                 value={formData.customerDetails.bvn}
                 onChange={handleInputChange}
-                placeholder="BVN"
+                placeholder="NIN"
                 required
               />
                 <input

@@ -108,7 +108,7 @@ background: #005e78;
   }
 `;
 
-const AdminCalendarPage = () => {
+const NewAdminCalendarPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -158,7 +158,7 @@ console.log(loan);
   };
 
   const handleMoveBack = () => {
-    navigate(`/admin/customer/${loan?.customerDetails?.bvn}`);
+    navigate(`/admin/new-customer/${loan?.customerDetails?.bvn}`);
   };
 
   const closePopup = () => setPopupInfo(null);
@@ -383,4 +383,4 @@ console.log(loan);
   );
 };
 
-export default AdminCalendarPage;
+export default NewAdminCalendarPage;
