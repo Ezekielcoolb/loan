@@ -262,7 +262,7 @@ const NewLoan = () => {
               </tr>
             </thead>
             <tbody>
-              {loans?.map((loan) => (
+              {loans?.slice().reverse().map((loan) => (
                 <tr key={loan?._id}>
                   <td>{`${loan?.customerDetails?.firstName} ${loan?.customerDetails?.lastName}`}</td>
                   <td>{loan?.loanDetails?.amountRequested}</td>

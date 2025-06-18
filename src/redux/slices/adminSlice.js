@@ -17,6 +17,8 @@ export const fetchAdmins = createAsyncThunk("admin/fetchAdmins", async () => {
     }
 });
 
+
+
 export const addAdmin = createAsyncThunk("admin/addAdmin", async (formData) => {
     try {
   const response = await axios.post(API_URL, formData);

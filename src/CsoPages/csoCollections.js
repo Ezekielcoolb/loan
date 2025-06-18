@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Calendar from "react-calendar"; // Import the calendar
 import { FaCalendarAlt } from "react-icons/fa"; // Import calendar icon
 import {
   fetchCsoActiveLoans,
   fetchLoanAppForms,
+  fetchSearchingCsoActiveLoansforCollection,
 } from "../redux/slices/LoanSlice";
 import "react-calendar/dist/Calendar.css"; // Import calendar styles
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import axios from "axios";
-import { uploadRemittance } from "../redux/slices/csoSlice";
+import { setRemittanceUploadReset, submitDailyRemittanceReport, uploadRemittance } from "../redux/slices/csoSlice";
 import { PulseLoader } from "react-spinners";
 import { Link, useNavigate } from "react-router-dom";
+import { uploadImages } from "../redux/slices/uploadSlice";
 
 const CollectionRap = styled.div`
   min-height: 100vh;
@@ -241,14 +243,13 @@ const ActiveLoansTable = () => {
     (state) => state.loan
   );
   const user = JSON.parse(localStorage.getItem("csoUser"));
-
   const csoId = user.workId;
   const [selectedDate, setSelectedDate] = useState(new Date()); // State for selected date
   const [showCalendar, setShowCalendar] = useState(false); // State for calendar visibility
   const [totalAmountPaid, setTotalAmountPaid] = useState(0); // State for total amount paid
   const [totalAdminFee, setAdminFee] = useState(0);
   const [overallTotal, setOverallTotal] = useState(0);
-  const { isUploading, uploaded } = useSelector((state) => state.cso);
+  const { isUploading, uploaded, remittanceuploadedSuccess } = useSelector((state) => state.cso);
   const [imageUrl, setImageUrl] = useState("");
   const [time, setTime] = useState(86400); // Timer starts at 24 hours in seconds
   const workId = user.workId;
@@ -257,9 +258,30 @@ const ActiveLoansTable = () => {
   const currenttoday = new Date().toDateString();
   const [confirm, setConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+    const [name, setName] = useState('');
+        const { urls } = useSelector((state) => state.upload);
+    console.log(uploadRemmit);
+    console.log(user);
+    
 
-  console.log(customers);
+  console.log(imageUrl);
 
+  const lastDateString = user?.remittance[user?.remittance?.length - 1]?.date;
+
+// Convert it to a Date object
+const lastDate = new Date(lastDateString);
+
+// Format to desired format (e.g., "Tue Jun 10 2025")
+const formattedDate = lastDate?.toDateString();
+
+console.log(formattedDate);
+
+useEffect(() => {
+  if (urls?.length > 0 ) {
+    // If multiple files, you can store them as array or string (e.g., first one)
+    setImageUrl(urls[0]); // Or store all: setImageUrl(urls);
+  }
+}, [urls]);
   // Timer logic
   useEffect(() => {
     const now = new Date();
@@ -292,20 +314,34 @@ const ActiveLoansTable = () => {
   useEffect(() => {
     const today = new Date().toDateString();
     const lastUploadDate = localStorage.getItem("lastUploadDate");
-    setUploadRemitt(lastUploadDate);
+    if (formattedDate) {
+    setUploadRemitt(formattedDate);
+
+    }
     if (uploaded) {
       localStorage.setItem("lastUploadDate", today);
     }
 
-    if (lastUploadDate === today) {
+    if (formattedDate === today) {
       setTime(0); // Disable the timer for today
     }
-  }, [uploaded]);
+  }, [uploaded, formattedDate]);
 
   useEffect(() => {
     // Dispatch the action to fetch loans when the component mounts or date changes
     dispatch(fetchCsoActiveLoans({ csoId, date: selectedDate.toISOString() }));
   }, [dispatch, csoId, selectedDate]);
+
+
+
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setName(value);
+    if (value.trim() !== "") {
+      dispatch(fetchSearchingCsoActiveLoansforCollection({ csoId,  date: selectedDate.toISOString(), name }));
+    } 
+  };
+  
 
   useEffect(() => {
     dispatch(fetchLoanAppForms({ csoId, date: selectedDate.toISOString() }));
@@ -348,25 +384,16 @@ const ActiveLoansTable = () => {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
 
-  const handleFileChange = async (e) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", e[0]);
-      formData.append("upload_preset", "ml_default");
-      const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
-        formData
-      );
-      console.log(response);
-      setImageUrl(response.data.secure_url);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+const handleFileChange = (files) => {
+  if (!files.length) return;
+  dispatch(uploadImages({ files, folderName: "products" }));
+};
+
 
   const handleUpload = () => {
     if (imageUrl) {
       dispatch(uploadRemittance({ amount: overallTotal, workId, imageUrl }));
+      dispatch(submitDailyRemittanceReport({ workId, image: imageUrl }));
       setConfirm(false);
       setIsLoading(true);
     }
@@ -392,6 +419,9 @@ const ActiveLoansTable = () => {
     navigate(`/cso/previousLoans/${id}`);
   };
 
+
+   
+
   return (
     <CollectionRap>
       <div>
@@ -409,7 +439,10 @@ const ActiveLoansTable = () => {
           </div>
         </div>
         <div className="input-div">
-          <input type="text" placeholder="Search" />
+          <input
+          value={name}
+        onChange={handleChange}
+          type="text" placeholder="Search" />
           <Icon
             className="search-input-icon"
             icon="ic:baseline-search"
@@ -472,7 +505,7 @@ const ActiveLoansTable = () => {
                             ? "Fully Paid"
                             : `${customer?.status}`}
                         </td>
-                        {customer?.loanStatus !== "fully paid" && (
+                        {customer?.loanStatus !== "fully paid" ? (
                           <td>
                             <button
                               className="view-detail-btn"
@@ -483,6 +516,8 @@ const ActiveLoansTable = () => {
                               View Details
                             </button>
                           </td>
+                        ): (
+                          <td>No Detail</td>
                         )}
                       </tr>
                     ))}
@@ -663,7 +698,7 @@ const ActiveLoansTable = () => {
           ""
         )}
       </div>
-      {isLoading ? (
+      {remittanceuploadedSuccess ? (
         <div className="dropdown-container">
           <div className="pay-dropdown">
             <div className="pay-green-circle">
@@ -676,7 +711,7 @@ const ActiveLoansTable = () => {
             </div>
             <p>Remittance uploaded successfully</p>
             <button
-              onClick={() => setIsLoading(false)}
+              onClick={() => dispatch(setRemittanceUploadReset())}
               className="upload-cancel-btn"
             >
               Exit

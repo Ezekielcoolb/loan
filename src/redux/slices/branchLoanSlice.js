@@ -52,9 +52,9 @@ export const fetchCustomerBranchLoans = createAsyncThunk(
 
 // Fetch data from backend
 export const fetchLoanStatsChart = createAsyncThunk(
-  'loan/fetchLoanStats',
+  'loan/fetchLoanStatsChart',
   async () => {
-      const response = await axios.get(`${API_URL}//chart-loans/loan-stats`);
+      const response = await axios.get(`${API_URL}/chart-loans/loan-stats`);
       return response.data;
   }
 );

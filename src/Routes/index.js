@@ -4,6 +4,10 @@ import TopLoader from "../Preload/TopLoader";
 import OutstandingDoughnutChart from "../CsoPages/csoTest";
 import NewCustomerDetailsInfo from "../Admin/LoanPages/NewLoanCustomerDetails";
 import NewAdminCalendarPage from "../Admin/LoanPages/NewLoanCalendarCard";
+import Operations from "../Admin/Reports/Operation";
+import AdminReport from "../Admin/Reports/Reports";
+import HolidayList from "../Admin/Holidays/Holidays";
+import CsoCollectionReportCollection from "../CsoPages/CsoCollectionReport";
 
 const AdminDashboardLayout = lazy(() => import("../Controller/adminController"));
 const AdminDashboard = lazy(() => import("../Admin/AdminDashboard"));
@@ -106,6 +110,7 @@ export default function Routess() {
                         { path: "/admin/newloan", element: <NewLoan /> },
                         { path: "/admin/disbursement", element: <Disbursment /> },
                         { path: "/admin/test", element: <MonthRemittanceTable /> },
+                        { path: "/admin/holidays", element: <HolidayList /> },
                         { path: "/admin/customer/:bvn", element: <CustomerDetailsInfo /> },
                           { path: "/admin/new-customer/:bvn", element: <NewCustomerDetailsInfo /> },
                         { path: "/admin/customer/calender/:id", element: <AdminCalendarPage /> },
@@ -118,6 +123,8 @@ export default function Routess() {
                         { path: "/admin/guarantorDetails/:id", element: <GuarantorDetails /> },
                         { path: "/admin/downloadLoanForm/:id", element: <DownloadLoanForm /> },
                         { path: "/admin/admin-members", element: <AdminForm /> },
+                         { path: "/admin/operations", element: <Operations /> },
+                         { path: "/admin/reports", element: <AdminReport /> },
                     ],
                 },
                 {
@@ -133,7 +140,9 @@ export default function Routess() {
                         { path: "/cso/loans-collections", element: <LoanCollections /> },
                         { path: "/cso/csos-dashboard", element: <RemittanceUpload /> },
                         { path: "/cso/csos-profile", element: <CsoProfile /> },
-                        { path: "/cso/csos-test", element: <OutstandingDoughnutChart /> },
+                        { path: "/cso/csos-collection-report", element: <CsoCollectionReportCollection /> },
+  
+                        // { path: "/cso/csos-test", element: <CsoCollectionReportCollection /> },
                         { path: "/cso/previousLoans/:id", element: <PreviousLoans /> },
                     ],
                 },

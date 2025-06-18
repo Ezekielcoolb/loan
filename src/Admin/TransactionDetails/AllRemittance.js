@@ -279,7 +279,18 @@ useEffect(() => {
  {imageModal && (
         <div className="dropdown-container ">
           <div className="successPop">
-            <img src={imageModal} alt="Remittance" style={{ maxWidth: "100%", maxHeight: "80vh" }} />
+             <img
+                        src={
+                          imageModal?.startsWith("http")
+                            ? imageModal // Cloudinary URL
+                            : imageModal
+                            ? `https://api.jksolutn.com${imageModal}` // Local image
+                            : "fallback.jpg" // Optional fallback image
+                        }
+                        alt="business"
+                        style={{ objectFit: "contain" }}
+                      />
+            {/* <img src={imageModal} alt="Remittance" style={{ maxWidth: "100%", maxHeight: "80vh" }} /> */}
             <button onClick={() => setImageModal(null)}>Close</button>
           </div>
         </div>

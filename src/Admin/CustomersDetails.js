@@ -11,6 +11,7 @@ import {
   fetchRejectedCustomers,
   searchActiveCustomer,
   searchPendingCustomer,
+  setSummaryPage,
 } from "../redux/slices/LoanSlice";
 import { MoonLoader } from "react-spinners";
 import AdminCustomerTable from "./CustomerDetail/ListAdminCustomers";
@@ -41,7 +42,16 @@ const BranchCustomerRap = styled.div`
     align-items: center;
     z-index: 9999;
   }
-
+.btns {
+  display: flex;
+  justify-content: space-between;
+}
+.btns button {
+    color: #007bff;
+    border-radius: 6px;
+    border: 1px solid #007bff;
+    background: transparent;
+}
   .modal-content {
     background: white;
 
@@ -258,14 +268,23 @@ const CustomersDetails = () => {
   const [query, setQuery] = useState("");
 
   const dispatch = useDispatch();
-  const { rejectedCustomers, pendingLoans, summaries, loans, summaryloading, error } =
+  const { rejectedCustomers, pendingLoans, summaries, summarypage, summarytotalPages, summarytotalRecords, loans, summaryloading, error } =
     useSelector((state) => state.loan);
 
 console.log(summaries);
 
   useEffect(() => {
-    dispatch(fetchCustomersSummary());
-  }, [dispatch]);
+    dispatch(fetchCustomersSummary(summarypage));
+  }, [dispatch, summarypage]);
+
+    const handlePrev = () => {
+    if (summarypage > 1) dispatch(setSummaryPage(summarypage - 1));
+  };
+
+  const handleNext = () => {
+    if (summarypage < summarytotalPages) dispatch(setSummaryPage(summarypage + 1));
+  };
+
 
 
   useEffect(() => {
@@ -470,6 +489,11 @@ console.log(summaries);
                     </tbody>
                   </table>
                 </div>
+              </div>
+              <div className="btns">
+                <button onClick={handlePrev}>Previous</button>
+                 <span>Page {summarypage} of {summarytotalPages}</span>
+                <button onClick={handleNext}>Next</button>
               </div>
             </div>
           )}

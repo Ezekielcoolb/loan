@@ -353,7 +353,16 @@ console.log(fullyPaidLoans);
          const repaymentSchedule = customer?.repaymentSchedule || [];
          const sortedSchedule = [...repaymentSchedule].sort((a, b) => new Date(a.date) - new Date(b.date));
          const startDate = sortedSchedule.length > 0 ? new Date(sortedSchedule[0].date).toLocaleDateString("en-GB") : "N/A";
-         const lastDate = sortedSchedule.length > 0 ? new Date(sortedSchedule[sortedSchedule.length - 1].date).toLocaleDateString("en-GB") : "N/A";
+     const lastPaymentDateRaw = customer?.loanDetails?.dailyPayment
+    ?.slice()
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .at(-1)?.date;
+
+
+      const lastDate = lastPaymentDateRaw
+    ? new Date(lastPaymentDateRaw).toLocaleDateString("en-GB")
+    : "N/A";
+    
          const pendingCount = repaymentSchedule.filter(p => p.status === "pending").length;
          const days = 22
          const performance = ((days - (pendingCount - 1))/days) * 100

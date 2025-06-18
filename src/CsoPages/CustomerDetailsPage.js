@@ -10,6 +10,7 @@ import {
 } from "../redux/slices/LoanSlice";
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { fetchRemittanceStatus } from "../redux/slices/csoSlice";
 
 const CustomerPageDetailRap = styled.div`
   height: 100vh;
@@ -90,6 +91,7 @@ const CustomerPageDetailRap = styled.div`
     background: #009a49;
     width: 114px;
     height: 91px;
+    border-style: none;
     border-radius: 10px;
     text-decoration: none;
     display: flex;
@@ -99,6 +101,37 @@ const CustomerPageDetailRap = styled.div`
     font-weight: 700;
     color: #ffffff;
   }
+  .dropdown-content{ 
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 20px;
+}
+  .dropdown-content p {
+  font-size: 20px;
+  color: #112240;
+  font-weight: 500;
+}
+.submit-btn {
+    border: 1px solid #112240;
+  background-color: #112240;
+  color: white;
+  width: 380px;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+.submit-btn-2 {
+     border: 1px solid #112240;
+  color: #112240;
+  background: transparent;
+  width: 380px;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 10px;
+}
   .loan-balances h6,
   .disbursement-info h6 {
     color: #319f43;
@@ -135,7 +168,7 @@ const CustomerPageDetailRap = styled.div`
   .active-loan-details {
     max-width: 500px;
     min-width: 409px;
-
+padding-bottom: 100px;
     background: #ffffff;
     border-radius: 40px;
   }
@@ -253,10 +286,14 @@ const CustomerDetailsPage = () => {
   const { fullyPaidLoans, loading, error } = useSelector(
     (state) => state.loan || {}
   );
+
+    const { remittancestatus, hoursLeft, minutesLeft } = useSelector((state) => state.cso);
   const loan = loans.find((loan) => loan._id === id);
   const navigate = useNavigate();
   console.log(loan);
-
+  console.log(remittancestatus, hoursLeft, minutesLeft);
+  
+const [remittanceAvailableShow, setRemittanceAvailableShow] = React.useState(false);
   const bvn = loan?.customerDetails?.bvn;
   const csoId = user?.workId;
   useEffect(() => {
@@ -268,6 +305,15 @@ const CustomerDetailsPage = () => {
   useEffect(() => {
     dispatch(fetchAllLoansByCsoId({ csoId }));
   }, [dispatch]);
+
+
+
+   useEffect(() => {
+    if (csoId) {
+      dispatch(fetchRemittanceStatus(csoId));
+    }
+  }, [csoId, dispatch]);
+
 console.log(loans);
 
   console.log(bvn);
@@ -333,7 +379,7 @@ console.log(loans);
     }
   
     // If first status is pending, subtract 1 day
-    if (schedule[0].status === 'pending') {
+    if (schedule[0].status === 'pending' || schedule[0].status === 'holiday') {
       count = Math.max(0, count - 1);
     }
   
@@ -355,10 +401,35 @@ console.log(loans);
 
   const totalDue = dailyAmount * daysToShow;
   
-  let AmountDue = totalDue - loan?.loanDetails?.amountPaidSoFar;
+  let AmountDueOne = totalDue - (loan?.loanDetails?.amountPaidSoFar || 0);
   
+if (AmountDueOne === NaN ) {
+  AmountDueOne = totalDue
+}
+
+
+  const expectedPay = loan?.loanDetails?.amountToBePaid
+ const totalPaidSoFar = repaymentSchedule?.reduce((sum, item) => sum + item.amountPaid, 0);
+console.log("Total amount paid:", totalPaidSoFar);
+
+const AmountDueTwo = expectedPay - totalPaidSoFar
+
+const repaymentScheduleLengthTillToday = repaymentSchedule?.filter(item => {
+  const repaymentDate = new Date(item.date);
+  return repaymentDate <= today;
+}).length;
+
+console.log(repaymentScheduleLengthTillToday);
+
+let AmountDue = 0
+if (repaymentScheduleLengthTillToday > 22) {
+   AmountDue = AmountDueTwo
+} else {
+   AmountDue = AmountDueOne
+}
+
   // Ensure AmountDue is not negative
-  AmountDue = AmountDue < 0 ? 0 : AmountDue;
+  // AmountDue = AmountDue < 0 ? 0 : AmountDue;
   
 
   const LoanBalance =
@@ -452,7 +523,13 @@ console.log(loans);
     
     console.log("Pending repayments up to today:", countPendingTillToday);
     
-    
+    const handlePayNowMovement = () => {
+      if (remittancestatus === false) {
+        navigate(`/cso/loans/${id}/payment`)
+      } else {
+          setRemittanceAvailableShow(true);
+      }
+    }
     
   return (
     <CustomerPageDetailRap>
@@ -545,8 +622,16 @@ console.log(loans);
           const repaymentSchedule = customer?.repaymentSchedule || [];
           const sortedSchedule = [...repaymentSchedule].sort((a, b) => new Date(a.date) - new Date(b.date));
           const startDate = sortedSchedule.length > 0 ? new Date(sortedSchedule[0].date).toLocaleDateString("en-GB") : "N/A";
-          const lastDate = sortedSchedule.length > 0 ? new Date(sortedSchedule[sortedSchedule.length - 1].date).toLocaleDateString("en-GB") : "N/A";
-          const pendingCount = repaymentSchedule.filter(p => p.status === "pending").length;
+ const lastPaymentDateRaw = customer?.loanDetails?.dailyPayment
+    ?.slice()
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .at(-1)?.date;
+    
+       const lastDate = lastPaymentDateRaw
+    ? new Date(lastPaymentDateRaw).toLocaleDateString("en-GB")
+    : "N/A";
+    
+    const pendingCount = repaymentSchedule.filter(p => p.status === "pending").length;
           const days = 22
           const performance = ((days - (pendingCount - 1))/days) * 100
           const repaymentPercentage = performance < 0 ? 100 : Math.round(performance);
@@ -587,12 +672,12 @@ console.log(loans);
                     <h6>Loan Balance</h6>
                     <h1>{LoanBalance}</h1>
                   </div>
-                  <Link
-                    to={`/cso/loans/${id}/payment`}
+                  <button
+                    onClick={handlePayNowMovement}
                     className="pay-now-button"
                   >
                     PAY NOW
-                  </Link>
+                  </button>
                 </div>
                 <div className="disbursement-info-divs">
                   <div className="disbursement-info">
@@ -632,6 +717,24 @@ console.log(loans);
           )}
         </div>
       </div>
+
+      {remittanceAvailableShow ? (
+        <>
+         <div className="dropdown-container">
+      <div className="all-dropdown-div">
+
+       
+        <div className="dropdown-content">
+          <p >Sorry, you cannot post a new payment after submitting remittance. <br /> Please wait till the next {hoursLeft}hr {minutesLeft} minutes. <br /> Thanks.</p>
+          <button className="submit-btn-2" onClick={() => setRemittanceAvailableShow(false)}>
+            Close
+            </button>
+        </div>
+        </div>
+        </div>
+        
+        </>
+      ): ""}
     </CustomerPageDetailRap>
   );
 };

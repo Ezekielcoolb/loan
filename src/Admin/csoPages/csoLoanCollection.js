@@ -313,7 +313,7 @@ const CollectRap = styled.div`
     padding: 30px;
     min-height: 100vh;
   }
-  .detail-in  button {
+  .detail-in button {
     color: #ffffff;
     font-weight: 500;
     height: 40px;
@@ -358,17 +358,16 @@ const CollectRap = styled.div`
     align-items: center;
     padding: 20px;
     border-bottom: 1px solid #d0d5dd;
-
   }
-  .update-show-drop-body input,  .update-show-drop-body select {
-width: 300px;
-height: 40px;
-padding-left: 15px;
-border-radius: 10px;
-border: 1px solid #d0d5dd;
-
+  .update-show-drop-body input,
+  .update-show-drop-body select {
+    width: 300px;
+    height: 40px;
+    padding-left: 15px;
+    border-radius: 10px;
+    border: 1px solid #d0d5dd;
   }
-  .update-show-drop-body button  {
+  .update-show-drop-body button {
     color: #ffffff;
     font-weight: 500;
     height: 40px;
@@ -423,8 +422,6 @@ const TextInfo = styled.div`
   }
 `;
 
-
-
 const CsoLoanCollection = () => {
   const dispatch = useDispatch();
   const { id } = useParams();
@@ -439,15 +436,11 @@ const CsoLoanCollection = () => {
   const [totalAmountPaid, setTotalAmountPaid] = useState(0);
   const [updatecsoShow, setUpdateCsoShow] = useState(false);
 
-
   const handleUpdateCsoShow = () => {
-    setUpdateCsoShow(!updatecsoShow)
-  }
-  const {
-    totalOutstandingChart,
-    defaultingTargetChart,
-    percentageChart,
-  } = useSelector((state) => state.otherLoan);
+    setUpdateCsoShow(!updatecsoShow);
+  };
+  const { totalOutstandingChart, defaultingTargetChart, percentageChart } =
+    useSelector((state) => state.otherLoan);
   const [dayPicker, setDayPicker] = useState("today");
 
   const csoId = id;
@@ -495,33 +488,33 @@ const CsoLoanCollection = () => {
   const { remittanceProgress } = useSelector((state) => state.remittance);
 
   const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    branch: '',
-    address: '',
-    status: '',
-    guaratorEmail: '',
-    guaratorName: '',
-    guaratorPhone: '',
-    guaratorAddress: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    branch: "",
+    address: "",
+    status: "",
+    guaratorEmail: "",
+    guaratorName: "",
+    guaratorPhone: "",
+    guaratorAddress: "",
   });
 
   useEffect(() => {
     if (specifiedCso) {
       setForm({
-        firstName: specifiedCso.firstName || '',
-        lastName: specifiedCso.lastName || '',
-        email: specifiedCso.email || '',
-        phone: specifiedCso.phone || '',
-        branch: specifiedCso.branch || '',
-        address: specifiedCso.address || '',
-        status: specifiedCso.status || '',
-        guaratorEmail: specifiedCso.guaratorEmail || '',
-        guaratorName: specifiedCso.guaratorName || '',
-        guaratorPhone: specifiedCso.guaratorPhone || '',
-        guaratorAddress: specifiedCso.guaratorAddress || '',
+        firstName: specifiedCso.firstName || "",
+        lastName: specifiedCso.lastName || "",
+        email: specifiedCso.email || "",
+        phone: specifiedCso.phone || "",
+        branch: specifiedCso.branch || "",
+        address: specifiedCso.address || "",
+        status: specifiedCso.status || "",
+        guaratorEmail: specifiedCso.guaratorEmail || "",
+        guaratorName: specifiedCso.guaratorName || "",
+        guaratorPhone: specifiedCso.guaratorPhone || "",
+        guaratorAddress: specifiedCso.guaratorAddress || "",
       });
     }
   }, [specifiedCso]);
@@ -530,14 +523,12 @@ const CsoLoanCollection = () => {
   console.log(updatingCsoloading);
   console.log(specifiedCso);
   console.log(updateCsoSuccessMessage);
-  
-  
 
-   useEffect(() => {
-      if (csoId) {
-        dispatch(fetchOutstandingProgressChart(csoId));
-      }
-    }, [csoId, dispatch]);
+  useEffect(() => {
+    if (csoId) {
+      dispatch(fetchOutstandingProgressChart(csoId));
+    }
+  }, [csoId, dispatch]);
 
   useEffect(() => {
     dispatch(fetchallgetRemittances({ workId, date: selectedRemiteDate }));
@@ -547,7 +538,6 @@ const CsoLoanCollection = () => {
     dispatch(fetchLoanProgress(workId));
     dispatch(fetchRemittanceNewProgress(workId)); // Fetch remittance progress for this CSO
   }, [dispatch, workId]);
-
 
   useEffect(() => {
     if (workId) {
@@ -563,8 +553,7 @@ const CsoLoanCollection = () => {
     dispatch(fetchAllLoansByCsoId({ csoId, page }));
   }, [dispatch, page]);
 
-
- useEffect(() => {
+  useEffect(() => {
     dispatch(fetchAllLoansByCsoIdLoanDashboardLoans(csoId));
   }, [dispatch]);
 
@@ -600,7 +589,6 @@ const CsoLoanCollection = () => {
     dispatch(fetchLoanAllTimeCounts({ csoId }));
   }, [dispatch]);
 
-  
   useEffect(() => {
     dispatch(fetchRemittanceNewProgress(workId)); // Fetch remittance progress for this CSO
   }, [dispatch, workId]);
@@ -766,12 +754,10 @@ const CsoLoanCollection = () => {
     },
   };
 
-
-
   const getColor = () => {
-    if (percentageChart < 50) return '#4CAF50';
-    if (percentageChart < 90) return '#FFC107';
-    return '#F44336';
+    if (percentageChart < 50) return "#4CAF50";
+    if (percentageChart < 90) return "#FFC107";
+    return "#F44336";
   };
 
   // Handle edge case: no target
@@ -781,11 +767,15 @@ const CsoLoanCollection = () => {
     : Math.min((totalOutstandingChart / defaultingTargetChart) * 100, 100);
 
   const chartNewData = {
-    labels: ['Outstanding', 'Remaining'],
+    labels: ["Outstanding", "Remaining"],
     datasets: [
       {
-        data: isZeroTarget ? [0, 100] : [adjustedPercentage, 100 - adjustedPercentage],
-        backgroundColor: isZeroTarget ? ['#e0e0e0', '#e0e0e0'] : [getColor(), '#e0e0e0'],
+        data: isZeroTarget
+          ? [0, 100]
+          : [adjustedPercentage, 100 - adjustedPercentage],
+        backgroundColor: isZeroTarget
+          ? ["#e0e0e0", "#e0e0e0"]
+          : [getColor(), "#e0e0e0"],
         borderWidth: 1,
       },
     ],
@@ -793,12 +783,12 @@ const CsoLoanCollection = () => {
 
   const chartOptions = {
     maintainAspectRatio: false,
-    cutout: '75%',
+    cutout: "75%",
     plugins: {
       legend: {
         display: true,
-        position: 'bottom',
-        align: 'center',
+        position: "bottom",
+        align: "center",
         labels: {
           boxWidth: 15,
           padding: 10,
@@ -809,7 +799,7 @@ const CsoLoanCollection = () => {
           label: function (context) {
             const index = context.dataIndex;
             if (isZeroTarget) {
-              return 'No target set';
+              return "No target set";
             }
             if (index === 0) {
               return `Outstanding: ₦${totalOutstandingChart.toLocaleString()}`;
@@ -823,18 +813,14 @@ const CsoLoanCollection = () => {
     },
   };
 
-
-
-
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = () => {
-    setUpdateCsoShow(false)
+    setUpdateCsoShow(false);
     dispatch(updateByAdminCSO({ workId, updateFields: form }));
   };
-  
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -894,9 +880,7 @@ const CsoLoanCollection = () => {
             Remmitance
           </Link>
           <Link
-            className={`cso-link ${
-              activeLink === "details" ? "active" : ""
-            }`}
+            className={`cso-link ${activeLink === "details" ? "active" : ""}`}
             onClick={() => handleLinkClick("details")}
           >
             Details
@@ -956,8 +940,8 @@ const CsoLoanCollection = () => {
                           <td>{loan.loanDetails.amountToBePaid}</td>
                           <td>{loan.loanDetails.amountPaidSoFar}</td>
                           <td>
-                            {loan.loanDetails.amountToBePaid - loan.loanDetails.amountPaidSoFar} 
-                            
+                            {loan.loanDetails.amountToBePaid -
+                              loan.loanDetails.amountPaidSoFar}
                           </td>
                           <td>{loan.status}</td>
                         </tr>
@@ -1476,7 +1460,7 @@ const CsoLoanCollection = () => {
                   </>
                 )}
               </div>
-              <div style={{ maxWidth: "350px",}}>
+              <div style={{ maxWidth: "350px" }}>
                 {/* <Pie
                   data={chartNewData}
                   options={{
@@ -1507,28 +1491,34 @@ const CsoLoanCollection = () => {
                     },
                   }}
                 /> */}
-                 <ChartRapper>
-                      <div>
-                        <h2 className="text-lg font-bold mb-2">Default Limit Tracker</h2>
-                        <TextInfo>
-                          <p>
-                            Outstanding: <br /> ₦{totalOutstandingChart.toLocaleString()}
-                          </p>
-                          <p>
-                            Target: <br /> ₦{defaultingTargetChart.toLocaleString()}
-                          </p>
-                        </TextInfo>
-                        {status === 'loading' ? (
-                          <p>Loading...</p>
-                        ) : (
-                          <FlexContainer>
-                            <ChartWrapper>
-                              <Doughnut data={chartNewData} options={chartOptions} />
-                            </ChartWrapper>
-                          </FlexContainer>
-                        )}
-                      </div>
-                    </ChartRapper>
+                <ChartRapper>
+                  <div>
+                    <h2 className="text-lg font-bold mb-2">
+                      Default Limit Tracker
+                    </h2>
+                    <TextInfo>
+                      <p>
+                        Outstanding: <br /> ₦
+                        {totalOutstandingChart.toLocaleString()}
+                      </p>
+                      <p>
+                        Target: <br /> ₦{defaultingTargetChart.toLocaleString()}
+                      </p>
+                    </TextInfo>
+                    {status === "loading" ? (
+                      <p>Loading...</p>
+                    ) : (
+                      <FlexContainer>
+                        <ChartWrapper>
+                          <Doughnut
+                            data={chartNewData}
+                            options={chartOptions}
+                          />
+                        </ChartWrapper>
+                      </FlexContainer>
+                    )}
+                  </div>
+                </ChartRapper>
               </div>
               <div>
                 <Bar data={data} options={options} />
@@ -1579,9 +1569,15 @@ const CsoLoanCollection = () => {
                     </p>
                     {remit.image && (
                       <img
-                        src={remit.image}
-                        alt="Remittance"
-                        className="w-40 mt-2"
+                        src={
+                          remit.image?.startsWith("http")
+                            ? remit.image // Cloudinary URL
+                            : remit.image
+                            ? `https://api.jksolutn.com${remit.image}` // Local image
+                            : "fallback.jpg" // Optional fallback image
+                        }
+                        alt="business"
+                        style={{ objectFit: "contain" }}
                       />
                     )}
                   </div>
@@ -1593,107 +1589,173 @@ const CsoLoanCollection = () => {
 
         {activeLink === "details" && (
           <>
-          <div className="detail-in">
-            <div className="detail-in-sub">
-              <p>Name</p>
-              <h6>{specifiedCso?.lastName} {specifiedCso?.firstName}</h6>
+            <div className="detail-in">
+              <div className="detail-in-sub">
+                <p>Name</p>
+                <h6>
+                  {specifiedCso?.lastName} {specifiedCso?.firstName}
+                </h6>
+              </div>
+              <div className="detail-in-sub">
+                <p>Email</p>
+                <h6>{specifiedCso?.email} </h6>
+              </div>
+              <div className="detail-in-sub">
+                <p>Phone Number</p>
+                <h6>{specifiedCso?.phone} </h6>
+              </div>
+              <div className="detail-in-sub">
+                <p>Gender</p>
+                <h6>{specifiedCso?.status} </h6>
+              </div>
+              <div className="detail-in-sub">
+                <p>Address</p>
+                <h6>{specifiedCso?.address} </h6>
+              </div>
+              <div className="detail-in-sub">
+                <p>Guarantor Name</p>
+                <h6>{specifiedCso?.guaratorName} </h6>
+              </div>
+              <div className="detail-in-sub">
+                <p>Guarantor Email</p>
+                <h6>{specifiedCso?.guaratorEmail} </h6>
+              </div>
+              <div className="detail-in-sub">
+                <p>Guarantor Address</p>
+                <h6>{specifiedCso?.guaratorAddress} </h6>
+              </div>
+              <div className="detail-in-sub">
+                <p>Guarantor Number</p>
+                <h6>{specifiedCso?.guaratorPhone} </h6>
+              </div>
+              <button onClick={handleUpdateCsoShow}>Update Cso</button>
             </div>
-            <div className="detail-in-sub">
-              <p>Email</p>
-              <h6>{specifiedCso?.email} </h6>
-            </div>
-            <div className="detail-in-sub">
-              <p>Phone Number</p>
-              <h6>{specifiedCso?.phone} </h6>
-            </div>
-            <div className="detail-in-sub">
-              <p>Gender</p>
-              <h6>{specifiedCso?.status} </h6>
-            </div>
-            <div className="detail-in-sub">
-              <p>Address</p>
-              <h6>{specifiedCso?.address} </h6>
-            </div>
-            <div className="detail-in-sub">
-              <p>Guarantor Name</p>
-              <h6>{specifiedCso?.guaratorName} </h6>
-            </div>
-            <div className="detail-in-sub">
-              <p>Guarantor Email</p>
-              <h6>{specifiedCso?.guaratorEmail} </h6>
-            </div>
-            <div className="detail-in-sub">
-              <p>Guarantor Address</p>
-              <h6>{specifiedCso?.guaratorAddress} </h6>
-            </div>
-            <div className="detail-in-sub">
-              <p>Guarantor Number</p>
-              <h6>{specifiedCso?.guaratorPhone} </h6>
-            </div>
-            <button onClick={handleUpdateCsoShow}>Update Cso</button>
-          </div>
           </>
         )}
       </div>
 
       {updatecsoShow ? (
         <>
-        <div className="dropdown-container">
-          <div className="update-show-drop">
-            <div className="update-show-drop-header">
-              <h4>Edit Profile</h4>
-                 <Icon
-                                onClick={handleUpdateCsoShow}
-                                icon="uil:times"
-                                width="16"
-                                height="16"
-                                style={{ color: "black", cursor: "pointer" }}
-                              />
-            </div>
-            <div className="update-show-drop-body">
-              <h6>Cso Information</h6>
-            <input name="firstName" value={form.firstName} onChange={handleChange} placeholder="First Name" />
-      <input name="lastName" value={form.lastName} onChange={handleChange} placeholder="Last Name" />
-      <input name="email" value={form.email} onChange={handleChange} placeholder="Email" />
-      <select name="status" value={form.status} onChange={handleChange}>
-  <option value="">Select Gender</option>
-  <option value="Male">Male</option>
-  <option value="Female">Female</option>
-</select>
-      <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone" />
-      <input name="branch" value={form.branch} onChange={handleChange} placeholder="Branch" />
-      <input name="address" value={form.address} onChange={handleChange} placeholder="Address" />
-      <h6>Cso Guarantor Information</h6>
-      <input name="guaratorName" value={form.guaratorName} onChange={handleChange} placeholder="Enter Guuarantor's Name" />
-      <input name="guaratorEmail" value={form.guaratorEmail} onChange={handleChange} placeholder="Enter Guarantor's Email" />
-      <input name="guaratorAddress" value={form.guaratorAddress} onChange={handleChange} placeholder="Enter Guarantor's Address" />
-      <input name="guaratorPhone" value={form.guaratorPhone} onChange={handleChange} placeholder="Enter Guarantor's Number" />
+          <div className="dropdown-container">
+            <div className="update-show-drop">
+              <div className="update-show-drop-header">
+                <h4>Edit Profile</h4>
+                <Icon
+                  onClick={handleUpdateCsoShow}
+                  icon="uil:times"
+                  width="16"
+                  height="16"
+                  style={{ color: "black", cursor: "pointer" }}
+                />
+              </div>
+              <div className="update-show-drop-body">
+                <h6>Cso Information</h6>
+                <input
+                  name="firstName"
+                  value={form.firstName}
+                  onChange={handleChange}
+                  placeholder="First Name"
+                />
+                <input
+                  name="lastName"
+                  value={form.lastName}
+                  onChange={handleChange}
+                  placeholder="Last Name"
+                />
+                <input
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  placeholder="Email"
+                />
+                <select
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+                <input
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  placeholder="Phone"
+                />
+                <input
+                  name="branch"
+                  value={form.branch}
+                  onChange={handleChange}
+                  placeholder="Branch"
+                />
+                <input
+                  name="address"
+                  value={form.address}
+                  onChange={handleChange}
+                  placeholder="Address"
+                />
+                <h6>Cso Guarantor Information</h6>
+                <input
+                  name="guaratorName"
+                  value={form.guaratorName}
+                  onChange={handleChange}
+                  placeholder="Enter Guuarantor's Name"
+                />
+                <input
+                  name="guaratorEmail"
+                  value={form.guaratorEmail}
+                  onChange={handleChange}
+                  placeholder="Enter Guarantor's Email"
+                />
+                <input
+                  name="guaratorAddress"
+                  value={form.guaratorAddress}
+                  onChange={handleChange}
+                  placeholder="Enter Guarantor's Address"
+                />
+                <input
+                  name="guaratorPhone"
+                  value={form.guaratorPhone}
+                  onChange={handleChange}
+                  placeholder="Enter Guarantor's Number"
+                />
 
-      <button onClick={handleSubmit}>Save Changes</button>
+                <button onClick={handleSubmit}>Save Changes</button>
+              </div>
             </div>
           </div>
-        </div>
         </>
-      ): ""}
+      ) : (
+        ""
+      )}
 
-      {updateCsoSuccessMessage && updateCsoSuccessMessage !== undefined && updateCsoSuccessMessage !== null ? (
-<>
-<div className="dropdown-container">
-  <div className="update-show-drop">
-<div className="update-show-drop-body">
-  <p>{updateCsoSuccessMessage}</p>
-  <button onClick={() => dispatch(clearUpdateSuccessMessages())}>Exit</button>
-  </div>
-  </div>
-  </div>
-</>
-      ): ""}
+      {updateCsoSuccessMessage &&
+      updateCsoSuccessMessage !== undefined &&
+      updateCsoSuccessMessage !== null ? (
+        <>
+          <div className="dropdown-container">
+            <div className="update-show-drop">
+              <div className="update-show-drop-body">
+                <p>{updateCsoSuccessMessage}</p>
+                <button onClick={() => dispatch(clearUpdateSuccessMessages())}>
+                  Exit
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        ""
+      )}
 
       {updatingCsoloading ? (
-<div className="dropdown-container">
-  <PulseLoader color="white" size={10} />
-</div>
-      ): ""}
+        <div className="dropdown-container">
+          <PulseLoader color="white" size={10} />
+        </div>
+      ) : (
+        ""
+      )}
     </CollectRap>
   );
 };

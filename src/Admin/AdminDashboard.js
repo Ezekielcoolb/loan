@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import Notifications from "./Notification";
 import {MoonLoader} from 'react-spinners'
 import { fetchLoanStats } from "../redux/slices/dashboardSlice";
+import { fetchDebugLoanBalance, fetchLoanBalancePaymentDisbursedSummary } from "../redux/slices/otherLoanSlice";
 
 
 const DashboardRap = styled.div`
@@ -370,16 +371,26 @@ width: 100%;
 const Dashboard = () => {
   const dispatch = useDispatch();
   const { allLoans, error } = useSelector((state) => state.loan);
+   const { dashPayLoan, debugdashPayLoan,  loading } = useSelector((state) => state.otherLoan);
      const { totalLoanTarget, totalActiveLoan, status } = useSelector((state) => state.loanBranches);
 const [isLoading, setIsLoading] = useState(true)
   const { stats } = useSelector((state) => state.dashboard);
 
+console.log(dashPayLoan);
+
+  
   useEffect(() => {
     dispatch(fetchLoanStats());
   }, [dispatch]);
 
+ useEffect(() => {
+    dispatch(fetchDebugLoanBalance());
+  }, [dispatch]);
 
 
+ useEffect(() => {
+    dispatch(fetchLoanBalancePaymentDisbursedSummary());
+  }, [dispatch]);
 
   useEffect(() => {
     dispatch(allLaonfTransactions());
@@ -501,15 +512,15 @@ const [isLoading, setIsLoading] = useState(true)
               <div className="overview-total complete-cancel">
               <div className="width-total">
                   <h5>PRINCIPAL + INTEREST</h5>
-                  <p> ₦{totalAmountToBePaid?.toLocaleString()}</p>
+                  <p> ₦{dashPayLoan?.totalToBePaid?.toLocaleString()}</p>
                 </div>
                 <div>
                   <h5>ACTUAL PAYMENT</h5>
-                  <p> ₦{totalAmountPaid?.toLocaleString()}</p>
+                  <p> ₦{dashPayLoan?.totalPaidSoFar?.toLocaleString()}</p>
                 </div>
                 <div className="width-total">
                   <h5>LOAN BALANCE</h5>
-                  <p> ₦{totalLoanBalance?.toLocaleString()}</p>
+                  <p> ₦{dashPayLoan?.totalBalance?.toLocaleString()}</p>
                 </div>
               </div>
 

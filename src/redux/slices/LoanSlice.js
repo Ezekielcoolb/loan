@@ -23,9 +23,9 @@ export const submitLoanApplication = createAsyncThunk(
 
 export const fetchCustomersSummary = createAsyncThunk(
   "customer/fetchCustomersSummary",
-  async () => {
+  async (page = 1, thunkAPI) => {
     try {
-      const response = await fetch(`${API_URL}/customers-loan-summary-all`);
+      const response = await fetch(`${API_URL}/customers-loan-summary-all?page=${page}`);
       console.log(response.data);
 
       return await response.json();
@@ -334,6 +334,21 @@ export const fetchCsoActiveLoans = createAsyncThunk(
   }
 );
 
+
+export const fetchSearchingCsoActiveLoansforCollection = createAsyncThunk(
+  'csoLoans/fetchSearchingCsoActiveLoansforCollection',
+  async ({ csoId, date, name }, thunkAPI) => {
+    try {
+      const response = await axios.get(`${API_URL}/fetchSearchingCsoActiveLoansforCollection/${csoId}`, {
+        params: { date, name },
+      });
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
 export const fetchPieRepaymentData = createAsyncThunk(
   "repayment/fetchPieRepaymentData",
   async ({ csoId }) => {
@@ -533,6 +548,20 @@ export const fetchLoansByCsoForHome = createAsyncThunk(
   }
 );
 
+
+export const fetchLoanForWeeklyReportCollection = createAsyncThunk(
+  'loans/fetchLoanForWeeklyReportCollection',
+  async ({ csoId }, thunkAPI) => {
+    try {
+    const res = await axios.get(`${API_URL}/cso-loans-form-download/${csoId}`);
+    return res.data;
+    } catch (err) {
+      console.error("Error fetching active loans:", err);
+      throw err;
+    }
+  }
+);
+
 export const fetchDisbursedLoansByDate = createAsyncThunk(
   'disbursedLoans/fetchDisbursedLoansByDate',
   async (date, { rejectWithValue }) => {
@@ -553,6 +582,11 @@ const loanSlice = createSlice({
     dibursedSuccessMessage: "",
     total: 0,
     page: 1,
+
+    summarypage: 1,
+    summarytotalPages: 1,
+    summarytotalRecords: 0,
+csoWeeklyReport: null,
     totalPages: 0,
     activeCustomers: [],
     repaymentSchedule: [],
@@ -589,6 +623,7 @@ const loanSlice = createSlice({
     noPaymentYesterday: [],
     defaultingCustomers: [],
     customers: [],
+    submitLoanloading: false,
     allDahboardLoans: [],
     activeDashboardLoans: [],
     pendingDashboardLoans: [],
@@ -625,6 +660,9 @@ const loanSlice = createSlice({
   reducers: {
      setDisbursedSelectedDate: (state, action) => {
       state.selectedDisburseDate = action.payload;
+    },
+    setSummaryPage: (state, action) => {
+      state.summarypage = action.payload;
     },
     setPage: (state, action) => {
       state.page = action.payload;
@@ -795,15 +833,15 @@ const loanSlice = createSlice({
     // Handle loading and data fetching for submitting loan
     builder
       .addCase(submitLoanApplication.pending, (state) => {
-        state.submitloading = true;
+        state.submitLoanloading = true;
       })
       .addCase(submitLoanApplication.fulfilled, (state, action) => {
-        state.submitloading = false;
+        state.submitLoanloading = false;
         state.loans.push(action.payload); // Add the new loan to the loans array
         state.successMessage = action.payload.message;
       })
       .addCase(submitLoanApplication.rejected, (state, action) => {
-        state.submitloading = false;
+        state.submitLoanloading = false;
         state.error = action.error.message;
       });
 
@@ -832,6 +870,23 @@ const loanSlice = createSlice({
         state.csoHometotalPages = action.payload.totalPages;
       })
       .addCase(fetchLoansByCsoForHome.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+
+
+
+      builder
+      .addCase(fetchLoanForWeeklyReportCollection.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchLoanForWeeklyReportCollection.fulfilled, (state, action) => {
+        state.loading = false;
+        state.csoWeeklyReport = action.payload;
+        state.csoHometotalPages = action.payload.totalPages;
+      })
+      .addCase(fetchLoanForWeeklyReportCollection.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });
@@ -1056,6 +1111,20 @@ const loanSlice = createSlice({
         state.error = action.payload;
       });
 
+       builder
+      .addCase(fetchSearchingCsoActiveLoansforCollection.pending, (state) => {
+        state.searchloading = true;
+        state.error = null;
+      })
+      .addCase(fetchSearchingCsoActiveLoansforCollection.fulfilled, (state, action) => {
+        state.searchloading = false;
+        state.customers = action.payload;
+      })
+      .addCase(fetchSearchingCsoActiveLoansforCollection.rejected, (state, action) => {
+        state.searchloading = false;
+        state.error = action.payload || 'Something went wrong';
+      });
+
     builder
       .addCase(fetchPieRepaymentData.pending, (state) => {
         state.loading = true;
@@ -1092,7 +1161,9 @@ const loanSlice = createSlice({
         state.summaryloading = "loading";
       })
       .addCase(fetchCustomersSummary.fulfilled, (state, action) => {
-        state.summaries = action.payload;
+        state.summaries = action.payload.data;
+         state.summarytotalPages = action.payload.totalPages;
+        state.summarytotalRecords = action.payload.totalRecords;
         state.summaryloading = "succeeded";
       })
       .addCase(fetchCustomersSummary.rejected, (state) => {
@@ -1294,6 +1365,7 @@ const loanSlice = createSlice({
   },
 });
 export const {
+  setSummaryPage,
   setPage,
   setPages,
   setLoans,

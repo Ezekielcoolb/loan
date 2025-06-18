@@ -22,7 +22,7 @@ import axios from "axios";
 import { PulseLoader } from "react-spinners";
 import TopLoader from "../Preload/TopLoader";
 import { fetchOutstandingLoans } from "../redux/slices/otherLoanSlice";
-import { fetchCsoByWorkId } from "../redux/slices/csoSlice";
+import { fetchCsoByWorkId, fetchRemittanceStatus } from "../redux/slices/csoSlice";
 
 const HomeCsoRap = styled.div`
   color: #005e78;
@@ -249,6 +249,37 @@ const HomeCsoRap = styled.div`
   .images-container h4 {
     max-width: 120px;
   }
+  .dropdown-content{ 
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 20px;
+}
+.dropdown-content p {
+  font-size: 20px;
+  color: #112240;
+  font-weight: 500;
+}
+.submit-btn {
+    border: 1px solid #112240;
+  background-color: #112240;
+  color: white;
+  width: 380px;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+.submit-btn-2 {
+     border: 1px solid #112240;
+  color: #112240;
+  background: transparent;
+  width: 380px;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 10px;
+}
 `;
 
 const CsoHome = () => {
@@ -267,6 +298,8 @@ const CsoHome = () => {
   const [popupMessage, setPopupMessage] = useState(null);
   const [popupColor, setPopupColor] = useState("#005e78");
   const [successGuarantorForm, setSuccessGuarantorForm] = useState(false);
+  const [remittanceAvailableShow, setRemittanceAvailableShow] = React.useState(false);
+  
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -275,7 +308,7 @@ const CsoHome = () => {
   const { outstandingLoans, totalOutstandingLoans } = useSelector(
     (state) => state.otherLoan
   );
-  const { specificCso } = useSelector((state) => state.cso);
+  const { specificCso, remittancestatus, hoursLeft, minutesLeft } = useSelector((state) => state.cso);
 
   console.log(totalOutstandingLoans);
   const [query, setQuery] = useState("");
@@ -294,13 +327,22 @@ const CsoHome = () => {
     }
   };
   const handleVisisble = () => {
+    if (remittancestatus === false) {
     dispatch(setDropdownVisible());
+    } else {
+          setRemittanceAvailableShow(true);
+
+    }
   };
 
   const handleSuccessVisible = () => {
     dispatch(setDropSuccessVisible());
   };
-
+ useEffect(() => {
+    if (csoId) {
+      dispatch(fetchRemittanceStatus(csoId));
+    }
+  }, [csoId, dispatch]);
   useEffect(() => {
     const fetchLoans = async () => {
       await dispatch(fetchAllLoansByCsoId({ csoId }));
@@ -472,12 +514,20 @@ const CsoHome = () => {
                       key={loan._id}
                       onClick={() => handleCustomerClick(loan)}
                     >
+                     
+
+
                       <img
-                        src={loan?.pictures?.customer}
-                        alt="Customer"
-                        width={100}
-                        height={100}
-                      />
+  src={
+    loan?.pictures?.customer?.startsWith("http")
+      ? loan?.pictures?.customer // Cloudinary URL
+      : loan?.pictures?.customer
+      ? `https://api.jksolutn.com${loan?.pictures?.customer}` // Local image
+      : "fallback.jpg" // Optional fallback image
+  }
+  alt="customer"
+  style={{ width: "100px", height: "100px", objectFit: "contain" }}
+/>
                       <h4 className="custom-name">
                         {loan?.customerDetails?.firstName}{" "}
                         {loan?.customerDetails?.lastName}
@@ -656,6 +706,23 @@ const CsoHome = () => {
       ) : (
         ""
       )}
+      {remittanceAvailableShow ? (
+        <>
+         <div className="dropdown-container">
+      <div className="all-dropdown-div">
+
+       
+        <div className="dropdown-content">
+          <p >Sorry, you cannot submit a new loan after submitting remittance. <br /> Please wait till the next {hoursLeft}hr {minutesLeft} minutes. <br /> Thanks.</p>
+          <button className="submit-btn-2" onClick={() => setRemittanceAvailableShow(false)}>
+            Close
+            </button>
+        </div>
+        </div>
+        </div>
+        
+        </>
+      ): ""}
     </HomeCsoRap>
   );
 };

@@ -14,6 +14,9 @@ import searchReducer from './slices/searchSlice'
 import dashboardReducer from './slices/dashboardSlice'
 import adminReducer from "./slices/adminSlice"
 import otherLoanReducer from "./slices/otherLoanSlice"
+import reportReducer from './slices/reportSlice'
+import uploadReducer from './slices/uploadSlice'
+import holidayReducer from './slices/holidaySlice'
 
 const store = configureStore({
     reducer: {
@@ -31,6 +34,9 @@ const store = configureStore({
         dashboard: dashboardReducer,
         admin: adminReducer,
         otherLoan: otherLoanReducer,
+        report: reportReducer,
+        upload: uploadReducer,
+        holiday: holidayReducer,
         search: searchReducer,
         
         

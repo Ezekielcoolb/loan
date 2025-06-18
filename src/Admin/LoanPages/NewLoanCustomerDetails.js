@@ -92,15 +92,10 @@ const NewCustomerDetailsInfo = () => {
 
   console.log(details[0]?.customerDetails?.bvn);
 
- 
- 
-
   return (
     <CustomerDetailRap>
       <div className="client-1">
-       
         <div className="client-link-container">
-       
           <Link
             className={`client-link ${
               activeLink === "transaction" ? "active" : ""
@@ -131,7 +126,10 @@ const NewCustomerDetailsInfo = () => {
       <div>
         {activeLink === "transaction" && (
           <div className="custom-1">
-            <h2>{details[0]?.customerDetails?.lastName} {details[0]?.customerDetails?.firstName}'s Loan Details</h2>
+            <h2>
+              {details[0]?.customerDetails?.lastName}{" "}
+              {details[0]?.customerDetails?.firstName}'s Loan Details
+            </h2>
             <div className="table-container">
               <div className="new-table-scroll">
                 <div className="table-div-con">
@@ -167,6 +165,16 @@ const NewCustomerDetailsInfo = () => {
                             ? "Defaulting"
                             : "Not Defaulting Yet";
 
+                        const lastPaymentDateRaw =
+                          loan?.loanDetails?.dailyPayment
+                            ?.slice()
+                            .sort((a, b) => new Date(a.date) - new Date(b.date))
+                            .at(-1)?.date;
+                        const lastDate = lastPaymentDateRaw
+                          ? new Date(lastPaymentDateRaw).toLocaleDateString(
+                              "en-GB"
+                            )
+                          : "N/A";
                         return (
                           <tr key={index}>
                             <td>{loan.loanDetails.amountRequested}</td>
@@ -180,18 +188,27 @@ const NewCustomerDetailsInfo = () => {
                             <td>
                               {new Date(loan.disbursedAt).toLocaleDateString()}
                             </td>
-                            <td>{new Date(endDate).toLocaleDateString()}</td>
+                            <td>
+                              {loan?.status === "fully paid"
+                                ? lastDate
+                                : new Date(endDate).toLocaleDateString()}
+                            </td>
+
                             <td>{loan.status}</td>
                             <td>{loanPerformance}</td>
-                            <td>  {loan.status==="fully paid" || loan.status==="active loan" ? ( 
+                            <td>
+                              {" "}
+                              {loan.status === "fully paid" ||
+                              loan.status === "active loan" ? (
                                 <Link
-            to={`/admin/new-loan-customer/calender/${loan?._id}`}
-           
-          >
-            View Loan Card
-          </Link>
-          ): <p>No Loan Card</p>} 
-          </td>
+                                  to={`/admin/new-loan-customer/calender/${loan?._id}`}
+                                >
+                                  View Loan Card
+                                </Link>
+                              ) : (
+                                <p>No Loan Card</p>
+                              )}
+                            </td>
                           </tr>
                         );
                       })}
@@ -203,120 +220,7 @@ const NewCustomerDetailsInfo = () => {
           </div>
         )}
 
-        {/* {activeLink === "details" && (
-          <div className="details">
-            <h2>Customer Details</h2>
-            <div className="left-loan-detail">
-              <div className="inner-details">
-                <h4>Personal Details</h4>
-                <p>
-                  <span>Customer Name:</span>{" "}
-                  {`${details[0]?.customerDetails?.firstName} ${details[0]?.customerDetails?.lastName}`}
-                </p>
-                <p>
-                  <span>Email:</span> {details[0]?.customerDetails?.email}
-                </p>
-                <p>
-                  <span>Phone:</span> {details[0]?.customerDetails?.phoneOne}
-                </p>
-                <p>
-                  <span>Address:</span> {details[0]?.customerDetails?.address}
-                </p>
-                <p>
-                  <span>BVN:</span> {details[0]?.customerDetails?.bvn}
-                </p>
-              </div>
-              <div className="inner-details">
-                <h4>Business Details</h4>
-                <p>
-                  <span>Business Name:</span>{" "}
-                  {details[0]?.businessDetails?.businessName}
-                </p>
-                <p>
-                  <span>Nature of Business:</span>{" "}
-                  {details[0]?.businessDetails?.natureOfBusiness}
-                </p>
-                <p>
-                  <span>Business Estimated Value:</span>{" "}
-                  {details[0]?.businessDetails?.estimatedValue}
-                </p>
-                <p>
-                  <span>Business Operational Status:</span>{" "}
-                  {details[0]?.businessDetails?.operationalStatus}
-                </p>
-              </div>
-              <div className="inner-details">
-                <h4>Loan Details</h4>
-                <p className="change-size">
-                  <span>Loan Requested:</span>
-                  {details[0]?.loanDetails?.amountRequested}
-                </p>
-                <p>
-                  <span>Loan Type:</span> {details[0]?.loanDetails?.loanType}
-                </p>
-              </div>
-              <div className="inner-details">
-                <h4>Bank Details</h4>
-                <p>
-                  <span>Account Name:</span> {details[0]?.bankDetails?.accountName}
-                </p>
-                <p>
-                  <span>Account Number:</span> {details[0]?.bankDetails?.accountNo}
-                </p>
-                <p>
-                  <span>Bank Name:</span> {details[0]?.bankDetails?.bankName}
-                </p>
-              </div>
-              <div className="inner-details">
-                <h4>Guarantor's Details</h4>
-                <p>
-                  <span>Guarantor Name:</span> {details[0]?.guarantorDetails?.name}
-                </p>
-                <p>
-                  <span>Guarantor Address:</span>{" "}
-                  {details[0]?.guarantorDetails?.address}
-                </p>
-                <p>
-                  <span>Guarantor Number:</span> {details[0]?.guarantorDetails?.phone}
-                </p>
-                <p>
-                  <span>Guarantor Email:</span> {details[0]?.guarantorDetails?.email}
-                </p>
-                <p>
-                  <span>Relationship with Custoomer:</span>{" "}
-                  {details[0]?.guarantorDetails?.relationship}
-                </p>
-                <p>
-                  <span>Years Known:</span> {details[0]?.guarantorDetails?.yearsKnown}
-                </p>
-              </div>
-              <div className="inner-details">
-                <h4>Group Details</h4>
-                <p>
-                  <span>Group Name:</span> {details[0]?.groupDetails?.groupName}
-                </p>
-                <p>
-                  <span>Group Leader:</span> {details[0]?.groupDetails?.leaderName}
-                </p>
-                <p>
-                  <span>Leader's Number:</span> {details[0]?.groupDetails?.mobileNo}
-                </p>
-              </div>
-              <div className="inner-details">
-                <h4>Images</h4>
-                <div>
-                  <h5>Business Image</h5>
-                  <div>
-                    <img src={details[0]?.pictures?.business} alt="" />
-                  </div>
-                </div>
-                <div>
-                  <h5>Other Images</h5>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}  */}
+        
       </div>
     </CustomerDetailRap>
   );

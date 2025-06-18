@@ -25,7 +25,7 @@ const LoanDetailRap = styled.div`
     color: #030b26;
   }
   .count {
-     font-size: 20px;
+    font-size: 20px;
     font-weight: 700;
     color: #030b26;
   }
@@ -167,8 +167,8 @@ const LoanDetailRap = styled.div`
   }
   .popup {
     position: absolute;
-    
-   z-index: 1000;
+
+    z-index: 1000;
     background: white;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -214,9 +214,8 @@ const LoanDetailRap = styled.div`
     background: #ffffff;
     padding: 20px;
     border-radius: 15px;
-
   }
-  .approved-div  p {
+  .approved-div p {
     font-size: 14px;
     font-weight: 600;
     color: #030b26;
@@ -237,7 +236,7 @@ const LoanDetailRap = styled.div`
     gap: 20px;
     flex-wrap: wrap;
   }
-  .customerimages img{
+  .customerimages img {
     max-width: 250px;
     max-height: 250px;
     border-radius: 20px;
@@ -274,13 +273,13 @@ const LoanDetailRap = styled.div`
     align-items: center;
     gap: 20px;
   }
-  .all-dropdown-div h5  {
+  .all-dropdown-div h5 {
     font-size: 25px;
     font-weight: 700;
     max-width: 370px;
     text-align: center;
   }
-  .all-dropdown-div span  {
+  .all-dropdown-div span {
     color: #030b26 !important;
     font-size: 25px;
     font-weight: 700;
@@ -296,15 +295,16 @@ const Button = styled.button`
   margin: 8px;
   border-radius: 8px;
   color: white;
-  background-color: ${({ active }) => (active ? '#16A34A' : '#3B82F6')}; // Green if true, Blue if false
+  background-color: ${({ active }) =>
+    active ? "#16A34A" : "#3B82F6"}; // Green if true, Blue if false
   border: none;
-  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
   transition: background 0.3s ease;
-  opacity: ${({ disabled }) => (disabled ? '0.6' : '1')};
+  opacity: ${({ disabled }) => (disabled ? "0.6" : "1")};
 
   &:hover {
-    background-color: ${({ active, disabled }) => 
-      disabled ? '#16A34A' : active ? '#15803D' : '#2563EB'};
+    background-color: ${({ active, disabled }) =>
+      disabled ? "#16A34A" : active ? "#15803D" : "#2563EB"};
   }
 `;
 
@@ -335,16 +335,16 @@ const ModalButton = styled.button`
   transition: background 0.3s ease;
 
   &:first-child {
-    background-color: #EF4444;
+    background-color: #ef4444;
     &:hover {
-      background-color: #DC2626;
+      background-color: #dc2626;
     }
   }
 
   &:last-child {
-    background-color: #22C55E;
+    background-color: #22c55e;
     &:hover {
-      background-color: #16A34A;
+      background-color: #16a34a;
     }
   }
 `;
@@ -352,7 +352,7 @@ const ModalButton = styled.button`
 const LoanDetails = () => {
   const { id } = useParams(); // Get loan ID from URL
   const dispatch = useDispatch();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const loans = useSelector((state) => state.loan.loans);
   const loan = loans.find((loan) => loan._id === id); // Find the loan in the Redux store
   const [amountApproved, setAmountApproved] = useState("");
@@ -361,45 +361,44 @@ const LoanDetails = () => {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [isCalled, setIsCalled] = useState(false);
-  const { callCso, callGuarantor, callCustomer, verifyCustomer } = useSelector(state => state.loan);
+  const { callCso, callGuarantor, callCustomer, verifyCustomer } = useSelector(
+    (state) => state.loan
+  );
   const [popup, setPopup] = useState(null); // Track which popup is open
-const [approveLoading, setApprovedLoading] = useState(false)
-const [rejectLoading, setRejectLoading] = useState(false)
-const [isApproved, setIsApproved] = useState(false)
-const [isRejected, setIsRejected] = useState(false)
+  const [approveLoading, setApprovedLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
+  const [isRejected, setIsRejected] = useState(false);
   const { details } = useSelector((state) => state.loan);
-
 
   console.log(details);
   const filteredLoansDetails = details?.filter(
-  (loan) =>
-    loan?.status?.toLowerCase() === "fully paid" ||
-    loan?.status?.toLowerCase() === "active loan"
-);
+    (loan) =>
+      loan?.status?.toLowerCase() === "fully paid" ||
+      loan?.status?.toLowerCase() === "active loan"
+  );
 
-const count = filteredLoansDetails?.length;
+  const count = filteredLoansDetails?.length;
 
-console.log("Filtered Loan Count:", count);
-const bvn = loan?.customerDetails?.bvn
-const isValid =
-amountApproved !== "" 
+  console.log("Filtered Loan Count:", count);
+  const bvn = loan?.customerDetails?.bvn;
+  const isValid = amountApproved !== "";
 
-const handleIsApprove = () => {
-  setIsApproved(!isApproved)
-}
+  const handleIsApprove = () => {
+    setIsApproved(!isApproved);
+  };
 
-const handleIsReject = () => {
-  setIsRejected(!isRejected)
-}
-
+  const handleIsReject = () => {
+    setIsRejected(!isRejected);
+  };
 
   const handleApprovedPop = () => {
-    setApprovedLoading(false)
-    navigate('/admin/newloan')
+    setApprovedLoading(false);
+    navigate("/admin/newloan");
   };
   const handleRejectPop = () => {
-    setRejectLoading(false)
-    navigate('/admin/newloan')
+    setRejectLoading(false);
+    navigate("/admin/newloan");
   };
 
   const handlePopupResponse = (response) => {
@@ -409,11 +408,10 @@ const handleIsReject = () => {
     setShowPopup(false); // Close the pop-up
   };
 
-
   const handleUpdate = () => {
-    if(popup) {
-    dispatch(updateCallStatus({ loanId: id, field: popup }));
-    setPopup(null); // Close popup after update
+    if (popup) {
+      dispatch(updateCallStatus({ loanId: id, field: popup }));
+      setPopup(null); // Close popup after update
     }
   };
   // Fetch loans if not already in the Redux store
@@ -423,11 +421,9 @@ const handleIsReject = () => {
     }
   }, [loan, dispatch]);
 
-
-  
-    useEffect(() => {
-      dispatch(fetchCustomerDetails(bvn));
-    }, [dispatch, bvn]);
+  useEffect(() => {
+    dispatch(fetchCustomerDetails(bvn));
+  }, [dispatch, bvn]);
 
   const handleOpenApprove = () => {
     setApproveOpen(!approveOpen);
@@ -440,39 +436,55 @@ const handleIsReject = () => {
   // Approve loan handler
   const handleApprove = () => {
     dispatch(approveLoan({ id, amountApproved }));
-    setIsApproved(false)
-    setApprovedLoading(true)
+    setIsApproved(false);
+    setApprovedLoading(true);
   };
 
   // Reject loan handler
   const handleReject = () => {
     dispatch(rejectLoan({ id, rejectionReason }));
-    setIsRejected(false)
-    setRejectLoading(true)
+    setIsRejected(false);
+    setRejectLoading(true);
   };
 
   const handleMoveToCustomerInfo = () => {
-    navigate(`/admin/new-customer/${loan?.customerDetails?.bvn}`)
-  }
+    navigate(`/admin/new-customer/${loan?.customerDetails?.bvn}`);
+  };
 
   if (!loan) return <p>Loading loan details...</p>; // Show a loader until the loan is found
+  const formatNumberWithCommas = (number) => {
+    return new Intl.NumberFormat().format(number);
+  };
 
+  const date = new Date(loan?.createdAt);
+
+  const options = {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  };
+
+  const formatted = date.toLocaleString("en-GB", options).replace(",", " at");
+  console.log(formatted);
   return (
     <LoanDetailRap>
-      <div style={{display: "flex", alignItems:"center"}}>
-<Link
-              style={{ marginLeft: "-50px" }}
-              className="cso-link"
-              to="/admin/newloan"
-            >
-              <Icon
-                icon="formkit:arrowleft"
-                width="90"
-                height="16"
-                style={{ color: "black", cursor: "pointer" }}
-              />
-            </Link>
-      <h2>Loan Details</h2>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <Link
+          style={{ marginLeft: "-50px" }}
+          className="cso-link"
+          to="/admin/newloan"
+        >
+          <Icon
+            icon="formkit:arrowleft"
+            width="90"
+            height="16"
+            style={{ color: "black", cursor: "pointer" }}
+          />
+        </Link>
+        <h2>Loan Details</h2>
       </div>
       <div className="loan-details">
         <div className="left-loan-detail">
@@ -522,8 +534,9 @@ const handleIsReject = () => {
             <p>
               <span>Loan Type:</span> {loan?.loanDetails?.loanType}
             </p>
-             <p>
-<span>Date Submitted:</span> {new Date(loan?.createdAt).toLocaleDateString('en-GB')}            </p>
+            <p>
+              <span>Date Submitted:</span> {formatted}{" "}
+            </p>
           </div>
           <div className="inner-details">
             <h4>Bank Details</h4>
@@ -570,14 +583,22 @@ const handleIsReject = () => {
             <p>
               <span>Leader's Number:</span> {loan?.groupDetails?.mobileNo}
             </p>
-            
           </div>
           <div className="inner-details">
             <h4>Signature</h4>
             <div className="signature">
-                  <img src={loan?.pictures?.signature} alt="" />
-                </div>
-            
+              <img
+                src={
+                  loan.pictures.signature?.startsWith("http")
+                    ? loan.pictures.signature // Cloudinary URL
+                    : loan.pictures.signature
+                    ? `https://api.jksolutn.com${loan.pictures.signature}` // Local image
+                    : "fallback.jpg" // Optional fallback image
+                }
+                alt="signature"
+                style={{ objectFit: "contain" }}
+              />
+            </div>
           </div>
           <div className="inner-details">
             <h4>Images</h4>
@@ -585,13 +606,33 @@ const handleIsReject = () => {
               <div>
                 <h5>Customer Image</h5>
                 <div>
-                  <img src={loan?.pictures?.customer} alt="" />
+                  <img
+                    src={
+                      loan?.pictures?.customer?.startsWith("http")
+                        ? loan?.pictures?.customer // Cloudinary URL
+                        : loan?.pictures?.customer
+                        ? `https://api.jksolutn.com${loan?.pictures?.customer}` // Local image
+                        : "fallback.jpg" // Optional fallback image
+                    }
+                    alt="customer"
+                    style={{ objectFit: "contain" }}
+                  />{" "}
                 </div>
               </div>
               <div>
                 <h5>Business Image</h5>
                 <div>
-                  <img src={loan?.pictures?.business} alt="" />
+                  <img
+                    src={
+                      loan?.pictures?.business?.startsWith("http")
+                        ? loan?.pictures?.business // Cloudinary URL
+                        : loan?.pictures?.business
+                        ? `https://api.jksolutn.com${loan?.pictures?.business}` // Local image
+                        : "fallback.jpg" // Optional fallback image
+                    }
+                    alt="business"
+                    style={{ objectFit: "contain" }}
+                  />{" "}
                 </div>
               </div>
             </div>
@@ -599,12 +640,22 @@ const handleIsReject = () => {
               <h5>Other Images</h5>
               <div className="customerimages">
                 {loan?.pictures?.others.map((img, index) => (
-                  <img key={index} src={img} alt="" />
+                  <img
+                    key={index}
+                    src={
+                      img?.startsWith("http")
+                        ? img // Cloudinary URL
+                        : img
+                        ? `https://api.jksolutn.com${img}` // Local image
+                        : "fallback.jpg" // Optional fallback image
+                    }
+                    alt="others"
+                    style={{ objectFit: "contain" }}
+                  />
                 ))}
-                </div>
+              </div>
             </div>
           </div>
-         
         </div>
 
         <div className="right-loan-detail">
@@ -615,29 +666,57 @@ const handleIsReject = () => {
                 Ask Cso <span className="span"> {loan?.csoName} </span>for more
                 information
               </p>
-              <Button onClick={() => setPopup('callCso')} active={callCso} disabled={callCso}>Call</Button>
+              <Button
+                onClick={() => setPopup("callCso")}
+                active={callCso}
+                disabled={callCso}
+              >
+                Call
+              </Button>
             </div>
             <div className="inner-verify">
               <p>Call customer for extra information or confirmation</p>
-              <Button onClick={() => setPopup('callCustomer')} active={callCustomer} disabled={callCustomer}>Call </Button>
-              </div>
+              <Button
+                onClick={() => setPopup("callCustomer")}
+                active={callCustomer}
+                disabled={callCustomer}
+              >
+                Call{" "}
+              </Button>
+            </div>
             <div className="inner-verify">
               <p>Call Guarantor for his/her consent</p>
-              <Button onClick={() => setPopup('callGuarantor')} active={callGuarantor} disabled={callGuarantor}>Call </Button>
-              </div>
+              <Button
+                onClick={() => setPopup("callGuarantor")}
+                active={callGuarantor}
+                disabled={callGuarantor}
+              >
+                Call{" "}
+              </Button>
+            </div>
             {/* <div className="inner-verify">
               <p>Verify past loan performance</p>
               <Button onClick={() => setPopup('verifyCustomer')} active={verifyCustomer} disabled={verifyCustomer}>Verify </Button>
               </div> */}
-              <div className="inner-verify">
-              <p>Number of previous loans: <span className="count">{count}</span></p>
+            <div className="inner-verify">
+              <p>
+                Number of previous loans: <span className="count">{count}</span>
+              </p>
               {count > 0 ? (
-              <Button onClick={handleMoveToCustomerInfo} active={verifyCustomer} disabled={verifyCustomer}>View </Button>
-              ): ""}
-              </div>
+                <Button
+                  onClick={handleMoveToCustomerInfo}
+                  active={verifyCustomer}
+                  disabled={verifyCustomer}
+                >
+                  View{" "}
+                </Button>
+              ) : (
+                ""
+              )}
+            </div>
             <p>
-              Click <Link to={`/admin/guarantorDetails/${id}`}>here</Link> to confirm if guarantor fill the guarantor
-              form
+              Click <Link to={`/admin/guarantorDetails/${id}`}>here</Link> to
+              confirm if guarantor fill the guarantor form
             </p>
           </div>
           <div className="action-div">
@@ -661,30 +740,39 @@ const handleIsReject = () => {
                 />{" "}
                 <br />
                 <button
-                 disabled={!isValid}
-                 className="approve"
-                 style={{
-                  backgroundColor: isValid ? "green" : "#727789",
-                  cursor:  !isValid ? "not-allowed" : "pointer",
-                }}
-                 onClick={handleIsApprove}>
+                  disabled={!isValid}
+                  className="approve"
+                  style={{
+                    backgroundColor: isValid ? "green" : "#727789",
+                    cursor: !isValid ? "not-allowed" : "pointer",
+                  }}
+                  onClick={handleIsApprove}
+                >
                   Approve
                 </button>
               </div>
             ) : (
               ""
             )}
-               {isApproved ? (
-                <div className="dropdown-container">
-              <div className="all-dropdown-div">
-                <h5 className="">You are about to approve <span> {amountApproved}</span></h5>
-                <div className="btn-div"> 
-                <button className="approve" onClick={handleApprove}>
-                  Approve
-                </button>
-                <button onClick={() => setIsApproved(false)} className="reject">Cancel</button>
+            {isApproved ? (
+              <div className="dropdown-container">
+                <div className="all-dropdown-div">
+                  <h5 className="">
+                    You are about to approve{" "}
+                    <span> {formatNumberWithCommas(amountApproved)}</span>
+                  </h5>
+                  <div className="btn-div">
+                    <button className="approve" onClick={handleApprove}>
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => setIsApproved(false)}
+                      className="reject"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-              </div>
               </div>
             ) : (
               ""
@@ -705,65 +793,97 @@ const handleIsReject = () => {
             ) : (
               ""
             )}
-               {isRejected ? (
-                <div className="dropdown-container">
-              <div className="all-dropdown-div">
-                <h5 className="">You are rejecting this loan because of this reason: <span> {rejectionReason}</span></h5>
-                <div className="btn-div"> 
-                <button className="reject" onClick={handleReject}>
-                  Reject
-                </button>
-                <button onClick={() => setIsRejected(false)} className="approve">Cancel</button>
+            {isRejected ? (
+              <div className="dropdown-container">
+                <div className="all-dropdown-div">
+                  <h5 className="">
+                    You are rejecting this loan because of this reason:{" "}
+                    <span> {rejectionReason}</span>
+                  </h5>
+                  <div className="btn-div">
+                    <button className="reject" onClick={handleReject}>
+                      Reject
+                    </button>
+                    <button
+                      onClick={() => setIsRejected(false)}
+                      className="approve"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
-              </div>
               </div>
             ) : (
               ""
             )}
-            {approveLoading? (
+            {approveLoading ? (
               <div className="dropdown-container ">
                 <div className="approved-div">
-              <p>You have approved the loan of<span style={{
-                fontWeight: "900",
-                fontSize: "18px",
-                color: "#030b26"
-              }}> {amountApproved}</span> </p>
-              <button onClick={handleApprovedPop}>Exit</button>
+                  <p>
+                    You have approved the loan of
+                    <span
+                      style={{
+                        fontWeight: "900",
+                        fontSize: "18px",
+                        color: "#030b26",
+                      }}
+                    >
+                      {" "}
+                      {amountApproved}
+                    </span>{" "}
+                  </p>
+                  <button onClick={handleApprovedPop}>Exit</button>
+                </div>
               </div>
-              </div>
-            ): ""}
-             {rejectLoading? (
+            ) : (
+              ""
+            )}
+            {rejectLoading ? (
               <div className="dropdown-container ">
                 <div className="approved-div">
-              <p>You have rejected the loan due to<span style={{
-                fontWeight: "900",
-                fontSize: "18px",
-                color: "red"
-              }}> {rejectionReason}</span> </p>
-              <button onClick={handleRejectPop}>Exit</button>
+                  <p>
+                    You have rejected the loan due to
+                    <span
+                      style={{
+                        fontWeight: "900",
+                        fontSize: "18px",
+                        color: "red",
+                      }}
+                    >
+                      {" "}
+                      {rejectionReason}
+                    </span>{" "}
+                  </p>
+                  <button onClick={handleRejectPop}>Exit</button>
+                </div>
               </div>
-              </div>
-            ): ""}
+            ) : (
+              ""
+            )}
           </div>
         </div>
       </div>
 
-
       <div>
-
-      {/* Popup Modal */}
-      {popup && (
-        <ModalOverlay>
-          <ModalContent>
-            <p>Have you called the {popup.replace('call', '').replace('verifyCustomer', 'Customer')}?</p>
-            <div>
-              <ModalButton onClick={() => setPopup(null)}>No</ModalButton>
-              <ModalButton onClick={handleUpdate}>Yes</ModalButton>
-            </div>
-          </ModalContent>
-        </ModalOverlay>
-      )}
-    </div>
+        {/* Popup Modal */}
+        {popup && (
+          <ModalOverlay>
+            <ModalContent>
+              <p>
+                Have you called the{" "}
+                {popup
+                  .replace("call", "")
+                  .replace("verifyCustomer", "Customer")}
+                ?
+              </p>
+              <div>
+                <ModalButton onClick={() => setPopup(null)}>No</ModalButton>
+                <ModalButton onClick={handleUpdate}>Yes</ModalButton>
+              </div>
+            </ModalContent>
+          </ModalOverlay>
+        )}
+      </div>
     </LoanDetailRap>
   );
 };

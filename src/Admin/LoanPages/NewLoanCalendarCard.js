@@ -154,6 +154,8 @@ console.log(loan);
       date: formatDate(new Date(schedule.date)),
       amountPaid: schedule.amountPaid,
       missedAmount: missedAmount - schedule.amountPaid,
+            holidayReason: schedule.holidayReason
+
     });
   };
 
@@ -234,6 +236,8 @@ console.log(loan);
               new Date(loan.disbursedAt).toDateString();
             const isEndDate = index === loan.repaymentSchedule.length - 1;
             const isPaid = schedule.status === "paid";
+                         const isHoliday = schedule.status === "holiday";
+
             const isPartial = schedule.status === "partial";
             const isMissed =
               scheduleDate < today && schedule.status === "pending";
@@ -252,6 +256,8 @@ console.log(loan);
                 : "green"
               : isMissed
               ? "red"
+              : isHoliday 
+    ? "blue"
               : isPartial
               ? "#e7c17b"
               : "transparent";
@@ -321,6 +327,22 @@ console.log(loan);
                     }}
                   />
                 )}
+                 {isHoliday && (
+                  <button
+                    onClick={() => handleButtonClick(schedule)} // Pass missed amount
+                    style={{
+                      width: "30px",
+                      height: "30px",
+                      borderRadius: "50%",
+                      backgroundColor: buttonColor,
+                      border: "none",
+                      position: "absolute",
+                      top: "5px",
+                      right: "5px",
+                      cursor: "pointer",
+                    }}
+                  />
+                )}
               </div>
             );
           })}
@@ -355,6 +377,15 @@ console.log(loan);
                 <span>Amount Due: </span> {popupInfo.missedAmount}
               </p>
             )}{" "}
+            
+            {popupInfo?.holidayReason ? (
+              <p style={{
+                fontSize: "18px",
+                maxWidth: "150px"
+              }}>
+              <span>Holiday: </span> {popupInfo.holidayReason}
+            </p>
+            ): ""}
             {/* Show missed amount */}
             <button
               onClick={closePopup}

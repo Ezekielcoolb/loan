@@ -7,6 +7,7 @@ import { Icon } from "@iconify/react/dist/iconify.js";
 import styled from "styled-components";
 import axios from "axios";
 import { PulseLoader } from "react-spinners";
+import { submitDailyRemittanceReport } from "../redux/slices/csoSlice";
 
 const PaymentRap = styled.div`
   height: 80vh !important;
@@ -153,7 +154,11 @@ const PaymentPage = () => {
   const loan = useSelector((state) => state.loan.selectedLoan);
     const { paymentloading, paymentError, paymentSuccess, status } = useSelector((state) => state.loan);
   
-console.log(paymentSuccess, paymentError);
+
+const workId = loan?.csoId
+
+console.log(workId);
+
 
 
   const [amount, setAmount] = useState(null);
@@ -169,7 +174,6 @@ console.log(paymentSuccess, paymentError);
     (schedule) => schedule.date.split("T")[0] === today
   );
 
-  const repaymentSchedule = loan?.repaymentSchedule
   // const today = new Date();
 
   const isValid = amount !== null && amount !== NaN
@@ -177,7 +181,7 @@ console.log(paymentSuccess, paymentError);
   function countWeekdaysSinceFirstRepayment(schedule) {
     if (!schedule?.length) return 0;
   
-    const firstDate = new Date(schedule[0]?.date);
+    const firstDate = new Date(schedule[0].date);
     const today = new Date();
   
     let count = 0;
@@ -194,26 +198,60 @@ console.log(paymentSuccess, paymentError);
     }
   
     // If first status is pending, subtract 1 day
-    if (schedule[0].status === 'pending') {
+    if (schedule[0].status === 'pending' || schedule[0].status === 'holiday') {
       count = Math.max(0, count - 1);
     }
   
     return count;
   }
+  
+  const repaymentSchedule = loan?.repaymentSchedule
 
+  console.log("Repayment Schedule:", repaymentSchedule);
+  
+  // const today = new Date();
+  
   const daysToShow = countWeekdaysSinceFirstRepayment(repaymentSchedule);
+  console.log("Days to show:", daysToShow);
 
+  console.log(`Display ${daysToShow} days of repayment.`);
+      
   const dailyAmount = loan?.loanDetails?.amountToBePaid / 22;
 
   const totalDue = dailyAmount * daysToShow;
   
-  let AmountDue = totalDue - loan?.loanDetails?.amountPaidSoFar;
+  let AmountDueOne = totalDue - (loan?.loanDetails?.amountPaidSoFar || 0);
   
-  // Ensure AmountDue is not negative
-  AmountDue = AmountDue < 0 ? 0 : AmountDue;
+if (AmountDueOne === NaN ) {
+  AmountDueOne = totalDue
+}
+
+
+  const expectedPay = loan?.loanDetails?.amountToBePaid
+ const totalPaidSoFar = repaymentSchedule?.reduce((sum, item) => sum + item.amountPaid, 0);
+console.log("Total amount paid:", totalPaidSoFar);
+
+const AmountDueTwo = expectedPay - totalPaidSoFar
+ const newtoday = new Date();
+const repaymentScheduleLengthTillToday = repaymentSchedule?.filter(item => {
+  const repaymentDate = new Date(item.date);
+  return repaymentDate <= newtoday;
+}).length;
+
+console.log(repaymentScheduleLengthTillToday);
+
+let AmountDue = 0
+if (repaymentScheduleLengthTillToday > 22) {
+   AmountDue = AmountDueTwo
+} else {
+   AmountDue = AmountDueOne
+}
+
 
   // Predefined value for the first button
   const predefinedValue = AmountDue;
+  console.log(AmountDue);
+  
   const handleVisisble = () => {
     setVisible(!visible);
   };
@@ -246,6 +284,7 @@ console.log(paymentSuccess, paymentError);
     if (isValid) {
       setLoading(true);
       dispatch(makePaymenting({ id, amount }));
+       dispatch(submitDailyRemittanceReport({ workId, amount }));
       setAmount(null);
       setPay(true);
       setConfirm(false);
@@ -264,6 +303,9 @@ console.log(paymentSuccess, paymentError);
     dispatch(clearPaymentMessages())
   }
 
+    const formatNumberWithCommas = (number) => {
+    return new Intl.NumberFormat().format(number);
+  };
   return (
     <PaymentRap>
       <Icon
@@ -325,7 +367,7 @@ console.log(paymentSuccess, paymentError);
             {confirm ? (
               <div className="dropdown-container">
                 <div className="pay-dropdown">
-                  <p>Do you want to make a payment of {amount}</p>
+                  <p>Do you want to make a payment of {formatNumberWithCommas(amount)}</p>
                   <div className="pay-btn">
 
                          <button type="submit"

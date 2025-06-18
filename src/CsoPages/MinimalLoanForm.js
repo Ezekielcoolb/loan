@@ -14,6 +14,8 @@ import {
 } from "../redux/slices/appSlice";
 import { PulseLoader } from "react-spinners";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { uploadImages } from "../redux/slices/uploadSlice";
+import imageCompression from 'browser-image-compression';
 
 
 const ModalOverlay = styled.div`
@@ -153,6 +155,9 @@ const MinimalApplicationForm = () => {
   const [signImage, setSignImage] = useState("");
   const [loading, setLoading] = useState(false);
   const user = JSON.parse(localStorage.getItem("csoUser"));
+    const [uploadTarget, setUploadTarget] = useState(null);
+      const { urls } = useSelector((state) => state.upload);
+  
   const loans = useSelector((state) => state.loan.loans);
   const successMessage = useSelector((state) => state.loan.successMessage);
   const loan = loans.find((loan) => loan._id === id);
@@ -219,7 +224,7 @@ const MinimalApplicationForm = () => {
     },
   });
 
-  console.log(successMessage);
+  console.log(formData);
 
   const isValid =
     formData.customerDetails.firstName !== "" &&
@@ -256,9 +261,9 @@ const MinimalApplicationForm = () => {
     formData.groupDetails.groupName !== "" &&
     formData.groupDetails.leaderName !== "" &&
     formData.groupDetails.mobileNo !== "" &&
-    ownerImage !== "" &&
-    loanerImage !== "" &&
-    signImage !== "" 
+    formData.pictures.business !== "" &&
+                  formData.pictures.customer !== "" &&
+                 formData.pictures.signature !== "" ;
 
   const { dropdowVisible } = useSelector((state) => state.app);
 
@@ -286,53 +291,125 @@ const MinimalApplicationForm = () => {
     });
   };
 
-  const handleFirstImage = async (e) => {
-    try {
-      const form = new FormData();
-      form.append("file", e[0]);
-      form.append("upload_preset", "ml_default");
-      const imageUrl = await axios.post(
-        `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
-        form
-      );
-      setOwnerIamge(imageUrl.data.secure_url);
-      // setFormData(formData.pictures.business === imageUrl.data.secure_url)
-      console.log(imageUrl);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+const handleFirstImage = async (fileList) => {
+  setUploadTarget("customer");
 
-  const handleSecondImage = async (e) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", e[0]);
-      formData.append("upload_preset", "ml_default");
-      const imageUrl = await axios.post(
-        `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
-        formData
-      );
-      console.log(imageUrl);
-      setLoanerIamge(imageUrl.data.secure_url);
-    } catch (err) {
-      console.log(err);
+  let files = Array.from(fileList);
+
+  files = await Promise.all(files.map(async (file, index) => {
+    // Fix blob to file if needed
+    if (!file.name || !file.lastModified) {
+      file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+        type: file.type || 'image/jpeg',
+        lastModified: Date.now(),
+      });
     }
-  };
-  const handleThirdImage = async (e) => {
+
+    // Compress the image
+    const options = {
+      maxSizeMB: 0.5, // target size
+      maxWidthOrHeight: 800, // scale down resolution
+      useWebWorker: true,
+    };
+
     try {
-      const formData = new FormData();
-      formData.append("file", e[0]);
-      formData.append("upload_preset", "ml_default");
-      const imageUrl = await axios.post(
-        `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
-        formData
-      );
-      console.log(imageUrl);
-      setSignImage(imageUrl.data.secure_url);
+      const compressedFile = await imageCompression(file, options);
+      return compressedFile;
     } catch (err) {
-      console.log(err);
+      console.error("Image compression failed", err);
+      return file; // fallback to original if compression fails
     }
-  };
+  }));
+
+  files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+
+  if (files.length === 0) {
+    alert("Captured file is invalid or empty. Please try again.");
+    return;
+  }
+
+  dispatch(uploadImages({ files, folderName: 'products' }));
+};
+
+ const handleSecondImage = async (fileList) => {
+   setUploadTarget("business");
+ 
+   let files = Array.from(fileList);
+ 
+   files = await Promise.all(files.map(async (file, index) => {
+     // Fix blob to file if needed
+     if (!file.name || !file.lastModified) {
+       file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+         type: file.type || 'image/jpeg',
+         lastModified: Date.now(),
+       });
+     }
+ 
+     // Compress the image
+     const options = {
+       maxSizeMB: 0.5, // target size
+       maxWidthOrHeight: 800, // scale down resolution
+       useWebWorker: true,
+     };
+ 
+     try {
+       const compressedFile = await imageCompression(file, options);
+       return compressedFile;
+     } catch (err) {
+       console.error("Image compression failed", err);
+       return file; // fallback to original if compression fails
+     }
+   }));
+ 
+   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+ 
+   if (files.length === 0) {
+     alert("Captured file is invalid or empty. Please try again.");
+     return;
+   }
+ 
+   dispatch(uploadImages({ files, folderName: 'products' }));
+ };
+ 
+ const handleThirdImage = async (fileList) => {
+   setUploadTarget("signature");
+ 
+   let files = Array.from(fileList);
+ 
+   files = await Promise.all(files.map(async (file, index) => {
+     // Fix blob to file if needed
+     if (!file.name || !file.lastModified) {
+       file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+         type: file.type || 'image/jpeg',
+         lastModified: Date.now(),
+       });
+     }
+ 
+     // Compress the image
+     const options = {
+       maxSizeMB: 0.5, // target size
+       maxWidthOrHeight: 800, // scale down resolution
+       useWebWorker: true,
+     };
+ 
+     try {
+       const compressedFile = await imageCompression(file, options);
+       return compressedFile;
+     } catch (err) {
+       console.error("Image compression failed", err);
+       return file; // fallback to original if compression fails
+     }
+   }));
+ 
+   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+ 
+   if (files.length === 0) {
+     alert("Captured file is invalid or empty. Please try again.");
+     return;
+   }
+ 
+   dispatch(uploadImages({ files, folderName: 'products' }));
+ };
 
   const handleGuarantorChange = () => {
     setGuarantorChange(!guarantorChange);
@@ -346,49 +423,77 @@ const MinimalApplicationForm = () => {
     setBusinessInfo(!businessInfo);
   };
 
-  const handleFileChange = async (e) => {
-    const imageUrls = [];
-    try {
-      for (const img of e) {
-        const form = new FormData();
-        form.append("file", img);
-        form.append("upload_preset", "ml_default");
-        const imageUrl = await axios.post(
-          `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
-          form
-        );
-        console.log(imageUrl);
-        imageUrls.push(imageUrl.data.secure_url);
-        setOtherIamges(imageUrls);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+ const handleFileChange = async (fileList) => {
+   setUploadTarget("others");
+ 
+   let files = Array.from(fileList);
+ 
+   files = await Promise.all(files.map(async (file, index) => {
+     // Fix blob to file if needed
+     if (!file.name || !file.lastModified) {
+       file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+         type: file.type || 'image/jpeg',
+         lastModified: Date.now(),
+       });
+     }
+ 
+     // Compress the image
+     const options = {
+       maxSizeMB: 0.5, // target size
+       maxWidthOrHeight: 800, // scale down resolution
+       useWebWorker: true,
+     };
+ 
+     try {
+       const compressedFile = await imageCompression(file, options);
+       return compressedFile;
+     } catch (err) {
+       console.error("Image compression failed", err);
+       return file; // fallback to original if compression fails
+     }
+   }));
+ 
+   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+ 
+   if (files.length === 0) {
+     alert("Captured file is invalid or empty. Please try again.");
+     return;
+   }
+ 
+   dispatch(uploadImages({ files, folderName: 'products' }));
+ };
+useEffect(() => {
+  if (!loading && urls.length > 0 && uploadTarget) {
+    setFormData((prev) => ({
+      ...prev,
+      pictures: {
+        ...prev.pictures,
+        [uploadTarget]:
+          uploadTarget === "others"
+            ? [...prev.pictures.others, ...urls]
+            : urls[0],
+      },
+    }));
+    setUploadTarget(null);
+  }
+}, [urls, loading, uploadTarget]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isValid) {
-      try {
-        formData.pictures = {
-          customer: ownerImage,
-          business: loanerImage,
-          others: otherImages,
-          signature: signImage,
-        };
-        setLoading(true);
-        const res = await dispatch(submitLoanApplication(formData));
-        setLoading(false);
-        dispatch(setDropdownVisible());
-        dispatch(setDropSuccessVisible());
-        console.log(res);
-      } catch (error) {
-        console.log(error);
-        setLoading(false);
-      }
+if (isValid) {
+    try {
+      
+      const res = await dispatch(submitLoanApplication(formData));
+      dispatch(setDropdownVisible());
+      dispatch(setDropSuccessVisible());
+      console.log(res);
+    } catch (error) {
+      console.log(error);
     }
+  }
   };
-
+  
   const handleClose = () => {
     dispatch(clearMessages()); 
     navigate(`/cso/customer-details/${loan?._id}`);

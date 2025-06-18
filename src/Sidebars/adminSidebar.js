@@ -51,26 +51,44 @@ const sidebarConfig = [
     link: "/admin/transactions",
     title: "Transaction",
   },
-  {
+   {
     id: 8,
+    icon: "healthicons:emergency-operations-center-outline",
+    link: "/admin/operations",
+    title: "Operations",
+  },
+  {
+    id: 9,
+    icon: "clarity:on-holiday-line",
+    link: "/admin/holidays",
+    title: "Holidays",
+  },
+   {
+    id: 10,
+    icon: "iconoir:reports-solid",
+    link: "/admin/reports",
+    title: "Reports",
+  },
+  {
+    id: 11,
     icon: "mdi:comment-account-outline",
     link: "/admin/admin-members",
     title: "Admin Panel",
   },
   {
-    id: 9,
+    id: 12,
     icon: "ri:home-office-line",
     link: "/admin/branches",
     title: "Branch",
   },
   {
-    id: 10,
+    id: 13,
     icon: "lets-icons:setting-line",
     link: "/admin/settings",
     title: "Setting",
   },
   {
-    id: 11,
+    id: 14,
     icon: "lets-icons:setting-line",
     link: "/admin/test",
     title: "Test",

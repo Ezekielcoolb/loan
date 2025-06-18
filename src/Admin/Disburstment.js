@@ -11,6 +11,7 @@ import {
 } from "../redux/slices/LoanSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { MoonLoader, PulseLoader } from "react-spinners";
+import { fetchAllTheCsos } from "../redux/slices/csoSlice";
 
 const NewLoanRap = styled.div`
   width: 100%;
@@ -136,26 +137,58 @@ const NewLoanRap = styled.div`
     height: 30px;
     padding: 0px 15px;
   }
+  .fiter-cso-div select {
+    border: 1px solid #d0d5dd;
+    border-radius: 10px;
+    height: 30px;
+    padding: 0px 15px;
+  }
+   .fiter-cso-div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+   }
 `;
 
 const Disbursment = () => {
   const dispatch = useDispatch();
     const [activeLink, setActiveLink] = useState("new");
-       const [showCalendar, setShowCalendar] = useState(false);
+    const [disbursingLoanId, setDisbursingLoanId] = useState(null);
 
+       const [showCalendar, setShowCalendar] = useState(false);
+const [filterCSO, setFilterCSO] = useState('');
     const handleLinkClick = (link) => {
     setActiveLink(link);
   };
   const { dibursedSuccessMessage, loans, selectedDisburseDate, dailyDisburseLoans, disburseloading, loading } =
     useSelector((state) => state.loan);
+
+     const { list: csos } = useSelector((state) => state.cso);
+    console.log(csos)
+
   const [isLoading, setIsLoading] = useState(false);
-  console.log(dibursedSuccessMessage);
+  console.log(dailyDisburseLoans);
+
+
+const filteredData = filterCSO
+  ? dailyDisburseLoans.filter(item => item.csoName === filterCSO)
+  : dailyDisburseLoans;
+
+
+  console.log(filterCSO);
+  
+  console.log(filteredData);
+  
 
   useEffect(() => {
     dispatch(fetchWaitingDisbursementLoans());
   }, [dispatch]);
+  useEffect(() => {
+    dispatch(fetchAllTheCsos());
+  }, [dispatch]);
 
   const handleDisburse = (id) => {
+     setDisbursingLoanId(id);
     dispatch(disburseLoan(id));
     setIsLoading(true);
     // window.location.reload();
@@ -205,7 +238,7 @@ const Disbursment = () => {
                   }`}
                   onClick={() => handleLinkClick("new")}
                 >
-                  New Loans
+                  New Disbursement
                 </Link>
                 <Link
                   className={`client-link ${
@@ -254,11 +287,11 @@ const Disbursment = () => {
                           className="approve"
                           onClick={() => handleDisburse(loan._id)}
                         >
-                          {disburseloading ? (
-                            <PulseLoader color="white" size={10} />
-                          ) : (
-                            "Disburse"
-                          )}
+                          {disbursingLoanId === loan._id ? (
+    <PulseLoader color="white" size={10} />
+  ) : (
+    "Disburse"
+  )}
                         </button>
                       </td>
                     </tr>
@@ -274,6 +307,19 @@ const Disbursment = () => {
   <div className="p-4">
  <div className="find-lawyer-header">
           <h2>Disbursed Loans</h2>
+          <div className="fiter-cso-div">
+             <select
+            value={filterCSO}
+            onChange={(e) => setFilterCSO(e.target.value)}
+            className="border p-2 w-full"
+          >
+            <option value="">-- Filter by a CSO --</option>
+            {csos.map((cso) => (
+  <option key={cso._id} value={`${cso.firstName} ${cso.lastName}`}>
+    {cso.firstName} {cso.lastName}
+  </option>
+))}
+          </select>
            <div className="disbursed-cal">
       <button
         onClick={() => setShowCalendar((prev) => !prev)}
@@ -291,6 +337,8 @@ const Disbursment = () => {
       )}
       <span className="ml-2 text-gray-600">{formatDate(selectedDisburseDate)}</span>
     </div>
+   
+    </div>
         </div>
    
 
@@ -302,6 +350,7 @@ const Disbursment = () => {
         <tr>
           <th className="border px-2 py-1">Customer Name</th>
           <th className="border px-2 py-1">Amount Approved</th>
+          <th className="border px-2 py-1">Cso Name</th>
           <th className="border px-2 py-1">Account Name</th>
           <th className="border px-2 py-1">Bank</th>
           <th className="border px-2 py-1">Account No</th>
@@ -309,7 +358,7 @@ const Disbursment = () => {
         </tr>
       </thead>
       <tbody>
-        {dailyDisburseLoans?.map((loan, idx) => (
+        {filteredData?.map((loan, idx) => (
           <tr key={idx} className="text-center">
             <td className="border px-2 py-1">
               {loan.customerDetails.firstName} {loan.customerDetails.lastName}
@@ -317,6 +366,7 @@ const Disbursment = () => {
             <td className="border px-2 py-1">
               ₦{loan.loanDetails.amountApproved.toLocaleString()}
             </td>
+            <td className="border px-2 py-1">{loan.csoName}</td>
             <td className="border px-2 py-1">{loan.bankDetails.accountName}</td>
             <td className="border px-2 py-1">{loan.bankDetails.bankName}</td>
             <td className="border px-2 py-1">{loan.bankDetails.accountNo}</td>

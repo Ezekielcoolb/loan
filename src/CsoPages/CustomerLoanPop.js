@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { submitLoanApplication } from "../redux/slices/LoanSlice";
 import axios from "axios";
@@ -6,6 +6,8 @@ import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { setDropdownVisible, setDropSuccessVisible } from "../redux/slices/appSlice";
 import { PulseLoader } from "react-spinners";
+import imageCompression from 'browser-image-compression';
+import { uploadImages } from "../redux/slices/uploadSlice";
 
 const LoanApplicationRap = styled.div`
 margin-bottom: 100px;
@@ -80,8 +82,11 @@ const LoanApplicationForm = () => {
   const [loanerImage, setLoanerIamge] = useState("");
   const [otherImages, setOtherIamges] = useState("");
   const [signImage, setSignImage] = useState("");
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setLoading] = useState(false)
   const user = JSON.parse(localStorage.getItem("csoUser"));
+  const [uploadTarget, setUploadTarget] = useState(null);
+    const { urls, loading } = useSelector((state) => state.upload);
+  
   const [formData, setFormData] = useState({
     csoId: user.workId,
     branch: user.branch,
@@ -142,7 +147,10 @@ const LoanApplicationForm = () => {
       signature: "",
     },
   });
- const { submitloading, status, error } = useSelector(
+
+  console.log(formData);
+  
+ const { submitLoanloading, status, error } = useSelector(
     (state) => state.loan
   );
   const isValid = formData.customerDetails.firstName !== "" &&
@@ -175,13 +183,13 @@ const LoanApplicationForm = () => {
                   formData.groupDetails.groupName !== "" &&
                   formData.groupDetails.leaderName !== "" &&
                   formData.groupDetails.mobileNo !== "" &&
-                  ownerImage !== "" &&
-                  loanerImage !== "" &&
-                 signImage !== "" &&
-                  otherImages!== "" 
+                  formData.pictures.business !== "" &&
+                  formData.pictures.customer !== "" &&
+                 formData.pictures.signature !== "" ;
 
 
 
+console.log(isValid);
 
   const { dropdowVisible} = useSelector((state) => state.app);
   
@@ -207,94 +215,307 @@ const LoanApplicationForm = () => {
     });
   };
 
-  const handleFirstImage = async (e) => {
-    try {
-      const form = new FormData();
-      form.append("file", e[0]);
-      form.append("upload_preset", "ml_default");
-      const imageUrl = await axios.post(
-        `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
-        form
-      );
-      setOwnerIamge(imageUrl.data.secure_url);
-      // setFormData(formData.pictures.business === imageUrl.data.secure_url)
-      console.log(imageUrl);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const handleSecondImage = async (e) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", e[0]);
-      formData.append("upload_preset", "ml_default");
-      const imageUrl = await axios.post(
-        `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
-        formData
-      );
-      console.log(imageUrl);
-      setLoanerIamge(imageUrl.data.secure_url);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-  const handleThirdImage = async (e) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", e[0]);
-      formData.append("upload_preset", "ml_default");
-      const imageUrl = await axios.post(
-        `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
-        formData
-      );
-      console.log(imageUrl);
-      setSignImage(imageUrl.data.secure_url);
-    } catch (err) {
-      console.log(err);
-    }
-  };
 
 
-  const handleFileChange = async (e) => {
-    const imageUrls = [];
-    try {
-      for (const img of e) {
-        const form = new FormData();
-        form.append("file", img);
-        form.append("upload_preset", "ml_default");
-        const imageUrl = await axios.post(
-          `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
-          form
-        );
-        console.log(imageUrl);
-        imageUrls.push(imageUrl.data.secure_url);
-        setOtherIamges(imageUrls);
-      }
-    } catch (error) {
-      console.log(error);
+  
+//  const handleFirstImage = (files) => {
+//   if (!files.length) return;
+//   setUploadTarget("customer");
+//   dispatch(uploadImages({ files, folderName: "products" }));
+// };
+
+// const handleFirstImage = (fileList) => {
+//     setUploadTarget("customer");
+
+//   let files = Array.from(fileList);
+
+//   // Check if it's missing File metadata (e.g., no name)
+//   files = files.map((file, index) => {
+//     if (!file.name || !file.lastModified) {
+//       // Create a "File" from the Blob
+//       return new File([file], `photo_${Date.now()}_${index}.jpg`, {
+//         type: file.type || 'image/jpeg',
+//         lastModified: Date.now(),
+//       });
+//     }
+//     return file;
+//   });
+
+//   // Filter valid images (non-zero size and type)
+//   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+
+//   if (files.length === 0) {
+//     alert("Captured file is invalid or empty. Please try again.");
+//     return;
+//   }
+
+//   dispatch(uploadImages({ files, folderName: 'products' }));
+// };
+const handleFirstImage = async (fileList) => {
+  setUploadTarget("customer");
+
+  let files = Array.from(fileList);
+
+  files = await Promise.all(files.map(async (file, index) => {
+    // Fix blob to file if needed
+    if (!file.name || !file.lastModified) {
+      file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+        type: file.type || 'image/jpeg',
+        lastModified: Date.now(),
+      });
     }
-  };
+
+    // Compress the image
+    const options = {
+      maxSizeMB: 0.5, // target size
+      maxWidthOrHeight: 800, // scale down resolution
+      useWebWorker: true,
+    };
+
+    try {
+      const compressedFile = await imageCompression(file, options);
+      return compressedFile;
+    } catch (err) {
+      console.error("Image compression failed", err);
+      return file; // fallback to original if compression fails
+    }
+  }));
+
+  files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+
+  if (files.length === 0) {
+    alert("Captured file is invalid or empty. Please try again.");
+    return;
+  }
+
+  dispatch(uploadImages({ files, folderName: 'products' }));
+};
+
+// const handleSecondImage = (files) => {
+//   if (!files.length) return;
+//   setUploadTarget("business");
+//   dispatch(uploadImages({ files, folderName: "products" }));
+// };
+
+
+// const handleSecondImage = (fileList) => {
+//     setUploadTarget("business");
+
+//   let files = Array.from(fileList);
+
+//   // Check if it's missing File metadata (e.g., no name)
+//   files = files.map((file, index) => {
+//     if (!file.name || !file.lastModified) {
+//       // Create a "File" from the Blob
+//       return new File([file], `photo_${Date.now()}_${index}.jpg`, {
+//         type: file.type || 'image/jpeg',
+//         lastModified: Date.now(),
+//       });
+//     }
+//     return file;
+//   });
+
+//   // Filter valid images (non-zero size and type)
+//   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+
+//   if (files.length === 0) {
+//     alert("Captured file is invalid or empty. Please try again.");
+//     return;
+//   }
+
+//   dispatch(uploadImages({ files, folderName: 'products' }));
+// };
+
+const handleSecondImage = async (fileList) => {
+  setUploadTarget("business");
+
+  let files = Array.from(fileList);
+
+  files = await Promise.all(files.map(async (file, index) => {
+    // Fix blob to file if needed
+    if (!file.name || !file.lastModified) {
+      file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+        type: file.type || 'image/jpeg',
+        lastModified: Date.now(),
+      });
+    }
+
+    // Compress the image
+    const options = {
+      maxSizeMB: 0.5, // target size
+      maxWidthOrHeight: 800, // scale down resolution
+      useWebWorker: true,
+    };
+
+    try {
+      const compressedFile = await imageCompression(file, options);
+      return compressedFile;
+    } catch (err) {
+      console.error("Image compression failed", err);
+      return file; // fallback to original if compression fails
+    }
+  }));
+
+  files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+
+  if (files.length === 0) {
+    alert("Captured file is invalid or empty. Please try again.");
+    return;
+  }
+
+  dispatch(uploadImages({ files, folderName: 'products' }));
+};
+
+const handleThirdImage = async (fileList) => {
+  setUploadTarget("signature");
+
+  let files = Array.from(fileList);
+
+  files = await Promise.all(files.map(async (file, index) => {
+    // Fix blob to file if needed
+    if (!file.name || !file.lastModified) {
+      file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+        type: file.type || 'image/jpeg',
+        lastModified: Date.now(),
+      });
+    }
+
+    // Compress the image
+    const options = {
+      maxSizeMB: 0.5, // target size
+      maxWidthOrHeight: 800, // scale down resolution
+      useWebWorker: true,
+    };
+
+    try {
+      const compressedFile = await imageCompression(file, options);
+      return compressedFile;
+    } catch (err) {
+      console.error("Image compression failed", err);
+      return file; // fallback to original if compression fails
+    }
+  }));
+
+  files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+
+  if (files.length === 0) {
+    alert("Captured file is invalid or empty. Please try again.");
+    return;
+  }
+
+  dispatch(uploadImages({ files, folderName: 'products' }));
+};
+
+// const handleThirdImage = (files) => {
+//   if (!files.length) return;
+//   setUploadTarget("signature");
+//   dispatch(uploadImages({ files, folderName: "products" }));
+// };
+
+// const handleFileChange = (files) => {
+//   if (!files.length) return;
+//   setUploadTarget("others");
+//   dispatch(uploadImages({ files, folderName: "products" }));
+// };
+
+
+
+// const handleFileChange = (fileList) => {
+//     setUploadTarget("others");
+
+//   let files = Array.from(fileList);
+
+//   // Check if it's missing File metadata (e.g., no name)
+//   files = files.map((file, index) => {
+//     if (!file.name || !file.lastModified) {
+//       // Create a "File" from the Blob
+//       return new File([file], `photo_${Date.now()}_${index}.jpg`, {
+//         type: file.type || 'image/jpeg',
+//         lastModified: Date.now(),
+//       });
+//     }
+//     return file;
+//   });
+
+//   // Filter valid images (non-zero size and type)
+//   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+
+//   if (files.length === 0) {
+//     alert("Captured file is invalid or empty. Please try again.");
+//     return;
+//   }
+
+//   dispatch(uploadImages({ files, folderName: 'products' }));
+// };
+const handleFileChange = async (fileList) => {
+  setUploadTarget("others");
+
+  let files = Array.from(fileList);
+
+  files = await Promise.all(files.map(async (file, index) => {
+    // Fix blob to file if needed
+    if (!file.name || !file.lastModified) {
+      file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+        type: file.type || 'image/jpeg',
+        lastModified: Date.now(),
+      });
+    }
+
+    // Compress the image
+    const options = {
+      maxSizeMB: 0.5, // target size
+      maxWidthOrHeight: 800, // scale down resolution
+      useWebWorker: true,
+    };
+
+    try {
+      const compressedFile = await imageCompression(file, options);
+      return compressedFile;
+    } catch (err) {
+      console.error("Image compression failed", err);
+      return file; // fallback to original if compression fails
+    }
+  }));
+
+  files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+
+  if (files.length === 0) {
+    alert("Captured file is invalid or empty. Please try again.");
+    return;
+  }
+
+  dispatch(uploadImages({ files, folderName: 'products' }));
+};
+
+useEffect(() => {
+  if (!loading && urls.length > 0 && uploadTarget) {
+    setFormData((prev) => ({
+      ...prev,
+      pictures: {
+        ...prev.pictures,
+        [uploadTarget]:
+          uploadTarget === "others"
+            ? [...prev.pictures.others, ...urls]
+            : urls[0],
+      },
+    }));
+    setUploadTarget(null);
+  }
+}, [urls, loading, uploadTarget]);
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 if (isValid) {
     try {
-      formData.pictures = {
-        customer: ownerImage,
-        business: loanerImage,
-        others: otherImages,
-        signature: signImage,
-      };
-      setLoading(true)
+      
       const res = await dispatch(submitLoanApplication(formData));
-      setLoading(false)
       dispatch(setDropdownVisible());
       dispatch(setDropSuccessVisible());
       console.log(res);
     } catch (error) {
       console.log(error);
-      setLoading(false)
     }
   }
   };
@@ -640,50 +861,50 @@ if (isValid) {
               />
             </div>
             <div className="detailssss">
-              {/* Pictures */}
-              <h3>Upload Pictures</h3>
-              <label className="upload-label">Upload customer picture</label>
-              <input
-                type="file"
-                capture="user"
-                onChange={(e) => handleFirstImage(e.target.files)}
-                required
-              />
-              <label className="upload-label">Upload business picture</label>
-              <input
-                type="file"
-                capture="user"
-                onChange={(e) => handleSecondImage(e.target.files)}
-                required
-              />
-             <label className="upload-label"> Upload another business picture</label>
-              <input
-                type="file"
-                multiple
-                onChange={(e) => handleFileChange(Array.from(e.target.files))}
-              />
-            </div>
-            <div className="detailssss">
-              {/* Pictures */}
-              <h3>Signature</h3>
+  <h3>Upload Pictures</h3>
 
-              <label className="upload-label">Upload customer's signature</label>
-              <input
-                type="file"
-                capture="user"
-                onChange={(e) => handleThirdImage(e.target.files)}
-                required
-              />
-              </div>
+  <label className="upload-label">Upload customer picture</label>
+  <input
+    type="file"
+    capture="user"
+    onChange={(e) => handleFirstImage(e.target.files)}
+    required
+  />
+  <label className="upload-label">Upload business picture</label>
+  <input
+    type="file"
+    capture="user"
+    onChange={(e) => handleSecondImage(e.target.files)}
+    required
+  />
+  <label className="upload-label">Upload another business picture</label>
+  <input
+    type="file"
+    multiple
+    onChange={(e) => handleFileChange(Array.from(e.target.files))}
+  />
+</div>
+<div className="detailssss">
+  <h3>Signature</h3>
+
+  <label className="upload-label">Upload customer's signature</label>
+  <input
+    type="file"
+    capture="user"
+    onChange={(e) => handleThirdImage(e.target.files)}
+    required
+  />
+</div>
+
             <button type="submit"
             onClick={handleSubmit}
-            disabled={!isValid || submitloading}
+            disabled={!isValid || submitLoanloading}
             style={{
               backgroundColor: isValid ? "#0c1d55" : "#727789",
-              cursor: submitloading || !isValid ? "not-allowed" : "pointer",
+              cursor: submitLoanloading || !isValid ? "not-allowed" : "pointer",
             }}
             >
-              {submitloading ? 
+              {submitLoanloading ? 
                 <PulseLoader color="white" size={10} />
                   : "Confirm Application"
             }

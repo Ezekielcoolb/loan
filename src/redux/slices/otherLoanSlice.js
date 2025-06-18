@@ -63,6 +63,33 @@ export const fetchOutstandingProgressChart = createAsyncThunk(
   }
 );
 
+
+export const fetchLoanBalancePaymentDisbursedSummary = createAsyncThunk(
+  'loanSummary/fetchLoanBalancePaymentDisbursedSummary',
+  async () => {
+    try {
+    const response = await axios.get(`${API_URL}/payment-disbursed-loanbalance-summary`);
+     console.log(response.data);
+    return response.data;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+);
+
+export const fetchDebugLoanBalance = createAsyncThunk(
+  'loanSummary/fetchDebugLoanBalance',
+  async () => {
+    try {
+    const response = await axios.get(`${API_URL}/payment-disbursed-loanbalance-summary`);
+     console.log(response.data);
+    return response.data;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+);
+
 const OtherLoanslice = createSlice({
   name: 'dailyPayments',
   initialState: {
@@ -70,6 +97,8 @@ const OtherLoanslice = createSlice({
     totalOutstandingChart: 0,
     defaultingTargetChart: 0,
     percentageChart: 0,
+    dashPayLoan: null,
+    debugdashPayLoan: null,
     outstandingLoans: [],
     totalOutstandingLoans: 0,
     status: 'idle',
@@ -131,6 +160,34 @@ const OtherLoanslice = createSlice({
       })
       .addCase(fetchOutstandingProgressChart.rejected, (state, action) => {
         state.status = 'failed';
+        state.error = action.error.message;
+      });
+
+builder
+      .addCase(fetchLoanBalancePaymentDisbursedSummary.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchLoanBalancePaymentDisbursedSummary.fulfilled, (state, action) => {
+        state.loading = false;
+        state.dashPayLoan = action.payload;
+      })
+      .addCase(fetchLoanBalancePaymentDisbursedSummary.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+
+      builder
+      .addCase(fetchDebugLoanBalance.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchDebugLoanBalance.fulfilled, (state, action) => {
+        state.loading = false;
+        state.debugdashPayLoan = action.payload;
+      })
+      .addCase(fetchDebugLoanBalance.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.error.message;
       });
 

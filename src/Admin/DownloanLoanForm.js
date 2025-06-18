@@ -485,11 +485,30 @@ console.log(loan);
                 <div className="picture-divs-sub">
                 <div className="form-body-info-sub-img">
                   <h5>Customer picture:</h5>
-                   <img src={loan?.pictures?.customer} />
-                </div>
+     <img
+                    src={
+                      loan?.pictures?.customer?.startsWith("http")
+                        ? loan?.pictures?.customer // Cloudinary URL
+                        : loan?.pictures?.customer
+                        ? `https://api.jksolutn.com${loan?.pictures?.customer}` // Local image
+                        : "fallback.jpg" // Optional fallback image
+                    }
+                    alt="customer"
+                    style={{ objectFit: "contain" }}
+                  />                </div>
                 <div className="form-body-info-sub-img">
                   <h5>Business picture:</h5>
-                  <img src={loan?.pictures?.customer}/>
+                      <img
+                    src={
+                      loan?.pictures?.business?.startsWith("http")
+                        ? loan?.pictures?.business // Cloudinary URL
+                        : loan?.pictures?.business
+                        ? `https://api.jksolutn.com${loan?.pictures?.business}` // Local image
+                        : "fallback.jpg" // Optional fallback image
+                    }
+                    alt="customer"
+                    style={{ objectFit: "contain" }}
+                  />
                 </div>
                 </div>
                 <div className="picture-divs-sub">
@@ -497,7 +516,17 @@ console.log(loan);
                   <h5>Other pictures:</h5>
                   <div className="other-pictures-div">
                   {loan?.pictures?.others.map((image, index) => (
-                    <img key={index} src={image} alt="" />
+                         <img
+                    src={
+                     image?.startsWith("http")
+                        ?image // Cloudinary URL
+                        :image
+                        ? `https://api.jksolutn.com${image}` // Local image
+                        : "fallback.jpg" // Optional fallback image
+                    }
+                    alt="customer"
+                    style={{ objectFit: "contain" }}
+                  />
                   ))}
                   </div>
                 </div>
@@ -511,23 +540,23 @@ console.log(loan);
               <div>
                 <ol>
                   <li>
-                    By submitting this biodata form, I hereby declare that the
-                    information provided is true, accurate, and complete to the
-                    best of my knowledge.
+                    By submitting this form, I hereby declare that all information provided is true, accurate, and complete to the best of my knowledge and belief. I expressly authorize JK Solutn Loan and Savings Limited to verify any and all information contained herein and to conduct background or reference checks as may be deemed necessary in furtherance of this application. I further acknowledge and agree to be bound by the company's operational policies, procedures, and terms of service, 
+                    as may be revised from time to time.
                   </li>
                   <li>
-                    I understand that any false or misleading information may
-                    lead to rejection of my application and may also be
-                    punishable under applicable laws. This includes, but is not
-                    limited to, criminal prosecution and/or damages.
+                    I understand and accept that in the event of a loan default, both I and the guarantor named in this application shall bear joint and several responsibility for the repayment of any and all outstanding amounts. Where I become unreachable, abscond, or fail to comply with repayment obligations, the guarantor shall be required to either produce me 
+                    (the borrower) or discharge the full indebtedness without delay.
                   </li>
                   <li>
-                    I have read, understood, and agreed to the Terms and
-                    Conditions of JK SOLUTNS including the company's policies
-                    and procedures. Additionally, I authorize JK SOLUTNS to
-                    verify the information provided and conduct reference checks
-                    as required.
+                    In circumstances where I fail, refuse, or neglect to repay the loan as agreed, JK Solutn Loan and Savings Limited reserves the full right to take possession of any goods, mobile phones, electronic devices, or other items of commercial value found at my residence, business premises, or any known location associated with me, for the purpose of debt recovery. Such items 
+                    shall be held as collateral and shall only be released upon full repayment of the outstanding debt.
                   </li>
+                  <li>Should the debt remain unpaid for a period of seven (7) days following confiscation, the
+                     company shall be entitled, without further notice, to sell the seized items at fair market value. Proceeds 
+                     from such sale shall be applied to offset the outstanding loan, and no refund, return, or compensation shall 
+                     thereafter be owed to me or my guarantor.</li>
+                     <li>Furthermore, I acknowledge and accept that the company reserves the right to pursue recovery of its funds through any lawful and appropriate enforcement 
+                      method or means as it may deem fit, without limitation or obligation to notify me in advance.</li>
                 </ol>
               </div>
               <div className="signature">
@@ -681,7 +710,17 @@ console.log(loan);
                 <h4>Uploaded Guarantor Form Picture</h4>
 
                 <div className="guarantor-pic">
-                  <img src={loan?.guarantorFormPic} alt="" />
+                     <img
+                    src={
+                      loan?.guarantorFormPic?.startsWith("http")
+                        ? loan?.guarantorFormPic // Cloudinary URL
+                        : loan?.guarantorFormPic
+                        ? `https://api.jksolutn.com${loan?.guarantorFormPic}` // Local image
+                        : "fallback.jpg" // Optional fallback image
+                    }
+                    alt="business"
+                    style={{ objectFit: "contain" }}
+                  />
                 </div>
               </div>
               <button

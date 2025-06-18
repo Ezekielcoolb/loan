@@ -1,5 +1,5 @@
 // src/components/LoanDashboard.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
@@ -13,6 +13,12 @@ import {
 import { Icon } from "@iconify/react/dist/iconify.js";
 import styled from "styled-components";
 import { fetchOutstandingLoans } from "../redux/slices/otherLoanSlice";
+import CsoCollectionReportCollection from "./CsoCollectionReport";
+
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { useNavigate } from "react-router-dom";
+
 
 const LoanCsoRap = styled.div`
   height: 100vh;
@@ -230,6 +236,7 @@ const LoanCsoRap = styled.div`
 `;
 
 const LoanCsoDashboard = () => {
+  const navigate = useNavigate()
   const dispatch = useDispatch();
   const user = JSON.parse(localStorage.getItem("csoUser"));
   const {
@@ -260,7 +267,8 @@ const LoanCsoDashboard = () => {
   // console.log(totalLoans);
   
   // console.log(csoDashboardTotalLoans);
-  
+    const reportRef = useRef();
+
 
   const [showDefaultingCustomers, setShowDefaultingCustomers] = useState(false);
   const [showYesDefaultingCustomers, setShowYesDefaultingCustomers] =
@@ -331,6 +339,9 @@ console.log(outstandingLoans);
     if (csoId) dispatch(fetchOutstandingLoans(csoId));
   }, [csoId, dispatch]);
 
+  const handleDownload = async () => {
+    navigate("/cso/csos-collection-report")
+  }
   // useEffect(() => {
    
   //     dispatch(calculateLoanStatsCsoLoanDashboard())
@@ -434,9 +445,18 @@ console.log(outstandingLoans);
           <div className="btns">
             <button onClick={handleNoPaymentYesterday}>Late Payment</button>
             <button onClick={handleDefaultLoansShow}>Defaults</button>
-            <button onClick={handleShowDefaultingCustomers}>
+            <div>
+      <button onClick={handleDownload}> Download Report</button>
+
+      {/* Hidden container for the report */}
+      <div style={{ position: "absolute", top: "-9999px", left: "-9999px" }}>
+        <CsoCollectionReportCollection ref={reportRef} />
+      </div>
+    </div>
+
+            {/* <button onClick={handleShowDefaultingCustomers}>
               Past Due Loans
-            </button>
+            </button> */}
           </div>
 
           {showDefaultingCustomers && defaultingCustomers?.length > 0 && (
