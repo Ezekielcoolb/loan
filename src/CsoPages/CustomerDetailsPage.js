@@ -412,7 +412,8 @@ if (AmountDueOne === NaN ) {
  const totalPaidSoFar = repaymentSchedule?.reduce((sum, item) => sum + item.amountPaid, 0);
 console.log("Total amount paid:", totalPaidSoFar);
 
-const AmountDueTwo = expectedPay - totalPaidSoFar
+const AmountDueTwo = expectedPay - loan?.loanDetails?.amountPaidSoFar
+
 
 const repaymentScheduleLengthTillToday = repaymentSchedule?.filter(item => {
   const repaymentDate = new Date(item.date);
@@ -549,12 +550,18 @@ if (repaymentScheduleLengthTillToday > 22) {
             <div className="first-custom-div">
               <div className="customer-details-div">
                 <div>
-                  <img
-                    src={loan?.pictures?.customer}
-                    alt="Customer"
-                    width={79}
-                    height={100}
-                  />
+                                       <img
+  src={
+    loan?.pictures?.customer?.startsWith("http")
+      ? loan?.pictures?.customer // Cloudinary URL
+      : loan?.pictures?.customer
+      ? `https://api.jksolutn.com${loan?.pictures?.customer}` // Local image
+      : "fallback.jpg" // Optional fallback image
+  }
+  alt="customer"
+  style={{ width: "70px", height: "100px", objectFit: "contain" }}
+/>
+                  
                 </div>
                 <div className="customer-details">
                   <h4>

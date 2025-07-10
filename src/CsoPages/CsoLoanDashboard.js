@@ -280,14 +280,24 @@ const LoanCsoDashboard = () => {
   const [rejected, setRejected] = useState(false);
   const [fully, setFully] = useState(false);
   const [defaultLoans, setDefaultLoans] = useState(false);
-
+const [allActive, setAllActive] = useState(false)
   const { outstandingLoans, totalOutstandingLoans, loading } = useSelector(state => state.otherLoan);
 
 
+const allActiveLoans = loans?.filter(loan => loan.status === "active loan");
 
-console.log(outstandingLoans);
+console.log(totalOutstandingLoans);
 
+const totalLoanBalanceForActiveLoans = allActiveLoans?.reduce((total, customer) => {
+  const toBePaid = customer?.loanDetails?.amountToBePaid || 0;
+  const paidSoFar = customer?.loanDetails?.amountPaidSoFar || 0;
+  const balance = toBePaid - paidSoFar;
+  return total + balance;
+}, 0);
 
+const handleOpenActiveLoans = () => {
+  setAllActive(!allActive)
+}
   const handleDefaultLoansShow = () => {
     setDefaultLoans(!defaultLoans);
   }
@@ -411,8 +421,47 @@ console.log(outstandingLoans);
     </div>
   );
 
+
+  // 1️⃣ Get today's date in UTC (no time component)
+const now = new Date();
+const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+
+// 2️⃣ Calculate "effective yesterday" (adjusted for weekends)
+let effectiveDate = new Date(todayUTC);
+effectiveDate.setDate(effectiveDate.getDate() - 1); // Normal yesterday
+
+// If Saturday → move back to Friday
+if (effectiveDate.getDay() === 6) {
+  effectiveDate.setDate(effectiveDate.getDate() - 1);
+}
+
+// If Sunday → move back to Friday
+if (effectiveDate.getDay() === 0) {
+  effectiveDate.setDate(effectiveDate.getDate() - 2);
+}
+
+// 3️⃣ Format effective date as YYYY-MM-DD (to match item.date)
+const effectiveDateString = effectiveDate.toISOString().slice(0, 10);
+console.log(effectiveDateString); // e.g., "2023-10-01"
+
+// 4️⃣ Filter remittance items where date matches
+const filteredRemittance = user?.remittance?.filter(item => {
+  const itemDateString = new Date(item.date).toISOString().slice(0, 10);
+  return itemDateString === effectiveDateString;
+});
+
+const filteredRemittanceIssue = user?.remitanceIssues?.filter(item => {
+  const itemDateString = new Date(item.date).toISOString().slice(0, 10);
+  return itemDateString === effectiveDateString;
+});
+
+console.log("Filtered Remittance:", filteredRemittance);
+console.log(filteredRemittanceIssue);
+
   return (
     <LoanCsoRap>
+
+
       <div className="all-loan">
         <div className="home-first-div">
           <h2>Loans</h2>
@@ -443,7 +492,7 @@ console.log(outstandingLoans);
             </p>
           </div>
           <div className="btns">
-            <button onClick={handleNoPaymentYesterday}>Late Payment</button>
+            <button onClick={handleOpenActiveLoans}>Active Loans</button>
             <button onClick={handleDefaultLoansShow}>Defaults</button>
             <div>
       <button onClick={handleDownload}> Download Report</button>
@@ -724,6 +773,89 @@ console.log(outstandingLoans);
             ) : (
               ""
             )}
+{allActive ? (
+   <div className="dropdown-container">
+                <div className="all-dropdown-div">
+                <div className="default-head">
+                  <h3>Active Loans</h3>
+                  <div className="cancel-btn">
+                    <Icon
+                      onClick={() => setAllActive(false)}
+                      icon="stash:times-circle"
+                      width="24"
+                      height="24"
+                      style={{ color: "#005e78", cursor: "pointer" }}
+                    />
+                  </div>
+                  </div>
+                  <div className="new-table-scroll">
+                    <table className="" border="1" cellPadding="10">
+                      <thead>
+                        <tr>
+                          <th>S/N</th> {/* Serial number column header */}
+                          <th>Customer Name</th>
+                          <th style={{
+                            whiteSpace: "nowrap",
+                            textAlign: "center"
+                          }}>Principal + <br />
+                          Interest</th>
+                          <th style={{
+                            whiteSpace: "nowrap"
+                          }}>Total Paid</th>
+                          <th style={{
+                            whiteSpace: "nowrap"
+                          }}>Loan Balance</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {allActiveLoans && allActiveLoans?.length > 0 ? (
+                          <>
+                            {allActiveLoans?.map((customer, index) => {
+                              
+
+                              return (
+                                <tr key={index}>
+                                  <td>{index + 1}</td>
+                                  <td>
+                                    {customer?.customerDetails?.lastName}  {customer?.customerDetails?.firstName}
+                                  </td>
+                                  <td style={{
+                                    textAlign: "right",
+                                  }}>
+                                    {customer?.loanDetails?.amountToBePaid}
+                                  </td>
+                                  <td style={{
+                                    textAlign: "right",
+                                  }}>
+                                    {customer?.loanDetails?.amountPaidSoFar}
+                                  </td>
+                                  
+                                 <td style={{
+                                    textAlign: "right",
+                                  }}>
+                                    {customer?.loanDetails?.amountToBePaid - customer?.loanDetails?.amountPaidSoFar}
+                                  </td>
+                                 
+                                </tr>
+                              );
+                            })}
+                            <tr className="">
+              <td colSpan="4" className=" text-right">Total Loan Balance</td>
+              <td className="total-here-now">₦{totalLoanBalanceForActiveLoans?.toLocaleString()}</td>
+            </tr>
+                          </>
+                        ) : (
+                          <tr>
+                            <td colSpan="5">No defaults loans</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+): ""}
+
           </div>
         </div>
         <div></div>

@@ -72,19 +72,41 @@ const CustomerDetailRap = styled.div`
     padding-top: 20px;
     margin: 20px;
   }
+  .payment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #d0d5dd;
+  }
+  .payment-content {
+    background-color: #ffffff;
+    border-radius: 10px;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+  .dropdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 `;
 
-const ManagerCustomerDetails = () => {
+const CustomerDetailsInfo = () => {
   const [activeLink, setActiveLink] = useState("transaction");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { details } = useSelector((state) => state.loan);
   const { bvn } = useParams();
+  const [selectedLoanId, setSelectedLoanId] = useState(null);
 
   useEffect(() => {
     dispatch(fetchCustomerDetails(bvn));
   }, [dispatch, bvn]);
-  console.log(details);
+
+  const filteredLoan = details?.find((loan) => loan._id === selectedLoanId);
+  console.log(filteredLoan);
 
   const handleLinkClick = (link) => {
     setActiveLink(link);
@@ -92,7 +114,6 @@ const ManagerCustomerDetails = () => {
 
   console.log(details[0]?.customerDetails?.bvn);
 
- 
   const handleMoveBack = () => {
     navigate(`/manager/customerdetails`);
   };
@@ -100,15 +121,14 @@ const ManagerCustomerDetails = () => {
   return (
     <CustomerDetailRap>
       <div className="client-1">
-       
         <div className="client-link-container">
-        <Icon
-                      onClick={handleMoveBack}
-                      icon="formkit:arrowleft"
-                      width="30"
-                      height="30"
-                      style={{ color: "black", cursor: "pointer" }}
-                    />
+          <Icon
+            onClick={handleMoveBack}
+            icon="formkit:arrowleft"
+            width="30"
+            height="30"
+            style={{ color: "black", cursor: "pointer" }}
+          />
           <Link
             className={`client-link ${
               activeLink === "transaction" ? "active" : ""
@@ -117,23 +137,23 @@ const ManagerCustomerDetails = () => {
           >
             Customer Transactions
           </Link>
-          <Link
-            to={`/manager/customer/calender/${details[0]?.customerDetails?.bvn}`}
+          {/* <Link
+            to={`/admin/customer/calender/${details[0]?.customerDetails?.bvn}`}
             className={`client-link ${
               activeLink === "loanCard" ? "active" : ""
             }`}
             onClick={() => handleLinkClick("loanCard")}
           >
             Customer Loan Card
-          </Link>
-          <Link
+          </Link> */}
+          {/* <Link
             className={`client-link ${
               activeLink === "details" ? "active" : ""
             }`}
             onClick={() => handleLinkClick("details")}
           >
             Customer Details
-          </Link>
+          </Link> */}
         </div>
       </div>
       <div>
@@ -156,10 +176,12 @@ const ManagerCustomerDetails = () => {
                         <th>End Date</th>
                         <th>Loan Status</th>
                         <th>Loan Performance</th>
+                        <th>Payment Breakdown</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {details.map((loan, index) => {
+                      {details?.map((loan, index) => {
                         const loanBalance =
                           loan.loanDetails.amountPaidSoFar === ""
                             ? loan.loanDetails.amountToBePaid
@@ -190,6 +212,26 @@ const ManagerCustomerDetails = () => {
                             <td>{new Date(endDate).toLocaleDateString()}</td>
                             <td>{loan.status}</td>
                             <td>{loanPerformance}</td>
+                            <td>
+                              <button
+                                onClick={() => setSelectedLoanId(loan?._id)}
+                              >
+                                View
+                              </button>
+                            </td>
+                            <td>
+                              {" "}
+                              {loan.status === "fully paid" ||
+                              loan.status === "active loan" ? (
+                                <Link
+                                  to={`/manager/customer/calender/${loan?._id}`}
+                                >
+                                  View Loan Card
+                                </Link>
+                              ) : (
+                                <p>No Loan Card</p>
+                              )}
+                            </td>
                           </tr>
                         );
                       })}
@@ -201,7 +243,7 @@ const ManagerCustomerDetails = () => {
           </div>
         )}
 
-        {activeLink === "details" && (
+        {/* {activeLink === "details" && (
           <div className="details">
             <h2>Customer Details</h2>
             <div className="left-loan-detail">
@@ -314,10 +356,72 @@ const ManagerCustomerDetails = () => {
               </div>
             </div>
           </div>
-        )}
+        )}  */}
       </div>
+
+      {selectedLoanId ? (
+        <div className="dropdown-container">
+          <div className="all-dropdown-div">
+            <div className="payment-content">
+              <div className="payment-header">
+                <h3>Payment Breakdown for {filteredLoan?.customerDetails?.lastName} {filteredLoan?.customerDetails?.firstName} (cso: {filteredLoan?.csoName})</h3>
+                <Icon
+                  icon="mdi:close"
+                  width="30"
+                  height="30"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => setSelectedLoanId(null)}
+                />
+              </div>
+
+              <table className="custom-table" border="1">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Amount</th>
+    </tr>
+  </thead>
+  <tbody>
+    {[
+      ...new Map(
+        (filteredLoan?.loanDetails?.dailyPayment || [])
+          .slice()
+          .reverse()
+          .map((item) => [item._id, item]) // remove duplicates
+      ).values(),
+    ].map((payment, index) => (
+      <tr key={payment._id || index}>
+        <td>{new Date(payment.date).toLocaleDateString()}</td>
+        <td>{payment.amount}</td>
+      </tr>
+    ))}
+  </tbody>
+
+  <tfoot>
+    <tr>
+      <td style={{ fontWeight: 'bold' }}>Total</td>
+      <td style={{ fontWeight: 'bold' }}>
+        {[
+          ...new Map(
+            (filteredLoan?.loanDetails?.dailyPayment || [])
+              .slice()
+              .reverse()
+              .map((item) => [item._id, item])
+          ).values(),
+        ].reduce((total, item) => total + Number(item.amount || 0), 0)}
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
+            </div>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
     </CustomerDetailRap>
   );
 };
 
-export default ManagerCustomerDetails;
+export default CustomerDetailsInfo;

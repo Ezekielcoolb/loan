@@ -8,11 +8,9 @@ import styled from "styled-components";
 import { Link } from "react-router-dom";
 import SecondReportPage from "./SecondOperation";
 
-
 const ReportRap = styled.div`
   width: 100%;
   padding: 20px;
-
 
   .client-1 {
     display: flex;
@@ -55,41 +53,40 @@ const ReportRap = styled.div`
     justify-content: space-between;
     align-items: center;
   }
-   .find-lawyer-header-upper button {
-        color: #030b26;
+  .find-lawyer-header-upper button {
+    color: #030b26;
     border: 1px solid #030b26;
     height: 40px;
     padding: 0 10px;
     border-radius: 5px;
     background-color: transparent;
-
-   }
-   .weeks-days {
+  }
+  .weeks-days {
     display: flex;
     align-items: center;
     gap: 20px;
     margin: 20px 0px;
-   }
-   .week-paragraph {
-color: #030b26;
-font-weight: 600;
-cursor: pointer;
-font-size: 16px;
-   }
-   .week-paragraph.active {
-color: #727789;
-   }
-   .total {
+  }
+  .week-paragraph {
     color: #030b26;
-font-weight: 600;
-font-size: 16px;
-   }
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  .week-paragraph.active {
+    color: #727789;
+  }
+  .total {
+    color: #030b26;
+    font-weight: 600;
+    font-size: 16px;
+  }
 `;
 
 // ...existing code...
 
 const ScrollContainer = styled.div`
-    width: 100%;
+  width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   /* Try removing min-width or set to unset */
@@ -120,21 +117,20 @@ const CustomTable = styled.table`
 `;
 // ...existing code...
 
-
-
-
 const ReportPage = () => {
   const dispatch = useDispatch();
-      const [activeLink, setActiveLink] = useState("new");
-    const [openweek, setOpenweek] = useState("week1")
+  const [activeLink, setActiveLink] = useState("new");
+  const [openweek, setOpenweek] = useState("week1");
+
+
   const { data, status, error, currentMonth, currentYear } = useSelector(
     (state) => state.report
   );
-console.log(data);
+  console.log(data);
 
-const handleWeekOpen = (link) => {
-  setOpenweek(link)
-}
+  const handleWeekOpen = (link) => {
+    setOpenweek(link);
+  };
   useEffect(() => {
     dispatch(
       fetchReportMonthlySummary({ month: currentMonth, year: currentYear })
@@ -193,8 +189,6 @@ const handleWeekOpen = (link) => {
     return Array.from(set);
   }, [filteredEntries]);
 
-
-
   const weeks = React.useMemo(() => {
     const weekdays = dayEntries
       .map(([dateStr, dayData]) => {
@@ -250,416 +244,466 @@ const handleWeekOpen = (link) => {
     return totals;
   }, [filteredEntries, csos]);
 
-
-   const handleLinkClick = (link) => {
+  const handleLinkClick = (link) => {
     setActiveLink(link);
   };
 
-
-
-  const weeklyReports = data?.weeklyReports
+  const weeklyReports = data?.weeklyReports;
   console.log(weeklyReports);
-  const week1 = weeklyReports?.find(week => week.weekName === 'Week 1');
-const week2 = weeklyReports?.find(week => week.weekName === 'Week 2');
-const week3 = weeklyReports?.find(week => week.weekName === 'Week 3');
-const week4 = weeklyReports?.find(week => week.weekName === 'Week 4');
-const week5 = weeklyReports?.find(week => week.weekName === 'Week 5');
+  const week1 = weeklyReports?.find((week) => week.weekName === "Week 1");
+  const week2 = weeklyReports?.find((week) => week.weekName === "Week 2");
+  const week3 = weeklyReports?.find((week) => week.weekName === "Week 3");
+  const week4 = weeklyReports?.find((week) => week.weekName === "Week 4");
+  const week5 = weeklyReports?.find((week) => week.weekName === "Week 5");
 
-const uniqueCsos = Array.from(
-  new Set(
-    week1?.days.flatMap((day) =>
-      day.csoLoans.map((loan) => loan.csoName.trim())
+  const uniqueCsos = Array.from(
+    new Set(
+      week1?.days.flatMap((day) =>
+        day.csoLoans.map((loan) => loan.csoName.trim())
+      )
     )
-  )
-);
-const uniqueCsosTwo = Array.from(
-  new Set(
-    week2?.days.flatMap((day) =>
-      day.csoLoans.map((loan) => loan.csoName.trim())
+  );
+  const uniqueCsosTwo = Array.from(
+    new Set(
+      week2?.days.flatMap((day) =>
+        day.csoLoans.map((loan) => loan.csoName.trim())
+      )
     )
-  )
-);
-const uniqueCsosThree = Array.from(
-  new Set(
-    week3?.days.flatMap((day) =>
-      day.csoLoans.map((loan) => loan.csoName.trim())
+  );
+  const uniqueCsosThree = Array.from(
+    new Set(
+      week3?.days.flatMap((day) =>
+        day.csoLoans.map((loan) => loan.csoName.trim())
+      )
     )
-  )
-);
+  );
 
-const uniqueCsosFour = Array.from(
-  new Set(
-    week4?.days.flatMap((day) =>
-      day.csoLoans.map((loan) => loan.csoName.trim())
+  const uniqueCsosFour = Array.from(
+    new Set(
+      week4?.days.flatMap((day) =>
+        day.csoLoans.map((loan) => loan.csoName.trim())
+      )
     )
-  )
-);
-const uniqueCsosFive = Array.from(
-  new Set(
-    week5?.days.flatMap((day) =>
-      day.csoLoans.map((loan) => loan.csoName.trim())
+  );
+  const uniqueCsosFive = Array.from(
+    new Set(
+      week5?.days.flatMap((day) =>
+        day.csoLoans.map((loan) => loan.csoName.trim())
+      )
     )
-  )
-);
+  );
 
+  const allCsoNames = new Set();
 
-const allCsoNames = new Set();
-
-weeklyReports?.forEach(week => {
-  week.days.forEach(day => {
-    day.csoLoans.forEach(({ csoName }) => {
-      allCsoNames.add(csoName.trim());
+  weeklyReports?.forEach((week) => {
+    week.days.forEach((day) => {
+      day.csoLoans.forEach(({ csoName }) => {
+        allCsoNames.add(csoName.trim());
+      });
     });
   });
-});
 
-const csoList = Array.from(allCsoNames);
+  const csoList = Array.from(allCsoNames);
 
-// Build table data per week
-const tableData = weeklyReports?.map(week => {
-  const row = { weekName: week.weekName };
-  csoList.forEach(cso => (row[cso] = 0));
-  week.days.forEach(day => {
-    day.csoLoans.forEach(({ csoName, loansCount }) => {
-      const name = csoName.trim();
-      row[name] += loansCount;
+  // Build table data per week
+  const tableData = weeklyReports?.map((week) => {
+    const row = { weekName: week.weekName };
+    csoList.forEach((cso) => (row[cso] = 0));
+    week.days.forEach((day) => {
+      day.csoLoans.forEach(({ csoName, loansCount }) => {
+        const name = csoName.trim();
+        row[name] += loansCount;
+      });
     });
+    return row;
   });
-  return row;
-});
-const totalRow = { weekName: "Total" };
-csoList.forEach(cso => {
-  totalRow[cso] = tableData.reduce((sum, row) => sum + row[cso], 0);
-});
-  
+  const totalRow = { weekName: "Total" };
+  csoList.forEach((cso) => {
+    totalRow[cso] = tableData.reduce((sum, row) => sum + row[cso], 0);
+  });
+
   return (
     <ReportRap>
+      <div className="client-1">
+        <div className="client-link-container">
+          <Link
+            className={`client-link ${activeLink === "new" ? "active" : ""}`}
+            onClick={() => handleLinkClick("new")}
+          >
+            Cso Reports
+          </Link>
+          <Link
+            className={`client-link ${
+              activeLink === "previous" ? "active" : ""
+            }`}
+            onClick={() => handleLinkClick("previous")}
+          >
+            Business Reports
+          </Link>
+        </div>
+      </div>
 
- <div className="client-1">
-              <div className="client-link-container">
-                <Link
-                  className={`client-link ${
-                    activeLink === "new" ? "active" : ""
-                  }`}
-                  onClick={() => handleLinkClick("new")}
-                >
-                  Cso Reports
-                </Link>
-                <Link
-                  className={`client-link ${
-                    activeLink === "previous" ? "active" : ""
-                  }`}
-                  onClick={() => handleLinkClick("previous")}
-                >
-                  Business Reports
-                </Link>
-                
+      <div className="find-lawyer-header">
+        <div className="find-lawyer-header-upper">
+          <h2> Report</h2>
+          <div
+            style={{
+              margin: "10px 0",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "20px",
+            }}
+          >
+            <button onClick={handlePrevMonth}>Previous Month</button>
+            <div>
+              {new Date(currentYear, currentMonth - 1).toLocaleString(
+                "default",
+                {
+                  month: "long",
+                }
+              )}{" "}
+              {currentYear}
+            </div>
+            <button onClick={handleNextMonth}>Next Month</button>
+          </div>
+        </div>
+
+        {status === "loading" && <p>Loading...</p>}
+        {status === "failed" && <p>Error: {error}</p>}
+
+        {activeLink === "new" && (
+          <>
+            <div className="weeks-days">
+              <p
+                className={`week-paragraph ${
+                  openweek === "week1" ? "active" : ""
+                }`}
+                onClick={() => handleWeekOpen("week1")}
+              >
+                Week 1
+              </p>
+              <p
+                className={`week-paragraph ${
+                  openweek === "week2" ? "active" : ""
+                }`}
+                onClick={() => handleWeekOpen("week2")}
+              >
+                Week 2
+              </p>
+              <p
+                className={`week-paragraph ${
+                  openweek === "week3" ? "active" : ""
+                }`}
+                onClick={() => handleWeekOpen("week3")}
+              >
+                Week 3
+              </p>
+              <p
+                className={`week-paragraph ${
+                  openweek === "week4" ? "active" : ""
+                }`}
+                onClick={() => handleWeekOpen("week4")}
+              >
+                Week 4
+              </p>
+              <p
+                className={`week-paragraph ${
+                  openweek === "week5" ? "active" : ""
+                }`}
+                onClick={() => handleWeekOpen("week5")}
+              >
+                Week 5
+              </p>
+            </div>
+            {status === "succeeded" && (
+              <>
+                {openweek === "week1" && (
+                  <>
+                    {week1 && (
+                      <div className="table-container">
+                        <div className="new-table-scroll">
+                          <div className="table-div-con"></div>
+                          <table className="custom-table">
+                            <thead>
+                              <tr>
+                                <th>Date</th>
+                                <th>Day</th>
+                                {uniqueCsos?.map((cso) => (
+                                  <th key={cso}>{cso}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {week1?.days.map((day) => {
+                                const dateObj = new Date(day.date);
+                                const csoMap = {};
+                                day.csoLoans.forEach(
+                                  ({ csoName, loansCount }) => {
+                                    csoMap[csoName.trim()] = loansCount;
+                                  }
+                                );
+
+                                return (
+                                  <tr key={day.date}>
+                                    <td>{day.date}</td>
+                                    <td>
+                                      {(() => {
+                                        const utcDate = new Date(
+                                          `${day.date}T00:00:00Z`
+                                        );
+                                        const dayOfWeek = utcDate.getUTCDay(); // always consistent
+                                        return daysOfWeek[dayOfWeek];
+                                      })()}
+                                    </td>
+                                    {uniqueCsos?.map((cso) => (
+                                      <td key={cso}>{csoMap[cso] ?? 0}</td>
+                                    ))}
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {openweek === "week2" && (
+                  <>
+                    {week2 && (
+                      <div className="table-container">
+                        <div className="new-table-scroll">
+                          <div className="table-div-con"></div>
+                          <table className="custom-table">
+                            <thead>
+                              <tr>
+                                <th>Date</th>
+                                <th>Day</th>
+                                {uniqueCsosTwo?.map((cso) => (
+                                  <th key={cso}>{cso}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {week2?.days.map((day) => {
+                                const dateObj = new Date(day.date);
+                                const csoMap = {};
+                                day.csoLoans.forEach(
+                                  ({ csoName, loansCount }) => {
+                                    csoMap[csoName.trim()] = loansCount;
+                                  }
+                                );
+
+                                return (
+                                  <tr key={day.date}>
+                                    <td>{day.date}</td>
+                                    <td>{daysOfWeek[dateObj.getDay()]}</td>
+                                    {uniqueCsosTwo?.map((cso) => (
+                                      <td key={cso}>{csoMap[cso] ?? 0}</td>
+                                    ))}
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {openweek === "week3" && (
+                  <>
+                    {week3 && (
+                      <div className="table-container">
+                        <div className="new-table-scroll">
+                          <div className="table-div-con"></div>
+                          <table className="custom-table">
+                            <thead>
+                              <tr>
+                                <th>Date</th>
+                                <th>Day</th>
+                                {uniqueCsosThree?.map((cso) => (
+                                  <th key={cso}>{cso}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {week3?.days.map((day) => {
+                                const dateObj = new Date(day.date);
+                                const csoMap = {};
+                                day.csoLoans.forEach(
+                                  ({ csoName, loansCount }) => {
+                                    csoMap[csoName.trim()] = loansCount;
+                                  }
+                                );
+
+                                return (
+                                  <tr key={day.date}>
+                                    <td>{day.date}</td>
+                                    <td>{daysOfWeek[dateObj.getDay()]}</td>
+                                    {uniqueCsosThree?.map((cso) => (
+                                      <td key={cso}>{csoMap[cso] ?? 0}</td>
+                                    ))}
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {openweek === "week4" && (
+                  <>
+                    {week4 && (
+                      <div className="table-container">
+                        <div className="new-table-scroll">
+                          <div className="table-div-con"></div>
+                          <table className="custom-table">
+                            <thead>
+                              <tr>
+                                <th>Date</th>
+                                <th>Day</th>
+                                {uniqueCsosFour?.map((cso) => (
+                                  <th key={cso}>{cso}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {week4?.days.map((day) => {
+                                const dateObj = new Date(day.date);
+                                const csoMap = {};
+                                day.csoLoans.forEach(
+                                  ({ csoName, loansCount }) => {
+                                    csoMap[csoName.trim()] = loansCount;
+                                  }
+                                );
+
+                                return (
+                                  <tr key={day.date}>
+                                    <td>{day.date}</td>
+                                    <td>{daysOfWeek[dateObj.getDay()]}</td>
+                                    {uniqueCsosFour?.map((cso) => (
+                                      <td key={cso}>{csoMap[cso] ?? 0}</td>
+                                    ))}
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+                {openweek === "week5" && (
+                  <>
+                    {week5 && (
+                      <div className="table-container">
+                        <div className="new-table-scroll">
+                          <div className="table-div-con"></div>
+                          <table className="custom-table">
+                            <thead>
+                              <tr>
+                                <th>Date</th>
+                                <th>Day</th>
+                                {uniqueCsosFive?.map((cso) => (
+                                  <th key={cso}>{cso}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {week5?.days.map((day) => {
+                                const dateObj = new Date(day.date);
+                                const csoMap = {};
+                                day.csoLoans.forEach(
+                                  ({ csoName, loansCount }) => {
+                                    csoMap[csoName.trim()] = loansCount;
+                                  }
+                                );
+
+                                return (
+                                  <tr key={day.date}>
+                                    <td>{day.date}</td>
+                                    <td>{daysOfWeek[dateObj.getDay()]}</td>
+                                    {uniqueCsosFive?.map((cso) => (
+                                      <td key={cso}>{csoMap[cso] ?? 0}</td>
+                                    ))}
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+
+            {/* Monthly Summary Table */}
+            <h3
+              style={{
+                marginTop: "20px",
+              }}
+            >
+               {new Date(currentYear, currentMonth - 1).toLocaleString(
+                "default",
+                {
+                  month: "long",
+                }
+              )}{" "}
+              {currentYear} Summary
+            </h3>
+            <div className="table-container">
+              <div className="new-table-scroll">
+                <div className="table-div-con">
+                  <table className="custom-table">
+                    <thead>
+                      <tr className="bg-gray-200">
+                        <th className="px-4 py-2 border text-left">Week</th>
+                        {csoList.map((cso) => (
+                          <th key={cso} className="px-4 py-2 border text-left">
+                            {cso}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tableData?.map((row) => (
+                        <tr key={row.weekName}>
+                          <td className="px-4 py-2 border">{row.weekName}</td>
+                          {csoList.map((cso) => (
+                            <td key={cso} className="px-4 py-2 border">
+                              {row[cso]}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                      <tr className="font-bold bg-gray-100">
+                        <td className="total">Total</td>
+                        {csoList.map((cso) => (
+                          <td key={cso} className="total">
+                            {totalRow[cso]}
+                          </td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-
-<div className="find-lawyer-header">
-    <div className="find-lawyer-header-upper">
-      <h2> Report</h2>
-       <div
-        style={{
-          margin: "10px 0",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: "20px",
-        }}
-      >
-        <button onClick={handlePrevMonth}>Previous Month</button>
-        <div>
-          {new Date(currentYear, currentMonth - 1).toLocaleString("default", {
-            month: "long",
-          })}{" "}
-          {currentYear}
-        </div>
-        <button onClick={handleNextMonth}>Next Month</button>
-      </div>
-</div>
-
-     
-
-      {status === "loading" && <p>Loading...</p>}
-      {status === "failed" && <p>Error: {error}</p>}
-
-
-      {activeLink === "new" && (
-        <>
-        <div className="weeks-days">
-  <p className={`week-paragraph ${openweek === "week1" ? "active" : ""}`} onClick={() => handleWeekOpen("week1")} >Week 1</p>
-  <p className={`week-paragraph ${openweek === "week2" ? "active" : ""}`} onClick={() => handleWeekOpen("week2")}>Week 2</p>
-  <p className={`week-paragraph ${openweek === "week3" ? "active" : ""}`} onClick={() => handleWeekOpen("week3")}>Week 3</p>
-  <p className={`week-paragraph ${openweek === "week4" ? "active" : ""}`} onClick={() => handleWeekOpen("week4")}>Week 4</p>
-  <p className={`week-paragraph ${openweek === "week5" ? "active" : ""}`} onClick={() => handleWeekOpen("week5")}>Week 5</p>
-</div>
-         {status === "succeeded" &&
-        <>
-        {openweek === "week1" && (
-        <>
-        {week1 && (
-         <div className="table-container">
-          <div className="new-table-scroll">
-            <div className="table-div-con"></div>
-  <table className="custom-table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Day</th>
-        {uniqueCsos?.map((cso) => (
-          <th key={cso}>{cso}</th>
-        ))}
-      </tr>
-    </thead>
-    <tbody>
-      {week1?.days.map((day) => {
-        const dateObj = new Date(day.date);
-        const csoMap = {};
-        day.csoLoans.forEach(({ csoName, loansCount }) => {
-          csoMap[csoName.trim()] = loansCount;
-        });
-
-        return (
-          <tr key={day.date}>
-            <td>{day.date}</td>
-            <td>{daysOfWeek[dateObj.getDay()]}</td>
-            {uniqueCsos?.map((cso) => (
-              <td key={cso}>{csoMap[cso] ?? 0}</td>
-            ))}
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-  </div>
-  </div>
-  
-)}
-</>
-)}
-
-        {openweek === "week2" && (
-        <>
-        {week2 && (
-         <div className="table-container">
-          <div className="new-table-scroll">
-            <div className="table-div-con"></div>
-  <table className="custom-table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Day</th>
-        {uniqueCsosTwo?.map((cso) => (
-          <th key={cso}>{cso}</th>
-        ))}
-      </tr>
-    </thead>
-    <tbody>
-      {week2?.days.map((day) => {
-        const dateObj = new Date(day.date);
-        const csoMap = {};
-        day.csoLoans.forEach(({ csoName, loansCount }) => {
-          csoMap[csoName.trim()] = loansCount;
-        });
-
-        return (
-          <tr key={day.date}>
-            <td>{day.date}</td>
-            <td>{daysOfWeek[dateObj.getDay()]}</td>
-            {uniqueCsosTwo?.map((cso) => (
-              <td key={cso}>{csoMap[cso] ?? 0}</td>
-            ))}
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-  </div>
-  </div>
-  
-)}
-</>
-)}
-
-        {openweek === "week3" && (
-        <>
-        {week3 && (
-         <div className="table-container">
-          <div className="new-table-scroll">
-            <div className="table-div-con"></div>
-  <table className="custom-table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Day</th>
-        {uniqueCsosThree?.map((cso) => (
-          <th key={cso}>{cso}</th>
-        ))}
-      </tr>
-    </thead>
-    <tbody>
-      {week3?.days.map((day) => {
-        const dateObj = new Date(day.date);
-        const csoMap = {};
-        day.csoLoans.forEach(({ csoName, loansCount }) => {
-          csoMap[csoName.trim()] = loansCount;
-        });
-
-        return (
-          <tr key={day.date}>
-            <td>{day.date}</td>
-            <td>{daysOfWeek[dateObj.getDay()]}</td>
-            {uniqueCsosThree?.map((cso) => (
-              <td key={cso}>{csoMap[cso] ?? 0}</td>
-            ))}
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-  </div>
-  </div>
-  
-)}
-</>
-)}
-
-        {openweek === "week4" && (
-        <>
-        {week4 && (
-         <div className="table-container">
-          <div className="new-table-scroll">
-            <div className="table-div-con"></div>
-  <table className="custom-table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Day</th>
-        {uniqueCsosFour?.map((cso) => (
-          <th key={cso}>{cso}</th>
-        ))}
-      </tr>
-    </thead>
-    <tbody>
-      {week4?.days.map((day) => {
-        const dateObj = new Date(day.date);
-        const csoMap = {};
-        day.csoLoans.forEach(({ csoName, loansCount }) => {
-          csoMap[csoName.trim()] = loansCount;
-        });
-
-        return (
-          <tr key={day.date}>
-            <td>{day.date}</td>
-            <td>{daysOfWeek[dateObj.getDay()]}</td>
-            {uniqueCsosFour?.map((cso) => (
-              <td key={cso}>{csoMap[cso] ?? 0}</td>
-            ))}
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-  </div>
-  </div>
-  
-)}
-</>
-)}
-        {openweek === "week5" && (
-        <>
-        {week5 && (
-         <div className="table-container">
-          <div className="new-table-scroll">
-            <div className="table-div-con"></div>
-  <table className="custom-table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Day</th>
-        {uniqueCsosFive?.map((cso) => (
-          <th key={cso}>{cso}</th>
-        ))}
-      </tr>
-    </thead>
-    <tbody>
-      {week5?.days.map((day) => {
-        const dateObj = new Date(day.date);
-        const csoMap = {};
-        day.csoLoans.forEach(({ csoName, loansCount }) => {
-          csoMap[csoName.trim()] = loansCount;
-        });
-
-        return (
-          <tr key={day.date}>
-            <td>{day.date}</td>
-            <td>{daysOfWeek[dateObj.getDay()]}</td>
-            {uniqueCsosFive?.map((cso) => (
-              <td key={cso}>{csoMap[cso] ?? 0}</td>
-            ))}
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-  </div>
-  </div>
-  
-)}
-</>
-)}
-        </>
-        
-        }
-
-      {/* Monthly Summary Table */}
-      <h3 style= {{
-      marginTop: "20px"
-      }}>Monthly Summary</h3>
-       <div className="table-container">
-          <div className="new-table-scroll">
-            <div className="table-div-con">
-       <table className="custom-table">
- <thead>
-    <tr className="bg-gray-200">
-      <th className="px-4 py-2 border text-left">Week</th>
-      {csoList.map(cso => (
-        <th key={cso} className="px-4 py-2 border text-left">{cso}</th>
-      ))}
-    </tr>
-  </thead>
-  <tbody>
-    {tableData?.map(row => (
-      <tr key={row.weekName}>
-        <td className="px-4 py-2 border">{row.weekName}</td>
-        {csoList.map(cso => (
-          <td key={cso} className="px-4 py-2 border">{row[cso]}</td>
-        ))}
-      </tr>
-    ))}
-    <tr className="font-bold bg-gray-100">
-      <td  className="total">Total</td>
-      {csoList.map(cso => (
-        <td key={cso} className="total">{totalRow[cso]}</td>
-      ))}
-    </tr>
-  </tbody>
-</table>
-
-      </div>
-      </div>
-      </div>
-        </>
-      )}
-
-        {activeLink === "previous" && (
-            <SecondReportPage />
+          </>
         )}
 
-     
-    </div>
+        {activeLink === "previous" && <SecondReportPage />}
+      </div>
 
       {/* Additional Monthly Totals */}
     </ReportRap>

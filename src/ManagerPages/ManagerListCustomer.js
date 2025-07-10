@@ -58,7 +58,7 @@ const ManagerListCustomer = () => {
           <tr >
             <th>Name</th>
             <th>Address</th>
-            <th>Email</th>
+            <th>Phone Number</th>
             <th>Amount Requested</th>
             <th>Amount Approved</th>
             <th>Action</th>
@@ -71,7 +71,7 @@ const ManagerListCustomer = () => {
                 {loan.customerDetails.firstName} {loan.customerDetails.lastName}
               </td>
               <td>{loan.customerDetails.address}</td>
-              <td>{loan.customerDetails.email}</td>
+              <td>{loan.customerDetails.phoneOne}</td>
               <td>{loan.loanDetails.amountRequested}</td>
               <td>{loan.loanDetails.amountApproved}</td>
               <td>  <Link to={`/manager/downloadLoanForm/${loan._id}`}>View Details</Link>

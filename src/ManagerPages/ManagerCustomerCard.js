@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { fetchLoanByBvn } from "../redux/slices/LoanSlice";
+import { fetchLoanById } from "../redux/slices/LoanSlice";
 
 const CalendarRap = styled.div`
 height: 100vh;
 background: #005e78;
-
   .pop-info h3 {
     font-weight: 700;
     font-size: 20px;
@@ -43,7 +41,7 @@ background: #005e78;
     border: 1px solid #005e78;
   }
   .calendar-detail h1 {
-    font-size: 45px;
+    font-size: 50px;
     font-weight: 900;
     margin-left: 20px;
   }
@@ -82,7 +80,7 @@ background: #005e78;
     background: #e7c17b;
   }
   .circle-div p {
-    color: white;
+    color: black;
     font-size: 14px;
   }
   .circle-div {
@@ -99,31 +97,30 @@ background: #005e78;
   }
   .loanCardSpace {
     min-width: 370px;
-    max-width: 1000px;
-   margin: auto;
+    max-width: 500px;
+    padding-left: 3px;
+    padding-right: 10px;
+    padding-bottom: 100px !important;
   }
 `;
 
-const ManagerCustomerCard = () => {
-  const { bvn } = useParams();
- 
+const CalendarPage = () => {
+  const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const loan = useSelector((state) => state?.loan?.selectedLoan);
   const [popupInfo, setPopupInfo] = useState(null);
+console.log(loan);
 
- 
   useEffect(() => {
-    dispatch(fetchLoanByBvn(bvn));
-  }, [dispatch, bvn]);
-  console.log(loan);
-  
+    dispatch(fetchLoanById(id));
+  }, [dispatch, id]);
 
   if (!loan) return <p>Loading...</p>;
 
   const today = new Date();
 
-  const dailyAmount = loan[0]?.loanDetails?.amountToBePaid / 30;
+  const dailyAmount = loan?.loanDetails?.amountToBePaid / 22;
 
   // Custom function to format the date
   const formatDate = (date) => {
@@ -144,20 +141,20 @@ const ManagerCustomerCard = () => {
   };
 
   const LoanBalance =
-    loan[0]?.loanDetails?.amountToBePaid - loan[0]?.loanDetails?.amountPaidSoFar;
+    loan?.loanDetails?.amountToBePaid - loan?.loanDetails?.amountPaidSoFar;
 
   const handleButtonClick = (schedule, missedAmount = dailyAmount) => {
     setPopupInfo({
       date: formatDate(new Date(schedule.date)),
       amountPaid: schedule.amountPaid,
       missedAmount: missedAmount - schedule.amountPaid,
+      holidayReason: schedule.holidayReason
     });
   };
 
   const handleMoveBack = () => {
-    navigate(`/manager/customer/${loan[0]?.customerDetails.bvn}`);
+    navigate(`/manager/customer/${loan?.customerDetails.bvn}`);
   };
-
   const closePopup = () => setPopupInfo(null);
 
   return (
@@ -165,7 +162,7 @@ const ManagerCustomerCard = () => {
       <div className="calendar-detail">
         <div className="calendar-header">
           <h1>
-            {loan[0]?.customerDetails?.firstName} {loan[0]?.customerDetails?.lastName}
+            {loan?.customerDetails?.firstName} {loan?.customerDetails?.lastName}
           </h1>
           <div className="cancel-icon">
             <Icon
@@ -181,12 +178,16 @@ const ManagerCustomerCard = () => {
         Loan + Interest:
           <span className="loan-span">
             {" "}
-            {loan[0]?.loanDetails?.amountToBePaid}{" "}
+            {loan?.loanDetails?.amountToBePaid}{" "}
           </span>
         </h6>
         <h6>
           Loan Balance:
           <span className="loan-span">{LoanBalance}</span>
+        </h6>
+        <h6>
+          Total Paid:
+          <span className="loan-span">{loan?.loanDetails?.amountPaidSoFar}</span>
         </h6>
 <div className="all-circle-div">
   <div className="circle-div">
@@ -220,13 +221,15 @@ const ManagerCustomerCard = () => {
             gap: "2px",
           }}
         >
-          {loan[0]?.repaymentSchedule?.map((schedule, index) => {
+          
+          {loan?.repaymentSchedule?.map((schedule, index) => {
             const scheduleDate = new Date(schedule.date);
             const isStartDate =
               scheduleDate.toDateString() ===
               new Date(loan.disbursedAt).toDateString();
-            const isEndDate = index === loan[0]?.repaymentSchedule?.length - 1;
+            const isEndDate = index === loan.repaymentSchedule.length - 1;
             const isPaid = schedule.status === "paid";
+             const isHoliday = schedule.status === "holiday";
             const isPartial = schedule.status === "partial";
             const isMissed =
               scheduleDate < today && schedule.status === "pending";
@@ -237,17 +240,22 @@ const ManagerCustomerCard = () => {
             else if (isEndDate) backgroundColor = "#afaf5a";
             else if (isMissed) backgroundColor = "black"; // Set missed background to black
 
-            const buttonColor = isPaid
-              ? scheduleDate.toDateString() === today.toDateString()
-                ? "green"
-                : isFuture
-                ? "orange"
-                : "green"
-              : isMissed
-              ? "red"
-              : isPartial
-              ? "#e7c17b"
-              : "transparent";
+            const buttonColor =
+  isStartDate // No button color on the first day
+    ? "transparent"
+    : isPaid
+    ? scheduleDate.toDateString() === today.toDateString()
+      ? "green"
+      : isFuture
+      ? "orange"
+      : "green"
+    : isMissed
+    ? "red"
+    : isHoliday 
+    ? "blue"
+    : isPartial
+    ? "#e7c17b"
+    : "transparent";
 
             const missedAmount = isMissed
               ? schedule.expectedAmount - schedule.amountPaid
@@ -314,6 +322,22 @@ const ManagerCustomerCard = () => {
                     }}
                   />
                 )}
+                 {isHoliday && (
+                  <button
+                    onClick={() => handleButtonClick(schedule)} // Pass missed amount
+                    style={{
+                      width: "30px",
+                      height: "30px",
+                      borderRadius: "50%",
+                      backgroundColor: buttonColor,
+                      border: "none",
+                      position: "absolute",
+                      top: "5px",
+                      right: "5px",
+                      cursor: "pointer",
+                    }}
+                  />
+                )}
               </div>
             );
           })}
@@ -347,7 +371,17 @@ const ManagerCustomerCard = () => {
               <p>
                 <span>Amount Due: </span> {popupInfo.missedAmount}
               </p>
+
             )}{" "}
+
+            {popupInfo?.holidayReason ? (
+              <p style={{
+                fontSize: "18px",
+                maxWidth: "150px"
+              }}>
+              <span>Holiday: </span> {popupInfo.holidayReason}
+            </p>
+            ): ""}
             {/* Show missed amount */}
             <button
               onClick={closePopup}
@@ -376,4 +410,4 @@ const ManagerCustomerCard = () => {
   );
 };
 
-export default ManagerCustomerCard;
+export default CalendarPage;

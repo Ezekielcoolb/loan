@@ -67,7 +67,13 @@ const adminSlice = createSlice({
     token: null,
     success: null,
   },
-  reducers: {},
+  reducers: {
+
+    logoutAdmin: (state) => {
+          state.user = null;
+          state.token = null;
+        },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchAdmins.pending, (state) => {
@@ -110,5 +116,5 @@ const adminSlice = createSlice({
       })
   },
 });
-
+export const { logoutAdmin  } = adminSlice.actions;
 export default adminSlice.reducer;

@@ -344,7 +344,7 @@ const ModalButton = styled.button`
   }
 `;
 
-const ManagerLoanDetails = () => {
+const SolutionLoanDetails = () => {
   const { id } = useParams(); // Get loan ID from URL
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -389,11 +389,11 @@ const ManagerLoanDetails = () => {
 
   const handleApprovedPop = () => {
     setApprovedLoading(false);
-    navigate("/admin/newloan");
+    navigate("/solution/newloan");
   };
   const handleRejectPop = () => {
     setRejectLoading(false);
-    navigate("/admin/newloan");
+    navigate("/solution/newloan");
   };
 
   const handlePopupResponse = (response) => {
@@ -443,7 +443,7 @@ const ManagerLoanDetails = () => {
   };
 
   const handleMoveToCustomerInfo = () => {
-    navigate(`/manager/new-customer/${loan?.customerDetails?.bvn}`);
+    navigate(`/solution/new-customer/${loan?.customerDetails?.bvn}`);
   };
 
   if (!loan) return <p>Loading loan details...</p>; // Show a loader until the loan is found
@@ -470,7 +470,7 @@ const ManagerLoanDetails = () => {
         <Link
           style={{ marginLeft: "-50px" }}
           className="cso-link"
-          to="/manager/newloan"
+          to="/solution/newloan"
         >
           <Icon
             icon="formkit:arrowleft"
@@ -710,7 +710,7 @@ const ManagerLoanDetails = () => {
               )}
             </div>
             <p>
-              Click <Link to={`/admin/guarantorDetails/${id}`}>here</Link> to
+              Click <Link to={`/solution/guarantorDetails/${id}`}>here</Link> to
               confirm if guarantor fill the guarantor form
             </p>
           </div>
@@ -883,4 +883,4 @@ const ManagerLoanDetails = () => {
   );
 };
 
-export default ManagerLoanDetails;
+export default SolutionLoanDetails;

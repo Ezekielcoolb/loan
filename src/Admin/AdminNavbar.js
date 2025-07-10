@@ -3,6 +3,8 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { setOpenSideBar } from "../redux/slices/appSlice";
+import { logoutAdmin } from "../redux/slices/adminSlice";
+import { logout } from "../redux/slices/authSlice";
 
 
 const AdminNavbar = () => {
@@ -18,8 +20,11 @@ const AdminNavbar = () => {
 
   const handleLogOut = () => {
     localStorage.removeItem("managerToken");
+     localStorage.removeItem("solutionToken");
     localStorage.removeItem("officerToken");
     localStorage.removeItem("superAdminToken");
+    dispatch(logoutAdmin())
+    dispatch(logout())
     navigate("/")
 
   }

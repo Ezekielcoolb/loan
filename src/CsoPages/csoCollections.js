@@ -260,11 +260,11 @@ const ActiveLoansTable = () => {
   const [isLoading, setIsLoading] = useState(false);
     const [name, setName] = useState('');
         const { urls } = useSelector((state) => state.upload);
-    console.log(uploadRemmit);
     console.log(user);
     
+console.log(customers);
+console.log(selectedDate);
 
-  console.log(imageUrl);
 
   const lastDateString = user?.remittance[user?.remittance?.length - 1]?.date;
 
@@ -274,7 +274,6 @@ const lastDate = new Date(lastDateString);
 // Format to desired format (e.g., "Tue Jun 10 2025")
 const formattedDate = lastDate?.toDateString();
 
-console.log(formattedDate);
 
 useEffect(() => {
   if (urls?.length > 0 ) {
@@ -329,7 +328,9 @@ useEffect(() => {
 
   useEffect(() => {
     // Dispatch the action to fetch loans when the component mounts or date changes
-    dispatch(fetchCsoActiveLoans({ csoId, date: selectedDate.toISOString() }));
+    dispatch(fetchCsoActiveLoans({ csoId, date: selectedDate.getFullYear() +
+  "-" + String(selectedDate.getMonth() + 1).padStart(2, "0") +
+  "-" + String(selectedDate.getDate()).padStart(2, "0") }));
   }, [dispatch, csoId, selectedDate]);
 
 
@@ -344,7 +345,9 @@ useEffect(() => {
   
 
   useEffect(() => {
-    dispatch(fetchLoanAppForms({ csoId, date: selectedDate.toISOString() }));
+    dispatch(fetchLoanAppForms({ csoId, date: selectedDate.getFullYear() +
+  "-" + String(selectedDate.getMonth() + 1).padStart(2, "0") +
+  "-" + String(selectedDate.getDate()).padStart(2, "0") }));
   }, [dispatch, csoId, selectedDate]);
 
   // Calculate total amount paid for the selected date
@@ -381,8 +384,8 @@ useEffect(() => {
     setShowCalendar(false); // Hide calendar after selecting a date
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+  // if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error} </p>;
 
 const handleFileChange = (files) => {
   if (!files.length) return;
@@ -393,7 +396,7 @@ const handleFileChange = (files) => {
   const handleUpload = () => {
     if (imageUrl) {
       dispatch(uploadRemittance({ amount: overallTotal, workId, imageUrl }));
-      dispatch(submitDailyRemittanceReport({ workId, image: imageUrl }));
+      // dispatch(submitDailyRemittanceReport({ workId, image: imageUrl }));
       setConfirm(false);
       setIsLoading(true);
     }
@@ -419,11 +422,48 @@ const handleFileChange = (files) => {
     navigate(`/cso/previousLoans/${id}`);
   };
 
+// 1️⃣ Get today's date in UTC (no time component)
+const now = new Date();
+const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+
+// 2️⃣ Calculate "effective yesterday" (adjusted for weekends)
+let effectiveDate = new Date(todayUTC);
+effectiveDate.setDate(effectiveDate.getDate() - 1); // Normal yesterday
+
+// If Saturday → move back to Friday
+if (effectiveDate.getDay() === 6) {
+  effectiveDate.setDate(effectiveDate.getDate() - 1);
+}
+
+// If Sunday → move back to Friday
+if (effectiveDate.getDay() === 0) {
+  effectiveDate.setDate(effectiveDate.getDate() - 2);
+}
+
+// 3️⃣ Format effective date as YYYY-MM-DD (to match item.date)
+const effectiveDateString = effectiveDate.toISOString().slice(0, 10);
+console.log(effectiveDateString); // e.g., "2023-10-01"
+
+// 4️⃣ Filter remittance items where date matches
+const filteredRemittance = user?.remittance?.filter(item => {
+  const itemDateString = new Date(item.date).toISOString().slice(0, 10);
+  return itemDateString === effectiveDateString;
+});
+
+const filteredRemittanceIssue = user?.remitanceIssues?.filter(item => {
+  const itemDateString = new Date(item.date).toISOString().slice(0, 10);
+  return itemDateString === effectiveDateString;
+});
+
+console.log("Filtered Remittance:", filteredRemittance);
+console.log(filteredRemittanceIssue);
+  
 
    
 
   return (
     <CollectionRap>
+
       <div>
         <div className="collect-1">
           <h2>Collections</h2>
@@ -455,7 +495,7 @@ const handleFileChange = (files) => {
         {showCalendar && (
           <div
             className="calendar-center"
-            style={{ position: "absolute", zIndex: 10, left: "20px" }}
+            style={{ position: "absolute", zIndex: 1000, left: "20px" }}
           >
             <Calendar onChange={handleDateChange} value={selectedDate} />
           </div>
@@ -698,6 +738,8 @@ const handleFileChange = (files) => {
           ""
         )}
       </div>
+
+
       {remittanceuploadedSuccess ? (
         <div className="dropdown-container">
           <div className="pay-dropdown">

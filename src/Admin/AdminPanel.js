@@ -171,12 +171,33 @@ const AdminRap = styled.div`
     font-size: 14px;
     border-style: none;
   }
+  .dropdown-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+   .dropdown-content p{
+    font-size: 16px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+   }
+    .dropdown-content span {
+      font-size: 20px;
+    font-weight: 600;
+    color: #112240;
+    }
 `;
 const AdminForm = () => {
   const dispatch = useDispatch();
   const [activeLink, setActiveLink] = useState("cso");
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const { admins, loading } = useSelector((state) => state.admin);
+  const [adminId, setAdminId] = useState(null);
+  console.log(adminId);
+
   const [isLoading, setIsLoding] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -188,6 +209,8 @@ const AdminForm = () => {
     assignedRole: "",
   });
   console.log(admins);
+  const userAdmin = admins?.find((item) => item._id === adminId);
+  console.log(userAdmin);
 
   const isValid =
     formData.firstName !== "" &&
@@ -227,6 +250,10 @@ const AdminForm = () => {
       assignedRole: "",
     });
     setDropdownVisible(!dropdownVisible);
+  };
+
+  const handleView = (id) => {
+    setAdminId(id);
   };
 
   return (
@@ -343,6 +370,9 @@ const AdminForm = () => {
                     <option value="Disbursement Officer">
                       Disbursement Officer
                     </option>
+                    <option value="Support/Reconciliation Officer">
+                      Support/Reconciliation Officer
+                    </option>
                   </select>
                 </label>
                 <div className="save-cancel-div">
@@ -385,6 +415,7 @@ const AdminForm = () => {
                           <th>Phone Number</th>
                           <th>Gender</th>
                           <th>Assigned Role</th>
+                          <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -401,6 +432,13 @@ const AdminForm = () => {
                               <td>{caseItem?.phone}</td>
                               <td>{caseItem?.gender}</td>
                               <td>{caseItem?.assignedRole}</td>
+                              <td>
+                                <button
+                                  onClick={() => handleView(caseItem?._id)}
+                                >
+                                  View
+                                </button>
+                              </td>
                             </tr>
                           ))
                         ) : (
@@ -421,6 +459,46 @@ const AdminForm = () => {
           )}
         </div>
       </div>
+      {adminId && (
+        <div className="dropdown-container">
+          <div className="all-dropdown-div">
+            <div className="dropdown-header">
+              <h4>Admin Details</h4>
+              <Icon
+                onClick={() => setAdminId(null)}
+                icon="uil:times"
+                width="16"
+                height="16"
+                style={{ color: "black", cursor: "pointer" }}
+              />
+            </div>
+            {userAdmin ? (
+              <div className="dropdown-content">
+                <p>
+                  <span> Name:</span> {userAdmin.firstName} {userAdmin.lastName}
+                </p>
+                <p>
+                  <span>Gender:</span> {userAdmin.gender}
+                </p>
+                <p>
+                  <span>Email:</span> {userAdmin.email}
+                </p>
+                <p>
+                  <span>Phone:</span> {userAdmin.phone}
+                </p>
+                 <p>
+                  <span>Password:</span> {userAdmin.password}
+                </p>
+                 <p>
+                  <span>Role:</span> {userAdmin.assignedRole}
+                </p>
+              </div>
+            ) : (
+              "No Details Available"
+            )}
+          </div>
+        </div>
+      )}
     </AdminRap>
   );
 };

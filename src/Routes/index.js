@@ -8,6 +8,22 @@ import Operations from "../Admin/Reports/Operation";
 import AdminReport from "../Admin/Reports/Reports";
 import HolidayList from "../Admin/Holidays/Holidays";
 import CsoCollectionReportCollection from "../CsoPages/CsoCollectionReport";
+import SolutionCsos from "../Solutions/SolutionCso";
+import SolutionCsoDetails from "../Solutions/SolutionCsoDetails";
+import SolutionLoanDetails from "../Solutions/SolutionLoanDetail";
+import SolutionCustomerCard from "../Solutions/SolutionCustomerCard";
+import SolutionCustomerDetails from "../Solutions/SolutionCustomerDetails";
+import SolutionNewLoan from "../Solutions/SolutionNewLoan";
+import SolutionLoanForm from "../Solutions/SolutionLoanForm";
+import SolutionGuarantorDetails from "../Solutions/SolutionGuarantorDetails";
+import SolutionNewCustomerDetailsInfo from "../Solutions/SolutionNewLoanDetails";
+import SolutionNewLoanCard from "../Solutions/SolutionNewLoanCard";
+import SolutionAdminPrivateRoutes from "../Admin/PrivateRoutes/SolutionPrivate";
+import SolutionLogin from "../Admin/AdminLogins/SolutionLogin";
+import SolutionCustomers from "../Solutions/SolutionCustomers";
+import SolutionOperations from "../Solutions/SolutionOperation";
+import ManagerNewCustomerDetailsInfo from "../ManagerPages/ManagerNewCustomerInfo";
+import ManagerNewLoanCard from "../ManagerPages/ManagerNewLoanCard";
 
 const AdminDashboardLayout = lazy(() => import("../Controller/adminController"));
 const AdminDashboard = lazy(() => import("../Admin/AdminDashboard"));
@@ -178,7 +194,10 @@ export default function Routess() {
                         { path: "/manager/newloan", element: <ManagerNewLoan /> },
                         { path: "/manager/test", element: <GuarantorDetailsTest /> },
                         { path: "/manager/customer/:bvn", element: <ManagerCustomerDetails /> },
-                        { path: "/manager/customer/calender/:bvn", element: <ManagerCustomerCard /> },
+                        { path: "/manager/new-customer/:bvn", element: <ManagerNewCustomerDetailsInfo /> },
+                        { path: "/manager/new-loan-customer/calender/:id", element: <ManagerNewLoanCard /> },
+
+                        { path: "/manager/customer/calender/:id", element: <ManagerCustomerCard /> },
                         { path: "/manager/calendar/:id", element: <CalendarPage /> },
                         { path: "/manager/csoDetails/:id", element: <ManagerCsoDetails /> },
                         { path: "/manager/loan/:id", element: <ManagerLoanDetails /> },
@@ -187,10 +206,35 @@ export default function Routess() {
                         { path: "/manager/guarantorDetails/:id", element: <ManagerGuarantorDetails /> },
                         { path: "/manager/downloadLoanForm/:id", element: <ManagerLoanForm /> },
                         { path: "/manager/admin-members", element: <AdminForm /> },
+                         { path: "/manager/operations", element: <Operations /> },
+                         { path: "/manager/reports", element: <AdminReport /> },
+                    ],
+                },
+                 {
+                    path: "/solution",
+                    element: <SolutionAdminPrivateRoutes />,
+                    children: [
+                        { path: "/solution", element: <AdminDashboard /> },
+                        { path: "/solution/admincso", element: <SolutionCsos /> },
+                        { path: "/solution/customerdetails", element: <SolutionCustomers /> },
+                        { path: "/solution/loan", element: <Loan /> },
+                       { path: "/solution/new-customer/:bvn", element: <SolutionNewCustomerDetailsInfo /> },
+                        { path: "/solution/newloan", element: <SolutionNewLoan /> },
+                        { path: "/solution/new-loan-customer/calender/:id", element: <SolutionNewLoanCard /> },
+                        { path: "/solution/customer/:bvn", element: <SolutionCustomerDetails /> },
+                        { path: "/solution/customer/calender/:bvn", element: <SolutionCustomerCard /> },
+                        { path: "/solution/csoDetails/:id", element: <SolutionCsoDetails /> },
+                        { path: "/solution/loan/:id", element: <SolutionLoanDetails /> },
+                        { path: "/solution/transactions", element: <AllTransactions /> },
+                        { path: "/solution/guarantorDetails/:id", element: <SolutionGuarantorDetails /> },
+                        { path: "/solution/downloadLoanForm/:id", element: <SolutionLoanForm /> },
+                         { path: "/solution/operations", element: <SolutionOperations /> },
+                         { path: "/solution/reports", element: <AdminReport /> },
                     ],
                 },
                 { path: "/disburseLogin", element: <AdminLogin /> },
                 { path: "/managerLogin", element: <ManagerLogin /> },
+                { path: "/solutionLogin", element: <SolutionLogin /> },
                 { path: "/superAdminLogin", element: <SuperAdminLogin /> },
                 { path: "/csoLogin", element: <CsoLogin /> },
                 { path: "/adminSignUp", element: <AdminSignup /> },

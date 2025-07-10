@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteLoan, fetchAdminLoans, fetchAdminLoansSearch } from '../../redux/slices/LoanSlice';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { Icon } from '@iconify/react/dist/iconify.js';
+import { fetchAdminLoans } from '../redux/slices/LoanSlice';
 
 const TableRap = styled.div`
  .page-div {
@@ -19,41 +18,16 @@ const TableRap = styled.div`
     border-radius: 10px;
     border: 1px solid #005e78;
   }
-  .search-div {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-  .search-position {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-  }
-  .search-div input {
-    width: 259px !important;
-    height: 38px !important;
-    padding: 0px 10px;
-    border-radius: 8px !important;
-    border: 1px solid #dbe0ee !important;
-  }
-
-  .search-div p {
-    color: #9499ac;
-    font-weight: 600;
-    font-size: 14px;
-  }
 `
 
-const AdminCustomerTable = () => {
+const SolutionListCustomer = () => {
   const dispatch = useDispatch();
   const { loans, loading, error } = useSelector((state) => state.loan);
   const itemsPerPage = 15;
- const [search, setSearch] = useState('');
-  
 
-  
-
-
+  useEffect(() => {
+    dispatch(fetchAdminLoans());
+  }, [dispatch]);
   // Calculate total pages
   const totalPages = Math.ceil(loans?.length / itemsPerPage);
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,60 +38,15 @@ const AdminCustomerTable = () => {
     currentPage * itemsPerPage
   );
 
-
-  useEffect(() => {
-    dispatch(fetchAdminLoans());
-  }, [dispatch]);
-
-
-  useEffect(() => {
-    const debounce = setTimeout(() => {
-      dispatch(fetchAdminLoansSearch(search));
-    }, 400); // debounce delay
-
-    return () => clearTimeout(debounce);
-  }, [search, dispatch]);
-
   // Handle pagination click
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
     }
-    
-  }
-  
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this loan?')) {
-        dispatch(deleteLoan(id));
-    }
-};
-
-    
+  };
   return (
-    <TableRap>
     <div>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        
-      }}>
       <h2 >Customers</h2>
-
-       <div className='search-div' style={{ position: "relative" }}>
-                      <input  value={search}
-                       onChange={e => setSearch(e.target.value)}
-                       type="text" placeholder="search" />
-                      <Icon
-                        className="search-position"
-                        icon="material-symbols-light:search"
-                        width="18"
-                        height="18"
-                        style={{ color: "#9499AC" }}
-                      />
-                    </div>
-       
-      </div>
       {loading && <p>Loading...</p>}
       {error && <p >Error: {error}</p>}
       <div className="table-container">
@@ -129,7 +58,7 @@ const AdminCustomerTable = () => {
           <tr >
             <th>Name</th>
             <th>Address</th>
-            <th>Phone Number</th>
+            <th>Email</th>
             <th>Amount Requested</th>
             <th>Amount Approved</th>
             <th>Action</th>
@@ -142,11 +71,12 @@ const AdminCustomerTable = () => {
                 {loan.customerDetails.firstName} {loan.customerDetails.lastName}
               </td>
               <td>{loan.customerDetails.address}</td>
-              <td>{loan.customerDetails.phoneOne}</td>
+              <td>{loan.customerDetails.email}</td>
               <td>{loan.loanDetails.amountRequested}</td>
               <td>{loan.loanDetails.amountApproved}</td>
-              <td>  <Link to={`/admin/downloadLoanForm/${loan._id}`}>View Details</Link>
+              <td>  <Link to={`/solution/downloadLoanForm/${loan._id}`}>View Details</Link>
               </td>
+              <td></td>
             </tr>
           ))}
         </tbody>
@@ -172,8 +102,7 @@ const AdminCustomerTable = () => {
       </div>
     </div>
     </div>
-    </TableRap>
   );
 };
 
-export default AdminCustomerTable;
+export default SolutionListCustomer;

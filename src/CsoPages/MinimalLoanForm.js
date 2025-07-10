@@ -14,8 +14,10 @@ import {
 } from "../redux/slices/appSlice";
 import { PulseLoader } from "react-spinners";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { uploadImages } from "../redux/slices/uploadSlice";
+import { resetUpload, uploadImages } from "../redux/slices/uploadSlice";
 import imageCompression from 'browser-image-compression';
+import { fetchOutstandingLoans } from "../redux/slices/otherLoanSlice";
+import { fetchCsoByWorkId } from "../redux/slices/csoSlice";
 
 
 const ModalOverlay = styled.div`
@@ -139,9 +141,21 @@ const LoanApplicationRap = styled.div`
     font-weight: 400px;
     size: 14px;
   }
+  .success-visible {
+    padding: 20px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  .success-visible p {
+    font-size: 18px;
+  }
+  
 `;
 
 const MinimalApplicationForm = () => {
+  
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { id } = useParams();
@@ -156,40 +170,42 @@ const MinimalApplicationForm = () => {
   const [loading, setLoading] = useState(false);
   const user = JSON.parse(localStorage.getItem("csoUser"));
     const [uploadTarget, setUploadTarget] = useState(null);
-      const { urls } = useSelector((state) => state.upload);
-  
+      const { urls, target  } = useSelector((state) => state.upload);
+  const { submitLoanloading, status, error } = useSelector(
+      (state) => state.loan
+    );
   const loans = useSelector((state) => state.loan.loans);
   const successMessage = useSelector((state) => state.loan.successMessage);
   const loan = loans.find((loan) => loan._id === id);
   const [formData, setFormData] = useState({
-    csoId: user.workId,
-    branch: user.branch,
-    csoName: `${user.firstName} ${user.lastName}`,
+    csoId: user?.workId,
+    branch: user?.branch,
+    csoName: `${user?.firstName} ${user?.lastName}`,
     customerDetails: {
-      firstName: loan.customerDetails.firstName,
-      lastName: loan.customerDetails.lastName,
-      middleName: loan.customerDetails.middleName,
-      dateOfBirth: loan.customerDetails.dateOfBirth,
-      email: loan.customerDetails.email,
-      phoneOne: loan.customerDetails.phoneOne,
-      phoneTwo: loan.customerDetails.phoneTwo,
-      address: loan.customerDetails.address,
-      city: loan.customerDetails.city,
-      state: loan.customerDetails.state,
-      bvn: loan.customerDetails.bvn,
-      religion: loan.customerDetails.religion,
-      NextOfKin: loan.customerDetails.NextOfKin,
-      NextOfKinNumber: loan.customerDetails.NextOfKinNumber,
+      firstName: loan?.customerDetails?.firstName,
+      lastName: loan?.customerDetails?.lastName,
+      middleName: loan?.customerDetails?.middleName,
+      dateOfBirth: loan?.customerDetails?.dateOfBirth,
+      email: loan?.customerDetails?.email,
+      phoneOne: loan?.customerDetails?.phoneOne,
+      phoneTwo: loan?.customerDetails?.phoneTwo,
+      address: loan?.customerDetails?.address,
+      city: loan?.customerDetails?.city,
+      state: loan?.customerDetails?.state,
+      bvn: loan?.customerDetails?.bvn,
+      religion: loan?.customerDetails?.religion,
+      NextOfKin: loan?.customerDetails?.NextOfKin,
+      NextOfKinNumber: loan?.customerDetails?.NextOfKinNumber,
     },
     businessDetails: {
-      businessName: loan.businessDetails.businessName,
-      natureOfBusiness: loan.businessDetails.natureOfBusiness,
-      address: loan.businessDetails.address,
-      yearsHere: loan.businessDetails.yearsHere,
-      nameKnown: loan.businessDetails.nameKnown,
-      estimatedValue: loan.businessDetails.estimatedValue,
-      operationalStatus: loan.businessDetails.operationalStatus,
-      additionalInfo: loan.businessDetails.additionalInfo,
+      businessName: loan?.businessDetails?.businessName,
+      natureOfBusiness: loan?.businessDetails?.natureOfBusiness,
+      address: loan?.businessDetails?.address,
+      yearsHere: loan?.businessDetails?.yearsHere,
+      nameKnown: loan?.businessDetails?.nameKnown,
+      estimatedValue: loan?.businessDetails?.estimatedValue,
+      operationalStatus: loan?.businessDetails?.operationalStatus,
+      additionalInfo: loan?.businessDetails?.additionalInfo,
     },
     bankDetails: {
       accountName: "",
@@ -203,18 +219,18 @@ const MinimalApplicationForm = () => {
       loanAppForm: 1500,
     },
     guarantorDetails: {
-      name: loan.guarantorDetails.name,
-      address: loan.guarantorDetails.address,
-      phone: loan.guarantorDetails.phone,
-      phoneTwo: loan.guarantorDetails.phoneTwo,
-      email: loan.guarantorDetails.email,
-      relationship: loan.guarantorDetails.relationship,
-      yearsKnown: loan.guarantorDetails.yearsKnown,
+      name: loan?.guarantorDetails?.name,
+      address: loan?.guarantorDetails?.address,
+      phone: loan?.guarantorDetails?.phone,
+      phoneTwo: loan?.guarantorDetails?.phoneTwo,
+      email: loan?.guarantorDetails?.email,
+      relationship: loan?.guarantorDetails?.relationship,
+      yearsKnown: loan?.guarantorDetails?.yearsKnown,
     },
     groupDetails: {
-      groupName: loan.groupDetails.groupName,
-      leaderName: loan.groupDetails.leaderName,
-      mobileNo: loan.groupDetails.mobileNo,
+      groupName: loan?.groupDetails?.groupName,
+      leaderName: loan?.groupDetails?.leaderName,
+      mobileNo: loan?.groupDetails?.mobileNo,
     },
     pictures: {
       customer: "",
@@ -223,7 +239,21 @@ const MinimalApplicationForm = () => {
       signature: "",
     },
   });
+  
+  const { outstandingLoans, totalOutstandingLoans } = useSelector(
+    (state) => state.otherLoan
+  );
+   const { specificCso, remittancestatus, hoursLeft, minutesLeft } = useSelector(
+      (state) => state.cso
+    );
 
+
+      const defaultingTarget = specificCso?.defaultingTarget;
+
+      console.log(totalOutstandingLoans, defaultingTarget);
+      
+
+  console.log(target);
   console.log(formData);
 
   const isValid =
@@ -268,10 +298,19 @@ const MinimalApplicationForm = () => {
   const { dropdowVisible } = useSelector((state) => state.app);
 
   const csoId = user.workId;
-
+const workId = user.workId;
   useEffect(() => {
     dispatch(fetchAllLoansByCsoId({ csoId }));
   }, [dispatch]);
+
+
+ useEffect(() => {
+    if (csoId) dispatch(fetchOutstandingLoans(csoId));
+  }, [csoId, dispatch]);
+
+    useEffect(() => {
+      if (workId) dispatch(fetchCsoByWorkId(workId));
+    }, [workId, dispatch]);
 
   const handleVisisbleNow = () => {
     navigate(`/cso/customer-details/${loan?._id}`);
@@ -292,12 +331,10 @@ const MinimalApplicationForm = () => {
   };
 
 const handleFirstImage = async (fileList) => {
-  setUploadTarget("customer");
-
+  const target = "customer"; // 👈 local value, not setState
   let files = Array.from(fileList);
 
   files = await Promise.all(files.map(async (file, index) => {
-    // Fix blob to file if needed
     if (!file.name || !file.lastModified) {
       file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
         type: file.type || 'image/jpeg',
@@ -305,111 +342,79 @@ const handleFirstImage = async (fileList) => {
       });
     }
 
-    // Compress the image
-    const options = {
-      maxSizeMB: 0.5, // target size
-      maxWidthOrHeight: 800, // scale down resolution
-      useWebWorker: true,
-    };
-
+    const options = { maxSizeMB: 0.5, maxWidthOrHeight: 800, useWebWorker: true };
     try {
-      const compressedFile = await imageCompression(file, options);
-      return compressedFile;
-    } catch (err) {
-      console.error("Image compression failed", err);
-      return file; // fallback to original if compression fails
+      return await imageCompression(file, options);
+    } catch {
+      return file;
     }
   }));
 
   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+  if (files.length === 0) return alert("Captured file is invalid or empty.");
 
-  if (files.length === 0) {
-    alert("Captured file is invalid or empty. Please try again.");
-    return;
-  }
-
-  dispatch(uploadImages({ files, folderName: 'products' }));
+  dispatch(uploadImages({ files, folderName: 'products', target })); // 👈 pass target
 };
 
+
+
+ 
+
  const handleSecondImage = async (fileList) => {
-   setUploadTarget("business");
+  const target = "business"; // 👈 local value, not setState
+  let files = Array.from(fileList);
+
+  files = await Promise.all(files.map(async (file, index) => {
+    if (!file.name || !file.lastModified) {
+      file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+        type: file.type || 'image/jpeg',
+        lastModified: Date.now(),
+      });
+    }
+
+    const options = { maxSizeMB: 0.5, maxWidthOrHeight: 800, useWebWorker: true };
+    try {
+      return await imageCompression(file, options);
+    } catch {
+      return file;
+    }
+  }));
+
+  files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+  if (files.length === 0) return alert("Captured file is invalid or empty.");
+
+  dispatch(uploadImages({ files, folderName: 'products', target })); // 👈 pass target
+};
+
  
-   let files = Array.from(fileList);
  
-   files = await Promise.all(files.map(async (file, index) => {
-     // Fix blob to file if needed
-     if (!file.name || !file.lastModified) {
-       file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
-         type: file.type || 'image/jpeg',
-         lastModified: Date.now(),
-       });
-     }
- 
-     // Compress the image
-     const options = {
-       maxSizeMB: 0.5, // target size
-       maxWidthOrHeight: 800, // scale down resolution
-       useWebWorker: true,
-     };
- 
-     try {
-       const compressedFile = await imageCompression(file, options);
-       return compressedFile;
-     } catch (err) {
-       console.error("Image compression failed", err);
-       return file; // fallback to original if compression fails
-     }
-   }));
- 
-   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
- 
-   if (files.length === 0) {
-     alert("Captured file is invalid or empty. Please try again.");
-     return;
-   }
- 
-   dispatch(uploadImages({ files, folderName: 'products' }));
- };
- 
- const handleThirdImage = async (fileList) => {
-   setUploadTarget("signature");
- 
-   let files = Array.from(fileList);
- 
-   files = await Promise.all(files.map(async (file, index) => {
-     // Fix blob to file if needed
-     if (!file.name || !file.lastModified) {
-       file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
-         type: file.type || 'image/jpeg',
-         lastModified: Date.now(),
-       });
-     }
- 
-     // Compress the image
-     const options = {
-       maxSizeMB: 0.5, // target size
-       maxWidthOrHeight: 800, // scale down resolution
-       useWebWorker: true,
-     };
- 
-     try {
-       const compressedFile = await imageCompression(file, options);
-       return compressedFile;
-     } catch (err) {
-       console.error("Image compression failed", err);
-       return file; // fallback to original if compression fails
-     }
-   }));
- 
-   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
- 
-   if (files.length === 0) {
-     alert("Captured file is invalid or empty. Please try again.");
-     return;
-   }
- 
-   dispatch(uploadImages({ files, folderName: 'products' }));
- };
+
+
+  const handleThirdImage = async (fileList) => {
+  const target = "signature"; // 👈 local value, not setState
+  let files = Array.from(fileList);
+
+  files = await Promise.all(files.map(async (file, index) => {
+    if (!file.name || !file.lastModified) {
+      file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+        type: file.type || 'image/jpeg',
+        lastModified: Date.now(),
+      });
+    }
+
+    const options = { maxSizeMB: 0.5, maxWidthOrHeight: 800, useWebWorker: true };
+    try {
+      return await imageCompression(file, options);
+    } catch {
+      return file;
+    }
+  }));
+
+  files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+  if (files.length === 0) return alert("Captured file is invalid or empty.");
+
+  dispatch(uploadImages({ files, folderName: 'products', target })); // 👈 pass target
+};
 
   const handleGuarantorChange = () => {
     setGuarantorChange(!guarantorChange);
@@ -462,21 +467,19 @@ const handleFirstImage = async (fileList) => {
  
    dispatch(uploadImages({ files, folderName: 'products' }));
  };
+
 useEffect(() => {
-  if (!loading && urls.length > 0 && uploadTarget) {
+  if (!loading && urls.length > 0 && target) {
     setFormData((prev) => ({
       ...prev,
       pictures: {
         ...prev.pictures,
-        [uploadTarget]:
-          uploadTarget === "others"
-            ? [...prev.pictures.others, ...urls]
-            : urls[0],
+        [target]: target === "others" ? [...prev.pictures.others, ...urls] : urls[0],
       },
     }));
-    setUploadTarget(null);
+    dispatch(resetUpload()); // 👈 Clear upload state after use
   }
-}, [urls, loading, uploadTarget]);
+}, [urls, loading, target, dispatch]);
 
 
   const handleSubmit = async (e) => {
@@ -485,8 +488,7 @@ if (isValid) {
     try {
       
       const res = await dispatch(submitLoanApplication(formData));
-      dispatch(setDropdownVisible());
-      dispatch(setDropSuccessVisible());
+     
       console.log(res);
     } catch (error) {
       console.log(error);
@@ -496,12 +498,43 @@ if (isValid) {
   
   const handleClose = () => {
     dispatch(clearMessages()); 
-    navigate(`/cso/customer-details/${loan?._id}`);
+  };
+  const formatNumberWithCommas = (number) => {
+    return new Intl.NumberFormat().format(number);
   };
 
+
+
+  const handleVisisble = () => {
+    navigate("/cso")
+  }
   return (
     <LoanApplicationRap>
-      <div className="">
+{totalOutstandingLoans > defaultingTarget && defaultingTarget !== 0 ?(
+(
+     <div className="dropdown-container">
+            <div className="success-visible">
+              <p style={{ color: "red" }}>
+                You have exceeded your defaulting limit of
+                <span
+                  style={{
+                    fontWeight: "900",
+                    fontSize: "40px",
+                  }}
+                >
+                  {" "}
+                  {formatNumberWithCommas(defaultingTarget)}{" "}
+                </span>
+                Try to clear the defaults in order to submit new loans. <br />{" "}
+                Thanks.
+              </p>
+              <button onClick={handleVisisble}>Exit</button>
+            </div>
+          </div>
+)
+): 
+(
+  <div className="">
         <form className="all-dropdown-div" onSubmit={handleSubmit}>
           <div className="upper-mininal">
             <h1> REAPPLICATION FORM</h1>
@@ -786,10 +819,10 @@ if (isValid) {
               disabled={!isValid}
               style={{
                 backgroundColor: isValid ? "#0c1d55" : "#727789",
-                cursor: loading || !isValid ? "not-allowed" : "pointer",
+                cursor: submitLoanloading || !isValid ? "not-allowed" : "pointer",
               }}
             >
-              {loading ? (
+              {submitLoanloading ? (
                 <PulseLoader color="white" size={10} />
               ) : (
                 "Confirm Application"
@@ -798,6 +831,9 @@ if (isValid) {
           </div>
         </form>
       </div>
+)
+}
+      
       {successMessage && (
         <ModalOverlay>
           <ModalContent>
@@ -813,6 +849,11 @@ if (isValid) {
           </ModalContent>
         </ModalOverlay>
       )}
+            {submitLoanloading ? (
+      <div className="dropdown-container">
+         <PulseLoader color="white" size={50} />
+      </div>
+            ): ""}
     </LoanApplicationRap>
   );
 };

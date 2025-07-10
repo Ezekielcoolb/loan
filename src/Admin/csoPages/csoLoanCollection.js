@@ -18,11 +18,14 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import {
+  addRemitanceIssueCsoResolved,
   clearUpdateSuccessMessages,
   fetchallgetRemittances,
+  fetchCsoRemittanceRemttanceIssue,
   fetchForAdminUpdateCSO,
   fetchLoanProgress,
   fetchLoanProgressChart,
+  setRemittanceIssueResolve,
   setSelectedRemmitDate,
   updateByAdminCSO,
 } from "../../redux/slices/csoSlice";
@@ -33,6 +36,7 @@ import {
   fetchAllLoansByCsoIdLoanDashboardLoans,
   fetchCsoActiveLoans,
   fetchLoanAllTimeCounts,
+  fetchLoanAppForms,
   fetchPieRepaymentData,
   setPage,
 } from "../../redux/slices/LoanSlice";
@@ -104,6 +108,18 @@ const CollectRap = styled.div`
     color: #030b26;
     font-size: 16px;
     font-weight: 700;
+  }
+  .all-dropdown-div img {
+    width: 100%;
+    object-fit: cover;
+    height: 400px;
+  }
+  .all-dropdown-div  {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
   }
   .summary-loan {
     display: flex;
@@ -291,6 +307,27 @@ const CollectRap = styled.div`
     padding: 0px 15px;
     margin-top: 20px;
   }
+
+  form input {
+     border: 1px solid #d0d5dd;
+    height: 40px;
+    width: 400px;
+     border-radius: 100px;
+    padding: 0px 15px;
+
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  form button {
+    width: 400px;
+    height: 40px;
+    border-radius: 10px;
+  }
   .remmittance-div p {
     font-size: 16px;
     color: #030b26;
@@ -427,6 +464,7 @@ const CsoLoanCollection = () => {
   const { id } = useParams();
   const workId = id;
   const [activeLink, setActiveLink] = useState("loans");
+  const [totalAdminFee, setAdminFee] = useState(0);
 
   const handleLinkClick = (link) => {
     setActiveLink(link);
@@ -435,13 +473,37 @@ const CsoLoanCollection = () => {
   const [showCalendar, setShowCalendar] = useState(false); // State for calendar visibility
   const [totalAmountPaid, setTotalAmountPaid] = useState(0);
   const [updatecsoShow, setUpdateCsoShow] = useState(false);
+  // const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedImage, setSelectedImage] = useState(null)
+  const [issueDropdown, setIssueDropdown] = useState(false)
 
+const [currentMonth, setCurrentMonth] = useState(() => {
+    const now = new Date();
+    return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  });
+
+  const handleIssueDrop = () => {
+    setIssueDropdown(!issueDropdown)
+  }
+
+   const handleIssueDropTwo = () => {
+    setIssueDropdown(!issueDropdown)
+    dispatch(setRemittanceIssueResolve())
+  }
+  
   const handleUpdateCsoShow = () => {
     setUpdateCsoShow(!updatecsoShow);
   };
   const { totalOutstandingChart, defaultingTargetChart, percentageChart } =
     useSelector((state) => state.otherLoan);
   const [dayPicker, setDayPicker] = useState("today");
+
+
+const [date, setDate] = useState('');
+  const [issueMessage, setIssueMessage] = useState('');
+const isValid =
+    date !== "" &&
+    issueMessage !== ""
 
   const csoId = id;
   const {
@@ -463,6 +525,7 @@ const CsoLoanCollection = () => {
     promptPayments,
     overduePayments,
     customers,
+    loanAppForm,
     page,
     totalPages,
     todayCount,
@@ -477,13 +540,23 @@ const CsoLoanCollection = () => {
     remmitdata,
     selectedRemiteDate,
     progressData,
+    remittanceCso,
+    remitanceCsoIssues,
     monthlyLoanCounts,
     loading,
+    addRemittanceIssue,
     specifiedCso,
     updatingCsoloading,
+    issueResolveloading,
     specifiedCsoTwo,
+    dailyCsoCollections,
     updateCsoSuccessMessage,
   } = useSelector((state) => state.cso);
+
+console.log(remittanceCso);
+console.log(addRemittanceIssue);
+console.log(addRemittanceIssue);
+console.log(dailyCsoCollections);
 
   const { remittanceProgress } = useSelector((state) => state.remittance);
 
@@ -523,6 +596,8 @@ const CsoLoanCollection = () => {
   console.log(updatingCsoloading);
   console.log(specifiedCso);
   console.log(updateCsoSuccessMessage);
+  console.log(loanAppForm);
+  
 
   useEffect(() => {
     if (csoId) {
@@ -538,6 +613,18 @@ const CsoLoanCollection = () => {
     dispatch(fetchLoanProgress(workId));
     dispatch(fetchRemittanceNewProgress(workId)); // Fetch remittance progress for this CSO
   }, [dispatch, workId]);
+
+const loadData = () => {
+    dispatch(fetchCsoRemittanceRemttanceIssue({
+      workId,
+      month: currentMonth.getUTCMonth() + 1,
+      year: currentMonth.getUTCFullYear()
+    }));
+  };
+
+  useEffect(() => {
+    if (workId) loadData();
+  }, [workId, currentMonth]);
 
   useEffect(() => {
     if (workId) {
@@ -558,9 +645,27 @@ const CsoLoanCollection = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    // Dispatch the action to fetch loans when the component mounts or date changes
-    dispatch(fetchCsoActiveLoans({ csoId, date: selectedDate.toISOString() }));
-  }, [dispatch, csoId, selectedDate]);
+     // Dispatch the action to fetch loans when the component mounts or date changes
+     dispatch(fetchCsoActiveLoans({ csoId, date: selectedDate.getFullYear() +
+   "-" + String(selectedDate.getMonth() + 1).padStart(2, "0") +
+   "-" + String(selectedDate.getDate()).padStart(2, "0") }));
+   }, [dispatch, csoId, selectedDate]);
+
+
+    useEffect(() => {
+       dispatch(fetchLoanAppForms({ csoId, date: selectedDate.getFullYear() +
+     "-" + String(selectedDate.getMonth() + 1).padStart(2, "0") +
+     "-" + String(selectedDate.getDate()).padStart(2, "0") }));
+     }, [dispatch, csoId, selectedDate]);
+
+       useEffect(() => {
+         if (loanAppForm) {
+           const totalPaid = loanAppForm.reduce((sum, customer) => {
+             return sum + customer.amount;
+           }, 0);
+           setAdminFee(totalPaid); // Update total amount paid
+         }
+       }, [loanAppForm, selectedDate]);
 
   // Calculate total amount paid for the selected date
   useEffect(() => {
@@ -839,6 +944,48 @@ const CsoLoanCollection = () => {
         <MoonLoader />
       </p>
     );
+
+
+ const handlePrev = () => {
+    const prev = new Date(Date.UTC(currentMonth.getUTCFullYear(), currentMonth.getUTCMonth() - 1, 1));
+    setCurrentMonth(prev);
+  };
+
+  const handleNext = () => {
+    const next = new Date(Date.UTC(currentMonth.getUTCFullYear(), currentMonth.getUTCMonth() + 1, 1));
+    setCurrentMonth(next);
+  };
+
+  const monthLabel = currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+  const mergedData = {};
+
+  dailyCsoCollections?.forEach(item => {
+    mergedData[item.date] = { amount: item.amount, image: '', issue: '' };
+  });
+
+  remittanceCso?.forEach(item => {
+    const dateKey = new Date(item.date).toISOString().split('T')[0];
+    if (!mergedData[dateKey]) mergedData[dateKey] = { amount: 0, image: '', issue: '' };
+    mergedData[dateKey].image = item.image || '';
+  });
+
+  remitanceCsoIssues?.forEach(item => {
+    const dateKey = new Date(item.date).toISOString().split('T')[0];
+    if (!mergedData[dateKey]) mergedData[dateKey] = { amount: 0, image: '', issue: '' };
+    mergedData[dateKey].issue = item.issueMessage || '';
+  });
+
+  const sortedDates = Object.keys(mergedData).sort((a, b) => new Date(b) - new Date(a));
+
+  const handleSubmitIssue = (e) => {
+    e.preventDefault();
+    if (!date || !issueMessage) return alert('Both fields are required.');
+
+    dispatch(addRemitanceIssueCsoResolved({ workId, issue: { date, issueMessage } }));
+  };
+
+
   return (
     <CollectRap>
       <div className="cso-1">
@@ -1030,12 +1177,55 @@ const CsoLoanCollection = () => {
                   </div>
                 </div>
               </div>
+
+               <h2 style={{ textAlign: "center", marginTop: "20px" }}>
+          Admin and Application Fees
+        </h2>
+        <div className="">
+         <div className="table-container">
+                  <div className="new-table-scroll">
+                    <div className="table-div-con">
+                      <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>S/N</th> {/* Serial number column header */}
+                  <th>Customer Name</th>
+                  <th>Admin fee</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loanAppForm
+                  ?.slice()
+                  .reverse()
+                  .map((customer, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>{" "}
+                      {/* Serial number, starting from 1 */}
+                      <td>{customer.customerName}</td>
+                      <td>{customer.amount}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+            </div>
+            </div>
+          </div>
+        </div>
               <div className="all-summary">
                 <h4>Daily Summary</h4>
                 <div className="summary-div">
                   <h6>Total Amount Collected:</h6>
                   <span> {formatNumberWithCommas(totalAmountPaid)}</span>
                 </div>
+                 <div className="summary-div">
+            <h6>Total Admin and Application Fee</h6>
+            <span> {formatNumberWithCommas(totalAdminFee)}</span>
+          </div>
+
+           <div className="summary-div">
+            <h2>Overall Total =</h2>
+            <h2>{formatNumberWithCommas(totalAdminFee + totalAmountPaid)}</h2>
+          </div>
               </div>
             </div>
           </>
@@ -1528,10 +1718,9 @@ const CsoLoanCollection = () => {
         )}
         {activeLink === "remmitance" && (
           <>
-            <div className="remmit">
+            {/* <div className="remmit">
               <h2 className="text-xl font-bold mb-4">Remittances</h2>
 
-              {/* Date Picker */}
               <input
                 type="date"
                 value={selectedRemiteDate}
@@ -1541,7 +1730,6 @@ const CsoLoanCollection = () => {
                 className="date-input"
               />
 
-              {/* Display Remittances */}
               {status === "loading" && (
                 <p
                   style={{
@@ -1583,7 +1771,70 @@ const CsoLoanCollection = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </div> */}
+
+       <div>
+       <div style={{
+       display: "flex",
+       alignItems: "center",
+       justifyContent: "space-between"
+       }}>
+        <h3>Remittance</h3>
+
+        <button style={{
+          width: "fit-content",
+          padding: "10px",
+          color: "white",
+          background: "green",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "30px",
+          borderRadius: "8px",
+          border: "none"
+        }} onClick={handleIssueDrop}>Resolve Issue</button>
+       </div>
+     
+
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+        <button onClick={handlePrev}>&laquo; Prev</button>
+        <h4 style={{ margin: '0 15px' }}>{monthLabel}</h4>
+        <button onClick={handleNext}>Next &raquo;</button>
+      </div>
+     
+
+
+       <div className="table-container">
+                  <div className="new-table-scroll">
+                    <div className="table-div-con">
+      <table className="custom-table">
+        <thead>
+          <tr>
+            <th>Date (UTC)</th>
+            <th>Amount (₦)</th>
+            <th>Image</th>
+            <th>Issue</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sortedDates.map(date => (
+            <tr key={date}>
+              <td>{date}</td>
+              <td>₦{Number(mergedData[date].amount || 0).toLocaleString()}</td>
+              <td>
+  {mergedData[date].image ? (
+    <button onClick={() => setSelectedImage(mergedData[date].image)}>View</button>
+  ) : '-'}
+</td>
+              <td>{mergedData[date].issue || '-'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      </div>
+      </div>
+      </div>
+    </div>
           </>
         )}
 
@@ -1756,6 +2007,77 @@ const CsoLoanCollection = () => {
       ) : (
         ""
       )}
+
+      {selectedImage ? (
+      <div className="dropdown-container">
+      <div className="all-dropdown-div">
+        <img
+                        src={
+                          selectedImage?.startsWith("http")
+                            ? selectedImage // Cloudinary URL
+                            : selectedImage
+                            ? `https://api.jksolutn.com${selectedImage}` // Local image
+                            : "fallback.jpg" // Optional fallback image
+                        }
+                        alt="Remitance"
+                       
+                      />
+
+                      <button style={{
+                      background: "red",
+                      color: "white",
+                      width: "150px",
+                      height: "50px",
+                      borderRadius: "8px",
+                      border: "none"
+                      
+                      }} onClick={() => setSelectedImage(null)}>Cancel</button>
+      </div>
+      
+      </div>
+      ):""}
+
+      {issueDropdown ? (
+      <div className="dropdown-container">
+        <div className="all-dropdown-div">
+         <h3>Add Remittance Issue</h3>
+      <form onSubmit={handleSubmitIssue}>
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+        <input type="text" value={issueMessage} onChange={(e) => setIssueMessage(e.target.value)} placeholder="Issue Message" required />
+       <button
+  style={{
+    background: isValid ? "blue" : "",
+     color: isValid ? "white" : ""
+  }}
+  type="submit"
+  disabled={issueResolveloading || !isValid}  // 🔑 Disable if loading or invalid
+>
+  {issueResolveloading ? <PulseLoader color="white" size={10} /> : "Submit"}
+</button>
+<button style={{
+  background: "red",
+  color: "white"
+}} onClick={handleIssueDrop}>
+                  Exit
+                </button>
+      </form>
+        </div>
+      </div>
+      ): ""}
+
+      {addRemittanceIssue ? (
+        <div className="dropdown-container">
+          <div className="all-dropdown-div">
+            <p>Issue Ressolved Successfully</p>
+            <button style={{
+              background: "red",
+              color: "white",
+              width: "200px",
+              height: "30px"
+            }} onClick={handleIssueDropTwo}>Exit</button>
+          </div>
+        </div>
+      ): ""}
     </CollectRap>
   );
 };

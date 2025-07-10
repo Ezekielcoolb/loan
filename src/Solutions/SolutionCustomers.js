@@ -14,7 +14,7 @@ import {
   setSummaryPage,
 } from "../redux/slices/LoanSlice";
 import { MoonLoader } from "react-spinners";
-import ManagerListCustomer from "./ManagerListCustomer";
+import SolutionListCustomer from "./SolutionListCustomers";
 
 const BranchCustomerRap = styled.div`
   width: 100%;
@@ -262,7 +262,7 @@ const BranchCustomerRap = styled.div`
   }
 `;
 
-const CustomersDetails = () => {
+const SolutionCustomers = () => {
   const [activeLink, setActiveLink] = useState("customer");
   const [activatedLink, setActivatedLink] = useState("active");
   const [query, setQuery] = useState("");
@@ -478,7 +478,7 @@ console.log(summaries);
           {summary.performance}%
         </td>
         <td>
-          <Link to={`/manager/customer/${summary.bvn}`}>
+          <Link to={`/solution/customer/${summary.bvn}`}>
             View Details
           </Link>
         </td>
@@ -578,9 +578,9 @@ console.log(summaries);
         </div>
       </div>
 }
-{activeLink === "details" && <ManagerListCustomer />}
+{activeLink === "details" && <SolutionListCustomer />}
     </BranchCustomerRap>
   );
 };
 
-export default CustomersDetails;
+export default SolutionCustomers;

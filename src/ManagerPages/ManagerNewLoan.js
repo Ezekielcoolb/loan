@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchWaitingLoans, setPages } from "../redux/slices/LoanSlice";
+import { deleteLoan, fetchWaitingLoans, setPages } from "../redux/slices/LoanSlice";
 import { MoonLoader } from "react-spinners";
 
 const NewLoanRap = styled.div`
@@ -190,6 +190,12 @@ const NewLoanRap = styled.div`
 
 const ManagerNewLoan = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(null);
+
+  const toggleDropdown = (loanId) => {
+    setDropdownOpen(dropdownOpen === loanId ? null : loanId);
+  };
+
   const dispatch = useDispatch();
   const { loans, loading, totalPages, currentPage } = useSelector(
     (state) => state.loan
@@ -198,6 +204,8 @@ const ManagerNewLoan = () => {
   useEffect(() => {
     dispatch(fetchWaitingLoans({ page: currentPage }));
   }, [dispatch, currentPage]);
+
+
   
   const handlePageChange = (page) => {
     dispatch(setPages(page));
@@ -214,6 +222,13 @@ const ManagerNewLoan = () => {
       dispatch(setPages(currentPage + 1));
     }
   };
+
+  const handleDelete = (id) => {
+    if (window.confirm('Are you sure you want to delete this loan?')) {
+        dispatch(deleteLoan(id));
+    }
+};
+
   
   if (loading === "loading") return <p style={{display: "flex", 
     flexDirection: "column", 
@@ -230,47 +245,85 @@ const ManagerNewLoan = () => {
         </div>
 
         <div className="table-container">
-          <div className="new-table-scroll">
-            <div className="table-div-con">
-              <table className="custom-table">
-                <thead>
-                  <tr>
-                    <th>Customer Name</th>
-                    <th>Loan Requested</th>
-                    <th>Business Name</th>
-                    <th>Estimated Value</th>
-                    <th>CSO in Charged</th>
-                    <th>Branch Associated</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loans?.map((loan) => (
-                    <tr key={loan?._id}>
-                      <td>{`${loan?.customerDetails?.firstName} ${loan?.customerDetails?.lastName}`}</td>
-                      <td>{loan?.loanDetails?.amountRequested}</td>
-                      <td>{loan?.businessDetails?.businessName}</td>
-                      <td>{loan?.businessDetails?.estimatedValue}</td>
-                      <td>{loan?.csoName}</td>
-                      <td>{loan?.branch}</td>
-                      <td style={{color: "green"}}>{loan?.status}</td>
-                      <td>
-                        <Link to={`/manager/loan/${loan._id}`}>View Details</Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-           {/* Pagination Controls */}
-     <div className="pagination">
+      <div className="new-table-scroll">
+        <div className="table-div-con">
+          <table className="custom-table">
+            <thead>
+              <tr>
+                <th>Customer Name</th>
+                <th>Loan Requested</th>
+                <th>Business Name</th>
+                <th>Estimated Value</th>
+                <th>CSO in Charged</th>
+                <th>Branch Associated</th>
+                <th>Status</th>
+                <th>Action</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loans?.slice().reverse().map((loan) => (
+                <tr key={loan?._id}>
+                  <td>{`${loan?.customerDetails?.firstName} ${loan?.customerDetails?.lastName}`}</td>
+                  <td>{loan?.loanDetails?.amountRequested}</td>
+                  <td>{loan?.businessDetails?.businessName}</td>
+                  <td>{loan?.businessDetails?.estimatedValue}</td>
+                  <td>{loan?.csoName}</td>
+                  <td>{loan?.branch}</td>
+                  <td style={{ color: "green" }}>{loan?.status}</td>
+                  <td>
+                    <Link to={`/admin/loan/${loan._id}`}>View Details</Link>
+                  </td>
+                  <td style={{ position: "relative" }}>
+                    <button 
+                      style={{ background: "transparent", border: "none", cursor: "pointer" }}
+                      onClick={() => toggleDropdown(loan._id)}
+                    >
+                      &#8226;&#8226;&#8226;
+                    </button>
+
+                    {dropdownOpen === loan._id && (
+                      <div 
+                        style={{
+                          position: "absolute",
+                          top: "100%",
+                          right: 0,
+                          background: "white",
+                          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                          borderRadius: "5px",
+                          padding: "5px",
+                          zIndex: 10,
+                        }}
+                      >
+                        <button 
+                          style={{
+                            background: "red",
+                            color: "white",
+                            padding: "10px",
+                            border: "none",
+                            width: "100%",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => handleDelete(loan._id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="pagination">
         <button onClick={handlePreviousPage} disabled={currentPage === 1}>
           Previous
         </button>
 
-        {/* Render Page Numbers */}
         <div>
           {[...Array(totalPages)].map((_, index) => (
             <button
@@ -278,7 +331,7 @@ const ManagerNewLoan = () => {
               onClick={() => handlePageChange(index + 1)}
               disabled={currentPage === index + 1}
               style={{
-                fontWeight: currentPage === index + 1 ? 'bold' : 'normal',
+                fontWeight: currentPage === index + 1 ? "bold" : "normal",
               }}
             >
               {index + 1}
@@ -290,7 +343,7 @@ const ManagerNewLoan = () => {
           Next
         </button>
       </div>
-        </div>
+    </div>
       </div>
     </NewLoanRap>
   );

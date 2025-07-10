@@ -9,25 +9,25 @@ const sidebarConfig = [
   {
     id: 1,
     icon: "ic:round-dashboard",
-    link: "/manager",
+    link: "/solution",
     title: "Dashboard",
   },
   {
     id: 2,
     icon: "fluent:people-edit-16-regular",
-    link: "/manager/admincso",
+    link: "/solution/admincso",
     title: "Customer Service Officer",
   },
   {
     id: 3,
     icon: "carbon:global-loan-and-trial",
-    link: "/manager/loan",
+    link: "/solution/loan",
     title: "Loans",
   },
   {
     id: 4,
     icon: "arcticons:studentloan-connect",
-    link: "/manager/newloan",
+    link: "/solution/newloan",
     title: "New Loan",
   },
 
@@ -41,47 +41,46 @@ const sidebarConfig = [
   {
     id: 5,
     icon: "streamline:information-desk-customer",
-    link: "/manager/customerdetails",
+    link: "/solution/customerdetails",
     title: "Customers",
   },
 
   {
     id: 6,
     icon: "mdi:comment-account-outline",
-    link: "/manager/transactions",
+    link: "/solution/transactions",
     title: "Transaction",
   },
+  //    {
+  //   id: 7,
+  //   icon: "healthicons:emergency-operations-center-outline",
+  //   link: "/solution/operations",
+  //   title: "Operations",
+  // },
+  //   {
+  //   id: 8,
+  //   icon: "iconoir:reports-solid",
+  //   link: "/solution/reports",
+  //   title: "Reports",
+  // },
 //   {
 //     id: 8,
 //     icon: "mdi:comment-account-outline",
 //     link: "/admin-members",
 //     title: "Admin Panel",
 //   },
-  {
-    id: 7,
-    icon: "ri:home-office-line",
-    link: "/manager/branches",
-    title: "Branch",
-  },
-    {
-    id: 7,
-    icon: "healthicons:emergency-operations-center-outline",
-    link: "/manager/operations",
-    title: "Operations",
-  },
-    {
-    id: 8,
-    icon: "iconoir:reports-solid",
-    link: "/manager/reports",
-    title: "Reports",
-  },
-  {
-    id: 8,
-    icon: "lets-icons:setting-line",
-    link: "/manager/settings",
-    title: "Setting",
-  },
-  
+//   {
+//     id: 7,
+//     icon: "ri:home-office-line",
+//     link: "/manager/branches",
+//     title: "Branch",
+//   },
+//   {
+//     id: 8,
+//     icon: "lets-icons:setting-line",
+//     link: "/manager/settings",
+//     title: "Setting",
+//   },
 //   {
 //     id: 9,
 //     icon: "lets-icons:setting-line",
@@ -90,7 +89,7 @@ const sidebarConfig = [
 //   },
 ];
 
-export default function ManagerSidebar() {
+export default function SolutionSidebar() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const { isSidebarOpen, setIsSidebarOpen, setIsProfileOpen } = useAppContext();
   const navigate = useNavigate()

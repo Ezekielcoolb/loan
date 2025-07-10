@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { fetchLoanById } from "../../redux/slices/LoanSlice";
+import { fetchLoanById } from "../redux/slices/LoanSlice";
 
 const CalendarRap = styled.div`
 height: 100vh;
@@ -104,7 +104,7 @@ background: #005e78;
   }
 `;
 
-const CalendarPage = () => {
+const ManagerNewLoanCard = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -152,9 +152,10 @@ console.log(loan);
     });
   };
 
-  const handleMoveBack = () => {
-    navigate(`/admin/customer/${loan?.customerDetails.bvn}`);
+   const handleMoveBack = () => {
+    navigate(`/manager/new-customer/${loan?.customerDetails?.bvn}`);
   };
+
   const closePopup = () => setPopupInfo(null);
 
   return (
@@ -410,4 +411,4 @@ console.log(loan);
   );
 };
 
-export default CalendarPage;
+export default ManagerNewLoanCard;

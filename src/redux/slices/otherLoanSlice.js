@@ -154,9 +154,9 @@ const OtherLoanslice = createSlice({
       })
       .addCase(fetchOutstandingProgressChart.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.totalOutstandingChart = action.payload.totalOutstanding;
-        state.defaultingTargetChart = action.payload.defaultingTarget;
-        state.percentageChart = action.payload.percentage;
+        state.totalOutstandingChart = action?.payload?.totalOutstanding;
+        state.defaultingTargetChart = action?.payload?.defaultingTarget;
+        state.percentageChart = action?.payload?.percentage;
       })
       .addCase(fetchOutstandingProgressChart.rejected, (state, action) => {
         state.status = 'failed';
@@ -199,8 +199,8 @@ builder
       })
       .addCase(fetchOutstandingLoans.fulfilled, (state, action) => {
         state.loading = false;
-        state.outstandingLoans = action.payload.loans;
-        state.totalOutstandingLoans = action.payload.totalOutstanding;
+        state.outstandingLoans = action?.payload?.loans;
+        state.totalOutstandingLoans = action?.payload?.totalOutstanding;
       })
       .addCase(fetchOutstandingLoans.rejected, (state, action) => {
         state.loading = false;

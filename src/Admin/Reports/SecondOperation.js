@@ -7,11 +7,9 @@ import {
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 
-
 const ReportRap = styled.div`
   width: 100%;
   padding: 20px;
-
 
   .client-1 {
     display: flex;
@@ -54,42 +52,41 @@ const ReportRap = styled.div`
     justify-content: space-between;
     align-items: center;
   }
-   .find-lawyer-header-upper button {
-        color: #030b26;
+  .find-lawyer-header-upper button {
+    color: #030b26;
     border: 1px solid #030b26;
     height: 40px;
     padding: 0 10px;
     border-radius: 5px;
     background-color: transparent;
-
-   }
-   .weeks-days {
+  }
+  .weeks-days {
     display: flex;
     align-items: center;
     gap: 20px;
     margin: 20px 0px;
-   }
-  
-   .week-paragraph {
-color: #030b26;
-font-weight: 600;
-cursor: pointer;
-font-size: 16px;
-   }
-   .week-paragraph.active {
-color: #727789;
-   }
-   .total {
+  }
+
+  .week-paragraph {
     color: #030b26;
-font-weight: 600;
-font-size: 16px;
-   }
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  .week-paragraph.active {
+    color: #727789;
+  }
+  .total {
+    color: #030b26;
+    font-weight: 600;
+    font-size: 16px;
+  }
 `;
 
 // ...existing code...
 
 const ScrollContainer = styled.div`
-    width: 100%;
+  width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   /* Try removing min-width or set to unset */
@@ -120,21 +117,18 @@ const CustomTable = styled.table`
 `;
 // ...existing code...
 
-
-
-
 const SecondReportPage = () => {
   const dispatch = useDispatch();
-      const [activeLink, setActiveLink] = useState("new");
-    const [openweek, setOpenweek] = useState("week1")
+  const [activeLink, setActiveLink] = useState("new");
+  const [openweek, setOpenweek] = useState("week1");
   const { data, status, error, currentMonth, currentYear } = useSelector(
     (state) => state.report
   );
-console.log(data);
+  console.log(data);
 
-const handleWeekOpen = (link) => {
-  setOpenweek(link)
-}
+  const handleWeekOpen = (link) => {
+    setOpenweek(link);
+  };
   useEffect(() => {
     dispatch(
       fetchReportMonthlySummary({ month: currentMonth, year: currentYear })
@@ -193,8 +187,6 @@ const handleWeekOpen = (link) => {
     return Array.from(set);
   }, [filteredEntries]);
 
-
-
   const weeks = React.useMemo(() => {
     const weekdays = dayEntries
       .map(([dateStr, dayData]) => {
@@ -223,369 +215,629 @@ const handleWeekOpen = (link) => {
     return groupedWeeks;
   }, [dayEntries]);
 
- 
-
-
-   const handleLinkClick = (link) => {
+  const handleLinkClick = (link) => {
     setActiveLink(link);
   };
 
-
-
-  const weeklyReports = data?.weeklyReports
+  const weeklyReports = data?.weeklyReports;
   console.log(weeklyReports);
-  const week1 = weeklyReports?.find(week => week.weekName === 'Week 1');
-const week2 = weeklyReports?.find(week => week.weekName === 'Week 2');
-const week3 = weeklyReports?.find(week => week.weekName === 'Week 3');
-const week4 = weeklyReports?.find(week => week.weekName === 'Week 4');
-const week5 = weeklyReports?.find(week => week.weekName === 'Week 5');
+  const week1 = weeklyReports?.find((week) => week.weekName === "Week 1");
+  const week2 = weeklyReports?.find((week) => week.weekName === "Week 2");
+  const week3 = weeklyReports?.find((week) => week.weekName === "Week 3");
+  const week4 = weeklyReports?.find((week) => week.weekName === "Week 4");
+  const week5 = weeklyReports?.find((week) => week.weekName === "Week 5");
 
-const monthlyTotals = {
-  totalDisbursement: 0,
-  totalInterest: 0,
-  totalExpenses: 0,
-  totalLoanAppForm: 0,
-  profit: 0,
-};
+  const monthlyTotals = {
+    totalDisbursement: 0,
+    totalInterest: 0,
+    totalExpenses: 0,
+    totalLoanAppForm: 0,
+    profit: 0,
+  };
 
-weeklyReports.forEach(week => {
-  week.days.forEach(day => {
-    monthlyTotals.totalDisbursement += day.totalDisbursement || 0;
-    monthlyTotals.totalInterest += day.totalInterest || 0;
-    monthlyTotals.totalExpenses += day.totalExpenses || 0;
-    monthlyTotals.totalLoanAppForm += day.totalLoanAppForm || 0;
-    monthlyTotals.profit += day.profit || 0;
+  weeklyReports.forEach((week) => {
+    week.days.forEach((day) => {
+      monthlyTotals.totalDisbursement += day.totalDisbursement || 0;
+      monthlyTotals.totalInterest += day.totalInterest || 0;
+      monthlyTotals.totalExpenses += day.totalExpenses || 0;
+      monthlyTotals.totalLoanAppForm += day.totalLoanAppForm || 0;
+      monthlyTotals.profit += day.profit || 0;
+    });
   });
-});
 
   return (
     <ReportRap>
-
-
-
-<div className="find-lawyer-header">
- 
-
-     
-
-      {status === "loading" && <p>Loading...</p>}
-      {status === "failed" && <p>Error: {error}</p>}
-
+      <div className="find-lawyer-header">
+        {status === "loading" && <p>Loading...</p>}
+        {status === "failed" && <p>Error: {error}</p>}
 
         <>
-        <div className="weeks-days">
-  <p className={`week-paragraph ${openweek === "week1" ? "active" : ""}`} onClick={() => handleWeekOpen("week1")} >Week 1</p>
-  <p className={`week-paragraph ${openweek === "week2" ? "active" : ""}`} onClick={() => handleWeekOpen("week2")}>Week 2</p>
-  <p className={`week-paragraph ${openweek === "week3" ? "active" : ""}`} onClick={() => handleWeekOpen("week3")}>Week 3</p>
-  <p className={`week-paragraph ${openweek === "week4" ? "active" : ""}`} onClick={() => handleWeekOpen("week4")}>Week 4</p>
-  <p className={`week-paragraph ${openweek === "week5" ? "active" : ""}`} onClick={() => handleWeekOpen("week5")}>Week 5</p>
-</div>
-         {status === "succeeded" &&
-        <>
-        {openweek === "week1" && (
-        <>
-        {week1 && (
-         <div className="table-container">
-          <div className="new-table-scroll">
-            <div className="table-div-con"></div>
-  <table className="custom-table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Day</th>
-       <th>New Loan</th>
-        <th>Card & Others</th>
-         <th>Interst On Loan</th>
-          <th>Total Expenses</th>
-           <th>Profit</th>
-            <th>Total Loan Balance</th>
-            <th>Cash At Hand</th>
-            <th>Growth</th>
-      </tr>
-    </thead>
-    <tbody>
-      {week1?.days.map((day) => {
-        const dateObj = new Date(day.date);
-        const csoMap = {};
-        day.csoLoans.forEach(({ csoName, loansCount }) => {
-          csoMap[csoName.trim()] = loansCount;
-        });
+          <div className="weeks-days">
+            <p
+              className={`week-paragraph ${
+                openweek === "week1" ? "active" : ""
+              }`}
+              onClick={() => handleWeekOpen("week1")}
+            >
+              Week 1
+            </p>
+            <p
+              className={`week-paragraph ${
+                openweek === "week2" ? "active" : ""
+              }`}
+              onClick={() => handleWeekOpen("week2")}
+            >
+              Week 2
+            </p>
+            <p
+              className={`week-paragraph ${
+                openweek === "week3" ? "active" : ""
+              }`}
+              onClick={() => handleWeekOpen("week3")}
+            >
+              Week 3
+            </p>
+            <p
+              className={`week-paragraph ${
+                openweek === "week4" ? "active" : ""
+              }`}
+              onClick={() => handleWeekOpen("week4")}
+            >
+              Week 4
+            </p>
+            <p
+              className={`week-paragraph ${
+                openweek === "week5" ? "active" : ""
+              }`}
+              onClick={() => handleWeekOpen("week5")}
+            >
+              Week 5
+            </p>
+          </div>
+          {status === "succeeded" && (
+            <>
+              {openweek === "week1" && (
+                <>
+                  {week1 && (
+                    <div className="table-container">
+                      <div className="new-table-scroll">
+                        <div className="table-div-con"></div>
+                        <table className="custom-table">
+                          <thead>
+                            <tr>
+                              <th>Date</th>
+                              <th>Day</th>
+                              <th>New Loan</th>
+                              <th>Card & Others</th>
+                              <th>Interst On Loan</th>
+                              <th>Total Expenses</th>
+                              <th>Profit</th>
+                              <th>Total Loan Balance</th>
+                              <th>Cash At Hand</th>
+                              <th>Growth</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {week1?.days.map((day) => {
+                              const dateObj = new Date(day.date);
+                              const csoMap = {};
+                              day.csoLoans.forEach(
+                                ({ csoName, loansCount }) => {
+                                  csoMap[csoName.trim()] = loansCount;
+                                }
+                              );
 
-        return (
-          <tr key={day.date}>
-            <td>{day.date}</td>
-            <td>{daysOfWeek[dateObj.getDay()]}</td>
-            <td>{day?.totalDisbursement}</td>
-            <td>{day?.totalLoanAppForm}</td>
-            <td>{day?.totalInterest}</td>
-            <td>{day?.totalExpenses}</td>
-            <td>{day?.profit}</td>
-            <td>{day?.totalLoanBalance}</td>
-              <td>{day?.totalCashAtHand}</td>
-              <td>{day?.growth}</td>
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-  </div>
-  </div>
-  
-)}
-</>
-)}
+                              return (
+                                <tr key={day.date}>
+                                  <td>{day.date}</td>
+                                  <td>
+                                    {(() => {
+                                      const utcDate = new Date(
+                                        `${day.date}T00:00:00Z`
+                                      );
+                                      const dayOfWeek = utcDate.getUTCDay(); // always consistent
+                                      return daysOfWeek[dayOfWeek];
+                                    })()}
+                                  </td>
+                                  <td>{day?.totalDisbursement}</td>
+                                  <td>{day?.totalLoanAppForm}</td>
+                                  <td>{day?.totalInterest}</td>
+                                  <td>{day?.totalExpenses}</td>
+                                  <td>{day?.profit}</td>
+                                  <td>{day?.totalLoanBalance}</td>
+                                  <td>{day?.totalCashAtHand}</td>
+                                  <td>{day?.growth}</td>
+                                </tr>
+                              );
+                            })}
 
-        {openweek === "week2" && (
-        <>
-        {week2 && (
-         <div className="table-container">
-          <div className="new-table-scroll">
-            <div className="table-div-con"></div>
-  <table className="custom-table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Day</th>
-       <th>New Loan</th>
-        <th>Card & Others</th>
-         <th>Interst On Loan</th>
-          <th>Total Expenses</th>
-           <th>Profit</th>
-            <th>Total Loan Balance</th>
-            <th>Cash At Hand</th>
-            <th>Growth</th>
-      </tr>
-    </thead>
-    <tbody>
-      {week2?.days.map((day) => {
-        const dateObj = new Date(day.date);
-        const csoMap = {};
-        day.csoLoans.forEach(({ csoName, loansCount }) => {
-          csoMap[csoName.trim()] = loansCount;
-        });
+                            {/* Totals Row */}
+                            <tr
+                              style={{
+                                fontWeight: "bold",
+                                backgroundColor: "#f1f1f1",
+                              }}
+                            >
+                              <td colSpan={2}>Total</td>
+                              <td>
+                                {week1?.days?.reduce(
+                                  (sum, d) => sum + (d.totalDisbursement || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week1?.days?.reduce(
+                                  (sum, d) => sum + (d.totalLoanAppForm || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week1?.days?.reduce(
+                                  (sum, d) => sum + (d.totalInterest || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week1?.days?.reduce(
+                                  (sum, d) => sum + (d.totalExpenses || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week1?.days?.reduce(
+                                  (sum, d) => sum + (d.profit || 0),
+                                  0
+                                )}
+                              </td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
 
-        return (
-          <tr key={day.date}>
-            <td>{day.date}</td>
-            <td>{daysOfWeek[dateObj.getDay()]}</td>
-            <td>{day?.totalDisbursement}</td>
-            <td>{day?.totalLoanAppForm}</td>
-            <td>{day?.totalInterest}</td>
-            <td>{day?.totalExpenses}</td>
-            <td>{day?.profit}</td>
-            <td>{day?.totalLoanBalance}</td>
-              <td>{day?.totalCashAtHand}</td>
-              <td>{day?.growth}</td>
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-  </div>
-  </div>
-  
-)}
-</>
-)}
+              {openweek === "week2" && (
+                <>
+                  {week2 && (
+                    <div className="table-container">
+                      <div className="new-table-scroll">
+                        <div className="table-div-con"></div>
+                        <table className="custom-table">
+                          <thead>
+                            <tr>
+                              <th>Date</th>
+                              <th>Day</th>
+                              <th>New Loan</th>
+                              <th>Card & Others</th>
+                              <th>Interst On Loan</th>
+                              <th>Total Expenses</th>
+                              <th>Profit</th>
+                              <th>Total Loan Balance</th>
+                              <th>Cash At Hand</th>
+                              <th>Growth</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {week2?.days.map((day) => {
+                              const dateObj = new Date(day.date);
+                              const csoMap = {};
+                              day.csoLoans.forEach(
+                                ({ csoName, loansCount }) => {
+                                  csoMap[csoName.trim()] = loansCount;
+                                }
+                              );
 
-        {openweek === "week3" && (
-        <>
-        {week3 && (
-         <div className="table-container">
-          <div className="new-table-scroll">
-            <div className="table-div-con"></div>
-  <table className="custom-table">
-    <thead>
-      <tr>
-       <th>Date</th>
-        <th>Day</th>
-       <th>New Loan</th>
-        <th>Card & Others</th>
-         <th>Interst On Loan</th>
-          <th>Total Expenses</th>
-           <th>Profit</th>
-            <th>Total Loan Balance</th>
-            <th>Cash At Hand</th>
-            <th>Growth</th>
-      </tr>
-    </thead>
-    <tbody>
-      {week3?.days.map((day) => {
-        const dateObj = new Date(day.date);
-        const csoMap = {};
-        day.csoLoans.forEach(({ csoName, loansCount }) => {
-          csoMap[csoName.trim()] = loansCount;
-        });
+                              return (
+                                <tr key={day.date}>
+                                  <td>{day.date}</td>
+                                  <td>{daysOfWeek[dateObj.getDay()]}</td>
+                                  <td>{day?.totalDisbursement}</td>
+                                  <td>{day?.totalLoanAppForm}</td>
+                                  <td>{day?.totalInterest}</td>
+                                  <td>{day?.totalExpenses}</td>
+                                  <td>{day?.profit}</td>
+                                  <td>{day?.totalLoanBalance}</td>
+                                  <td>{day?.totalCashAtHand}</td>
+                                  <td>{day?.growth}</td>
+                                </tr>
+                              );
+                            })}
+                            {/* Totals Row */}
+                            <tr
+                              style={{
+                                fontWeight: "bold",
+                                backgroundColor: "#f1f1f1",
+                              }}
+                            >
+                              <td colSpan={2}>Total</td>
+                              <td>
+                                {week2?.days?.reduce(
+                                  (sum, d) => sum + (d.totalDisbursement || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week2?.days?.reduce(
+                                  (sum, d) => sum + (d.totalLoanAppForm || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week2?.days?.reduce(
+                                  (sum, d) => sum + (d.totalInterest || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week2?.days?.reduce(
+                                  (sum, d) => sum + (d.totalExpenses || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week2?.days?.reduce(
+                                  (sum, d) => sum + (d.profit || 0),
+                                  0
+                                )}
+                              </td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
 
-        return (
-          <tr key={day.date}>
-           <td>{day.date}</td>
-            <td>{daysOfWeek[dateObj.getDay()]}</td>
-            <td>{day?.totalDisbursement}</td>
-            <td>{day?.totalLoanAppForm}</td>
-            <td>{day?.totalInterest}</td>
-            <td>{day?.totalExpenses}</td>
-            <td>{day?.profit}</td>
-            <td>{day?.totalLoanBalance}</td>
-              <td>{day?.totalCashAtHand}</td>
-              <td>{day?.growth}</td>
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-  </div>
-  </div>
-  
-)}
-</>
-)}
+              {openweek === "week3" && (
+                <>
+                  {week3 && (
+                    <div className="table-container">
+                      <div className="new-table-scroll">
+                        <div className="table-div-con"></div>
+                        <table className="custom-table">
+                          <thead>
+                            <tr>
+                              <th>Date</th>
+                              <th>Day</th>
+                              <th>New Loan</th>
+                              <th>Card & Others</th>
+                              <th>Interst On Loan</th>
+                              <th>Total Expenses</th>
+                              <th>Profit</th>
+                              <th>Total Loan Balance</th>
+                              <th>Cash At Hand</th>
+                              <th>Growth</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {week3?.days.map((day) => {
+                              const dateObj = new Date(day.date);
+                              const csoMap = {};
+                              day.csoLoans.forEach(
+                                ({ csoName, loansCount }) => {
+                                  csoMap[csoName.trim()] = loansCount;
+                                }
+                              );
 
-        {openweek === "week4" && (
-        <>
-        {week4 && (
-         <div className="table-container">
-          <div className="new-table-scroll">
-            <div className="table-div-con"></div>
-  <table className="custom-table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Day</th>
-       <th>New Loan</th>
-        <th>Card & Others</th>
-         <th>Interst On Loan</th>
-          <th>Total Expenses</th>
-           <th>Profit</th>
-            <th>Total Loan Balance</th>
-            <th>Cash At Hand</th>
-            <th>Growth</th>
-      </tr>
-    </thead>
-    <tbody>
-      {week4?.days.map((day) => {
-        const dateObj = new Date(day.date);
-        const csoMap = {};
-        day.csoLoans.forEach(({ csoName, loansCount }) => {
-          csoMap[csoName.trim()] = loansCount;
-        });
+                              return (
+                                <tr key={day.date}>
+                                  <td>{day.date}</td>
+                                  <td>{daysOfWeek[dateObj.getDay()]}</td>
+                                  <td>{day?.totalDisbursement}</td>
+                                  <td>{day?.totalLoanAppForm}</td>
+                                  <td>{day?.totalInterest}</td>
+                                  <td>{day?.totalExpenses}</td>
+                                  <td>{day?.profit}</td>
+                                  <td>{day?.totalLoanBalance}</td>
+                                  <td>{day?.totalCashAtHand}</td>
+                                  <td>{day?.growth}</td>
+                                </tr>
+                              );
+                            })}
+                            {/* Totals Row */}
+                            <tr
+                              style={{
+                                fontWeight: "bold",
+                                backgroundColor: "#f1f1f1",
+                              }}
+                            >
+                              <td colSpan={2}>Total</td>
+                              <td>
+                                {week3?.days?.reduce(
+                                  (sum, d) => sum + (d.totalDisbursement || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week3?.days?.reduce(
+                                  (sum, d) => sum + (d.totalLoanAppForm || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week3?.days?.reduce(
+                                  (sum, d) => sum + (d.totalInterest || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week3?.days?.reduce(
+                                  (sum, d) => sum + (d.totalExpenses || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week3?.days?.reduce(
+                                  (sum, d) => sum + (d.profit || 0),
+                                  0
+                                )}
+                              </td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
 
-        return (
-          <tr key={day.date}>
-            <td>{day.date}</td>
-            <td>{daysOfWeek[dateObj.getDay()]}</td>
-            <td>{day?.totalDisbursement}</td>
-            <td>{day?.totalLoanAppForm}</td>
-            <td>{day?.totalInterest}</td>
-            <td>{day?.totalExpenses}</td>
-            <td>{day?.profit}</td>
-            <td>{day?.totalLoanBalance}</td>
-              <td>{day?.totalCashAtHand}</td>
-              <td>{day?.growth}</td>
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-  </div>
-  </div>
-  
-)}
-</>
-)}
-        {openweek === "week5" && (
-        <>
-        {week5 && (
-         <div className="table-container">
-          <div className="new-table-scroll">
-            <div className="table-div-con"></div>
-  <table className="custom-table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Day</th>
-       <th>New Loan</th>
-        <th>Card & Others</th>
-         <th>Interst On Loan</th>
-          <th>Total Expenses</th>
-           <th>Profit</th>
-            <th>Total Loan Balance</th>
-            <th>Cash At Hand</th>
-            <th>Growth</th>
-      </tr>
-    </thead>
-    <tbody>
-      {week5?.days.map((day) => {
-        const dateObj = new Date(day.date);
-        const csoMap = {};
-        day.csoLoans.forEach(({ csoName, loansCount }) => {
-          csoMap[csoName.trim()] = loansCount;
-        });
+              {openweek === "week4" && (
+                <>
+                  {week4 && (
+                    <div className="table-container">
+                      <div className="new-table-scroll">
+                        <div className="table-div-con"></div>
+                        <table className="custom-table">
+                          <thead>
+                            <tr>
+                              <th>Date</th>
+                              <th>Day</th>
+                              <th>New Loan</th>
+                              <th>Card & Others</th>
+                              <th>Interst On Loan</th>
+                              <th>Total Expenses</th>
+                              <th>Profit</th>
+                              <th>Total Loan Balance</th>
+                              <th>Cash At Hand</th>
+                              <th>Growth</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {week4?.days.map((day) => {
+                              const dateObj = new Date(day.date);
+                              const csoMap = {};
+                              day.csoLoans.forEach(
+                                ({ csoName, loansCount }) => {
+                                  csoMap[csoName.trim()] = loansCount;
+                                }
+                              );
 
-        return (
-          <tr key={day.date}>
-            <td>{day.date}</td>
-            <td>{daysOfWeek[dateObj.getDay()]}</td>
-            <td>{day?.totalDisbursement}</td>
-            <td>{day?.totalLoanAppForm}</td>
-            <td>{day?.totalInterest}</td>
-            <td>{day?.totalExpenses}</td>
-            <td>{day?.profit}</td>
-            <td>{day?.totalLoanBalance}</td>
-              <td>{day?.totalCashAtHand}</td>
-              <td>{day?.growth}</td>
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
-  </div>
-  </div>
-  
-)}
-</>
-)}
+                              return (
+                                <tr key={day.date}>
+                                  <td>{day.date}</td>
+                                  <td>{daysOfWeek[dateObj.getDay()]}</td>
+                                  <td>{day?.totalDisbursement}</td>
+                                  <td>{day?.totalLoanAppForm}</td>
+                                  <td>{day?.totalInterest}</td>
+                                  <td>{day?.totalExpenses}</td>
+                                  <td>{day?.profit}</td>
+                                  <td>{day?.totalLoanBalance}</td>
+                                  <td>{day?.totalCashAtHand}</td>
+                                  <td>{day?.growth}</td>
+                                </tr>
+                              );
+                            })}
+                            {/* Totals Row */}
+                            <tr
+                              style={{
+                                fontWeight: "bold",
+                                backgroundColor: "#f1f1f1",
+                              }}
+                            >
+                              <td colSpan={2}>Total</td>
+                              <td>
+                                {week4?.days?.reduce(
+                                  (sum, d) => sum + (d.totalDisbursement || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week4?.days?.reduce(
+                                  (sum, d) => sum + (d.totalLoanAppForm || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week4?.days?.reduce(
+                                  (sum, d) => sum + (d.totalInterest || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week4?.days?.reduce(
+                                  (sum, d) => sum + (d.totalExpenses || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week4?.days?.reduce(
+                                  (sum, d) => sum + (d.profit || 0),
+                                  0
+                                )}
+                              </td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+              {openweek === "week5" && (
+                <>
+                  {week5 && (
+                    <div className="table-container">
+                      <div className="new-table-scroll">
+                        <div className="table-div-con"></div>
+                        <table className="custom-table">
+                          <thead>
+                            <tr>
+                              <th>Date</th>
+                              <th>Day</th>
+                              <th>New Loan</th>
+                              <th>Card & Others</th>
+                              <th>Interst On Loan</th>
+                              <th>Total Expenses</th>
+                              <th>Profit</th>
+                              <th>Total Loan Balance</th>
+                              <th>Cash At Hand</th>
+                              <th>Growth</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {week5?.days.map((day) => {
+                              const dateObj = new Date(day.date);
+                              const csoMap = {};
+                              day.csoLoans.forEach(
+                                ({ csoName, loansCount }) => {
+                                  csoMap[csoName.trim()] = loansCount;
+                                }
+                              );
+
+                              return (
+                                <tr key={day.date}>
+                                  <td>{day.date}</td>
+                                  <td>{daysOfWeek[dateObj.getDay()]}</td>
+                                  <td>{day?.totalDisbursement}</td>
+                                  <td>{day?.totalLoanAppForm}</td>
+                                  <td>{day?.totalInterest}</td>
+                                  <td>{day?.totalExpenses}</td>
+                                  <td>{day?.profit}</td>
+                                  <td>{day?.totalLoanBalance}</td>
+                                  <td>{day?.totalCashAtHand}</td>
+                                  <td>{day?.growth}</td>
+                                </tr>
+                              );
+                            })}
+                            {/* Totals Row */}
+                            <tr
+                              style={{
+                                fontWeight: "bold",
+                                backgroundColor: "#f1f1f1",
+                              }}
+                            >
+                              <td colSpan={2}>Total</td>
+                              <td>
+                                {week5?.days?.reduce(
+                                  (sum, d) => sum + (d.totalDisbursement || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week5?.days?.reduce(
+                                  (sum, d) => sum + (d.totalLoanAppForm || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week5?.days?.reduce(
+                                  (sum, d) => sum + (d.totalInterest || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week5?.days?.reduce(
+                                  (sum, d) => sum + (d.totalExpenses || 0),
+                                  0
+                                )}
+                              </td>
+                              <td>
+                                {week5?.days?.reduce(
+                                  (sum, d) => sum + (d.profit || 0),
+                                  0
+                                )}
+                              </td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          )}
+
+          {/* Monthly Summary Table */}
+          <h3
+            style={{
+              marginTop: "20px",
+            }}
+          >
+             {new Date(currentYear, currentMonth - 1).toLocaleString(
+                "default",
+                {
+                  month: "long",
+                }
+              )}{" "}
+              {currentYear} Summary
+          </h3>
+          <div className="table-container">
+            <div className="new-table-scroll">
+              <div className="table-div-con">
+                <table className="custom-table">
+                  <thead className="bg-gray-200">
+                    <tr>
+                      <th className="px-4 py-2 border">Total Disbursement</th>
+                      <th className="px-4 py-2 border">Total Interest</th>
+                      <th className="px-4 py-2 border">Total Expenses</th>
+                      <th className="px-4 py-2 border">Card & Others</th>
+                      <th className="px-4 py-2 border">Profit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="px-4 py-2 border">
+                        {monthlyTotals.totalDisbursement.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-2 border">
+                        {monthlyTotals.totalInterest.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-2 border">
+                        {monthlyTotals.totalExpenses.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-2 border">
+                        {monthlyTotals.totalLoanAppForm.toLocaleString()}
+                      </td>
+                      <td className="px-4 py-2 border font-bold">
+                        {monthlyTotals.profit.toLocaleString()}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </>
-        
-        }
-
-      {/* Monthly Summary Table */}
-      <h3 style= {{
-      marginTop: "20px"
-      }}>Monthly Summary</h3>
-       <div className="table-container">
-          <div className="new-table-scroll">
-            <div className="table-div-con">
-       <table className="custom-table">
-  <thead className="bg-gray-200">
-    <tr>
-      <th className="px-4 py-2 border">Total Disbursement</th>
-      <th className="px-4 py-2 border">Total Interest</th>
-      <th className="px-4 py-2 border">Total Expenses</th>
-      <th className="px-4 py-2 border">Card & Others</th>
-      <th className="px-4 py-2 border">Profit</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td className="px-4 py-2 border">{monthlyTotals.totalDisbursement.toLocaleString()}</td>
-      <td className="px-4 py-2 border">{monthlyTotals.totalInterest.toLocaleString()}</td>
-      <td className="px-4 py-2 border">{monthlyTotals.totalExpenses.toLocaleString()}</td>
-      <td className="px-4 py-2 border">{monthlyTotals.totalLoanAppForm.toLocaleString()}</td>
-      <td className="px-4 py-2 border font-bold">{monthlyTotals.profit.toLocaleString()}</td>
-    </tr>
-  </tbody>
-</table>
-
       </div>
-      </div>
-      </div>
-        </>
-
-        
-
-     
-    </div>
 
       {/* Additional Monthly Totals */}
     </ReportRap>

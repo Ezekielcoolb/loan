@@ -231,7 +231,7 @@ if (AmountDueOne === NaN ) {
  const totalPaidSoFar = repaymentSchedule?.reduce((sum, item) => sum + item.amountPaid, 0);
 console.log("Total amount paid:", totalPaidSoFar);
 
-const AmountDueTwo = expectedPay - totalPaidSoFar
+const AmountDueTwo = expectedPay - loan?.loanDetails?.amountPaidSoFar
  const newtoday = new Date();
 const repaymentScheduleLengthTillToday = repaymentSchedule?.filter(item => {
   const repaymentDate = new Date(item.date);
@@ -284,7 +284,7 @@ if (repaymentScheduleLengthTillToday > 22) {
     if (isValid) {
       setLoading(true);
       dispatch(makePaymenting({ id, amount }));
-       dispatch(submitDailyRemittanceReport({ workId, amount }));
+      //  dispatch(submitDailyRemittanceReport({ workId, amount }));
       setAmount(null);
       setPay(true);
       setConfirm(false);

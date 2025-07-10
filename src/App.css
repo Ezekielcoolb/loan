@@ -278,11 +278,11 @@ table {
   border: 1px solid #d0d5dd;
 }
 
-.custom-table tbody tr {
+.custom-table tbody tr, .custom-table tfoot tr {
   padding: 10px;
   border: 1px solid #d0d5dd;
 }
-.custom-table tbody td {
+.custom-table tbody td, .custom-table tfoot td {
   padding: 10px;
   border: none;
 }

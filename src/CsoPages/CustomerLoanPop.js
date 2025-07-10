@@ -4,89 +4,92 @@ import { submitLoanApplication } from "../redux/slices/LoanSlice";
 import axios from "axios";
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { setDropdownVisible, setDropSuccessVisible } from "../redux/slices/appSlice";
+import {
+  setDropdownVisible,
+  setDropSuccessVisible,
+} from "../redux/slices/appSlice";
 import { PulseLoader } from "react-spinners";
-import imageCompression from 'browser-image-compression';
-import { uploadImages } from "../redux/slices/uploadSlice";
+import imageCompression from "browser-image-compression";
+import { resetUpload, uploadImages } from "../redux/slices/uploadSlice";
 
 const LoanApplicationRap = styled.div`
-margin-bottom: 100px;
-h3 {
-  color: #005e78;
-  font-weight: 700px;
-  size: 16px;
-  text-align: center;
-  margin: auto;
-}
-.upload-label {
-  color: #005e78;
-  font-weight: 400px;
-  size: 12px;
-  margin-bottom: 0px;
-}
-input, select {
-width: 300px;
-height: 40px;
-border-radius: 15px;
-padding: 10px;
-background: #EAEAEA ;
-}
-.cancel-btn {
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
-}
-.all-dropdown-div {
-  padding-bottom: 50px !important;
-}
-button {
-  background: #005E78;
-font-size: 12px;
-font-weight: 600;
-display: flex;
-color: #ffffff;
-flex-direction: column;
-justify-content: center;
-align-items: center;
-border-radius: 10px;
-width: 200px;
-height: 40px;
-padding: 20px;
-border-style: none;
-margin: auto;
-}
-.loan-customers {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-}
-.detailssss {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-.all-dropdown-div {
-  max-height: 600px;
-  padding: 20px;
-  width: 380px;
-}
-.loan-customers {
-  overflow-y: auto;
-}
+  margin-bottom: 100px;
+  h3 {
+    color: #005e78;
+    font-weight: 700px;
+    size: 16px;
+    text-align: center;
+    margin: auto;
+  }
+  .upload-label {
+    color: #005e78;
+    font-weight: 400px;
+    size: 12px;
+    margin-bottom: 0px;
+  }
+  input,
+  select {
+    width: 300px;
+    height: 40px;
+    border-radius: 15px;
+    padding: 10px;
+    background: #eaeaea;
+  }
+  .cancel-btn {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+  }
+  .all-dropdown-div {
+    padding-bottom: 50px !important;
+  }
+  button {
+    background: #005e78;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    color: #ffffff;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    width: 200px;
+    height: 40px;
+    padding: 20px;
+    border-style: none;
+    margin: auto;
+  }
+  .loan-customers {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  .detailssss {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .all-dropdown-div {
+    max-height: 600px;
+    padding: 20px;
+    width: 380px;
+  }
+  .loan-customers {
+    overflow-y: auto;
+  }
 `;
 
 const LoanApplicationForm = () => {
-   
   const dispatch = useDispatch();
   const [ownerImage, setOwnerIamge] = useState("");
   const [loanerImage, setLoanerIamge] = useState("");
   const [otherImages, setOtherIamges] = useState("");
   const [signImage, setSignImage] = useState("");
-  const [isLoading, setLoading] = useState(false)
+  const [isLoading, setLoading] = useState(false);
   const user = JSON.parse(localStorage.getItem("csoUser"));
   const [uploadTarget, setUploadTarget] = useState(null);
-    const { urls, loading } = useSelector((state) => state.upload);
-  
+  const { urls, target, loading } = useSelector((state) => state.upload);
+
   const [formData, setFormData] = useState({
     csoId: user.workId,
     branch: user.branch,
@@ -100,7 +103,7 @@ const LoanApplicationForm = () => {
       address: "",
       bvn: null,
       NextOfKin: "",
-      NextOfKinNumber: ""
+      NextOfKinNumber: "",
     },
     businessDetails: {
       businessName: "",
@@ -110,13 +113,12 @@ const LoanApplicationForm = () => {
       nameKnown: "",
       estimatedValue: null,
       operationalStatus: "",
-      additionalInfo: ""
+      additionalInfo: "",
     },
     bankDetails: {
       accountName: "",
       accountNo: null,
       bankName: "",
-    
     },
     loanDetails: {
       amountRequested: null,
@@ -137,10 +139,8 @@ const LoanApplicationForm = () => {
       groupName: "",
       leaderName: "",
       mobileNo: "",
-    
     },
     pictures: {
-      
       customer: "",
       business: "",
       others: [], // Ensure it's initialized as an empty array
@@ -148,55 +148,51 @@ const LoanApplicationForm = () => {
     },
   });
 
+  console.log(uploadTarget);
   console.log(formData);
-  
- const { submitLoanloading, status, error } = useSelector(
+
+  const { submitLoanloading, status, error } = useSelector(
     (state) => state.loan
   );
-  const isValid = formData.customerDetails.firstName !== "" &&
-                  formData.customerDetails.lastName !== "" &&
-                  formData.customerDetails.phoneOne !== "" &&
-                  formData.customerDetails.address !== "" &&
-                  formData.customerDetails.bvn !== "" &&
-                  formData.customerDetails.dateOfBirth !== "" &&
-                  formData.customerDetails.NextOfKin !== "" &&
-                  formData.customerDetails.NextOfKinNumber !== "" &&
-                  formData.businessDetails.natureOfBusiness !== "" &&
-                  formData.businessDetails.estimatedValue !== "" &&
-                  formData.businessDetails.operationalStatus !== "" &&
-                  formData.businessDetails.businessName !== "" &&
-                  formData.businessDetails.address !== "" &&
-                  formData.businessDetails.yearsHere !== "" &&
-                  formData.businessDetails.nameKnown !== "" &&
 
-                  formData.bankDetails.accountName !== "" &&
-                  formData.bankDetails.accountNo !== "" &&
-                  formData.bankDetails.bankName !== "" &&
-                  formData.loanDetails.amountRequested !== "" &&
-                  formData.loanDetails.loanType !== "" &&
-                  formData.guarantorDetails.name !== "" &&
-                  formData.guarantorDetails.address !== "" &&
-                  formData.guarantorDetails.email !== "" &&
-                  formData.guarantorDetails.phone !== "" &&
-                  formData.guarantorDetails.relationship !== "" &&
-                  formData.guarantorDetails.yearsKnown !== "" &&
-                  formData.groupDetails.groupName !== "" &&
-                  formData.groupDetails.leaderName !== "" &&
-                  formData.groupDetails.mobileNo !== "" &&
-                  formData.pictures.business !== "" &&
-                  formData.pictures.customer !== "" &&
-                 formData.pictures.signature !== "" ;
+  const isValid =
+    formData.customerDetails.firstName !== "" &&
+    formData.customerDetails.lastName !== "" &&
+    formData.customerDetails.phoneOne !== "" &&
+    formData.customerDetails.address !== "" &&
+    formData.customerDetails.bvn !== "" &&
+    formData.customerDetails.dateOfBirth !== "" &&
+    formData.customerDetails.NextOfKin !== "" &&
+    formData.customerDetails.NextOfKinNumber !== "" &&
+    formData.businessDetails.natureOfBusiness !== "" &&
+    formData.businessDetails.estimatedValue !== "" &&
+    formData.businessDetails.operationalStatus !== "" &&
+    formData.businessDetails.businessName !== "" &&
+    formData.businessDetails.address !== "" &&
+    formData.businessDetails.yearsHere !== "" &&
+    formData.businessDetails.nameKnown !== "" &&
+    formData.bankDetails.accountName !== "" &&
+    formData.bankDetails.accountNo !== "" &&
+    formData.bankDetails.bankName !== "" &&
+    formData.loanDetails.amountRequested !== "" &&
+    formData.loanDetails.loanType !== "" &&
+    formData.guarantorDetails.name !== "" &&
+    formData.guarantorDetails.address !== "" &&
+    formData.guarantorDetails.email !== "" &&
+    formData.guarantorDetails.phone !== "" &&
+    formData.guarantorDetails.relationship !== "" &&
+    formData.guarantorDetails.yearsKnown !== "" &&
+    formData.groupDetails.groupName !== "" &&
+    formData.groupDetails.leaderName !== "" &&
+    formData.groupDetails.mobileNo !== "" &&
+    formData.pictures.business !== "" &&
+    formData.pictures.customer !== "" &&
+    formData.pictures.signature !== "";
 
+  console.log(isValid);
 
+  const { dropdowVisible } = useSelector((state) => state.app);
 
-console.log(isValid);
-
-  const { dropdowVisible} = useSelector((state) => state.app);
-  
-  
-
-   
-  
   const handleVisisble = () => {
     dispatch(setDropdownVisible());
   };
@@ -215,324 +211,280 @@ console.log(isValid);
     });
   };
 
+  //  const handleFirstImage = (files) => {
+  //   if (!files.length) return;
+  //   setUploadTarget("customer");
+  //   dispatch(uploadImages({ files, folderName: "products" }));
+  // };
 
+  // const handleFirstImage = (fileList) => {
+  //     setUploadTarget("customer");
 
-  
-//  const handleFirstImage = (files) => {
-//   if (!files.length) return;
-//   setUploadTarget("customer");
-//   dispatch(uploadImages({ files, folderName: "products" }));
-// };
+  //   let files = Array.from(fileList);
 
-// const handleFirstImage = (fileList) => {
-//     setUploadTarget("customer");
+  //   // Check if it's missing File metadata (e.g., no name)
+  //   files = files.map((file, index) => {
+  //     if (!file.name || !file.lastModified) {
+  //       // Create a "File" from the Blob
+  //       return new File([file], `photo_${Date.now()}_${index}.jpg`, {
+  //         type: file.type || 'image/jpeg',
+  //         lastModified: Date.now(),
+  //       });
+  //     }
+  //     return file;
+  //   });
 
-//   let files = Array.from(fileList);
+  //   // Filter valid images (non-zero size and type)
+  //   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
 
-//   // Check if it's missing File metadata (e.g., no name)
-//   files = files.map((file, index) => {
-//     if (!file.name || !file.lastModified) {
-//       // Create a "File" from the Blob
-//       return new File([file], `photo_${Date.now()}_${index}.jpg`, {
-//         type: file.type || 'image/jpeg',
-//         lastModified: Date.now(),
-//       });
-//     }
-//     return file;
-//   });
+  //   if (files.length === 0) {
+  //     alert("Captured file is invalid or empty. Please try again.");
+  //     return;
+  //   }
 
-//   // Filter valid images (non-zero size and type)
-//   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+  //   dispatch(uploadImages({ files, folderName: 'products' }));
+  // };
+  const handleFirstImage = async (fileList) => {
+    const target = "customer"; // 👈 local value, not setState
+    let files = Array.from(fileList);
 
-//   if (files.length === 0) {
-//     alert("Captured file is invalid or empty. Please try again.");
-//     return;
-//   }
+    files = await Promise.all(
+      files.map(async (file, index) => {
+        if (!file.name || !file.lastModified) {
+          file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+            type: file.type || "image/jpeg",
+            lastModified: Date.now(),
+          });
+        }
 
-//   dispatch(uploadImages({ files, folderName: 'products' }));
-// };
-const handleFirstImage = async (fileList) => {
-  setUploadTarget("customer");
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 800,
+          useWebWorker: true,
+        };
+        try {
+          return await imageCompression(file, options);
+        } catch {
+          return file;
+        }
+      })
+    );
 
-  let files = Array.from(fileList);
+    files = files.filter((f) => f.size > 0 && f.type.startsWith("image/"));
+    if (files.length === 0) return alert("Captured file is invalid or empty.");
 
-  files = await Promise.all(files.map(async (file, index) => {
-    // Fix blob to file if needed
-    if (!file.name || !file.lastModified) {
-      file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
-        type: file.type || 'image/jpeg',
-        lastModified: Date.now(),
-      });
+    dispatch(uploadImages({ files, folderName: "products", target })); // 👈 pass target
+  };
+
+  // const handleSecondImage = (files) => {
+  //   if (!files.length) return;
+  //   setUploadTarget("business");
+  //   dispatch(uploadImages({ files, folderName: "products" }));
+  // };
+
+  // const handleSecondImage = (fileList) => {
+  //     setUploadTarget("business");
+
+  //   let files = Array.from(fileList);
+
+  //   // Check if it's missing File metadata (e.g., no name)
+  //   files = files.map((file, index) => {
+  //     if (!file.name || !file.lastModified) {
+  //       // Create a "File" from the Blob
+  //       return new File([file], `photo_${Date.now()}_${index}.jpg`, {
+  //         type: file.type || 'image/jpeg',
+  //         lastModified: Date.now(),
+  //       });
+  //     }
+  //     return file;
+  //   });
+
+  //   // Filter valid images (non-zero size and type)
+  //   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+
+  //   if (files.length === 0) {
+  //     alert("Captured file is invalid or empty. Please try again.");
+  //     return;
+  //   }
+
+  //   dispatch(uploadImages({ files, folderName: 'products' }));
+  // };
+
+  const handleSecondImage = async (fileList) => {
+    const target = "business"; // 👈 local value, not setState
+    let files = Array.from(fileList);
+
+    files = await Promise.all(
+      files.map(async (file, index) => {
+        if (!file.name || !file.lastModified) {
+          file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+            type: file.type || "image/jpeg",
+            lastModified: Date.now(),
+          });
+        }
+
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 800,
+          useWebWorker: true,
+        };
+        try {
+          return await imageCompression(file, options);
+        } catch {
+          return file;
+        }
+      })
+    );
+
+    files = files.filter((f) => f.size > 0 && f.type.startsWith("image/"));
+    if (files.length === 0) return alert("Captured file is invalid or empty.");
+
+    dispatch(uploadImages({ files, folderName: "products", target })); // 👈 pass target
+  };
+
+  const handleThirdImage = async (fileList) => {
+    const target = "signature"; // 👈 local value, not setState
+    let files = Array.from(fileList);
+
+    files = await Promise.all(
+      files.map(async (file, index) => {
+        if (!file.name || !file.lastModified) {
+          file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+            type: file.type || "image/jpeg",
+            lastModified: Date.now(),
+          });
+        }
+
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 800,
+          useWebWorker: true,
+        };
+        try {
+          return await imageCompression(file, options);
+        } catch {
+          return file;
+        }
+      })
+    );
+
+    files = files.filter((f) => f.size > 0 && f.type.startsWith("image/"));
+    if (files.length === 0) return alert("Captured file is invalid or empty.");
+
+    dispatch(uploadImages({ files, folderName: "products", target })); // 👈 pass target
+  };
+
+  // const handleThirdImage = (files) => {
+  //   if (!files.length) return;
+  //   setUploadTarget("signature");
+  //   dispatch(uploadImages({ files, folderName: "products" }));
+  // };
+
+  // const handleFileChange = (files) => {
+  //   if (!files.length) return;
+  //   setUploadTarget("others");
+  //   dispatch(uploadImages({ files, folderName: "products" }));
+  // };
+
+  // const handleFileChange = (fileList) => {
+  //     setUploadTarget("others");
+
+  //   let files = Array.from(fileList);
+
+  //   // Check if it's missing File metadata (e.g., no name)
+  //   files = files.map((file, index) => {
+  //     if (!file.name || !file.lastModified) {
+  //       // Create a "File" from the Blob
+  //       return new File([file], `photo_${Date.now()}_${index}.jpg`, {
+  //         type: file.type || 'image/jpeg',
+  //         lastModified: Date.now(),
+  //       });
+  //     }
+  //     return file;
+  //   });
+
+  //   // Filter valid images (non-zero size and type)
+  //   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
+
+  //   if (files.length === 0) {
+  //     alert("Captured file is invalid or empty. Please try again.");
+  //     return;
+  //   }
+
+  //   dispatch(uploadImages({ files, folderName: 'products' }));
+  // };
+  const handleFileChange = async (fileList) => {
+    const target = "others"; // 👈 local value, not setState
+    let files = Array.from(fileList);
+
+    files = await Promise.all(
+      files.map(async (file, index) => {
+        if (!file.name || !file.lastModified) {
+          file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+            type: file.type || "image/jpeg",
+            lastModified: Date.now(),
+          });
+        }
+
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 800,
+          useWebWorker: true,
+        };
+        try {
+          return await imageCompression(file, options);
+        } catch {
+          return file;
+        }
+      })
+    );
+
+    files = files.filter((f) => f.size > 0 && f.type.startsWith("image/"));
+    if (files.length === 0) return alert("Captured file is invalid or empty.");
+
+    dispatch(uploadImages({ files, folderName: "products", target })); // 👈 pass target
+  };
+
+  useEffect(() => {
+    if (!loading && urls.length > 0 && target) {
+      setFormData((prev) => ({
+        ...prev,
+        pictures: {
+          ...prev.pictures,
+          [target]:
+            target === "others" ? [...prev.pictures.others, ...urls] : urls[0],
+        },
+      }));
+      dispatch(resetUpload()); // 👈 Clear upload state after use
     }
-
-    // Compress the image
-    const options = {
-      maxSizeMB: 0.5, // target size
-      maxWidthOrHeight: 800, // scale down resolution
-      useWebWorker: true,
-    };
-
-    try {
-      const compressedFile = await imageCompression(file, options);
-      return compressedFile;
-    } catch (err) {
-      console.error("Image compression failed", err);
-      return file; // fallback to original if compression fails
-    }
-  }));
-
-  files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
-
-  if (files.length === 0) {
-    alert("Captured file is invalid or empty. Please try again.");
-    return;
-  }
-
-  dispatch(uploadImages({ files, folderName: 'products' }));
-};
-
-// const handleSecondImage = (files) => {
-//   if (!files.length) return;
-//   setUploadTarget("business");
-//   dispatch(uploadImages({ files, folderName: "products" }));
-// };
-
-
-// const handleSecondImage = (fileList) => {
-//     setUploadTarget("business");
-
-//   let files = Array.from(fileList);
-
-//   // Check if it's missing File metadata (e.g., no name)
-//   files = files.map((file, index) => {
-//     if (!file.name || !file.lastModified) {
-//       // Create a "File" from the Blob
-//       return new File([file], `photo_${Date.now()}_${index}.jpg`, {
-//         type: file.type || 'image/jpeg',
-//         lastModified: Date.now(),
-//       });
-//     }
-//     return file;
-//   });
-
-//   // Filter valid images (non-zero size and type)
-//   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
-
-//   if (files.length === 0) {
-//     alert("Captured file is invalid or empty. Please try again.");
-//     return;
-//   }
-
-//   dispatch(uploadImages({ files, folderName: 'products' }));
-// };
-
-const handleSecondImage = async (fileList) => {
-  setUploadTarget("business");
-
-  let files = Array.from(fileList);
-
-  files = await Promise.all(files.map(async (file, index) => {
-    // Fix blob to file if needed
-    if (!file.name || !file.lastModified) {
-      file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
-        type: file.type || 'image/jpeg',
-        lastModified: Date.now(),
-      });
-    }
-
-    // Compress the image
-    const options = {
-      maxSizeMB: 0.5, // target size
-      maxWidthOrHeight: 800, // scale down resolution
-      useWebWorker: true,
-    };
-
-    try {
-      const compressedFile = await imageCompression(file, options);
-      return compressedFile;
-    } catch (err) {
-      console.error("Image compression failed", err);
-      return file; // fallback to original if compression fails
-    }
-  }));
-
-  files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
-
-  if (files.length === 0) {
-    alert("Captured file is invalid or empty. Please try again.");
-    return;
-  }
-
-  dispatch(uploadImages({ files, folderName: 'products' }));
-};
-
-const handleThirdImage = async (fileList) => {
-  setUploadTarget("signature");
-
-  let files = Array.from(fileList);
-
-  files = await Promise.all(files.map(async (file, index) => {
-    // Fix blob to file if needed
-    if (!file.name || !file.lastModified) {
-      file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
-        type: file.type || 'image/jpeg',
-        lastModified: Date.now(),
-      });
-    }
-
-    // Compress the image
-    const options = {
-      maxSizeMB: 0.5, // target size
-      maxWidthOrHeight: 800, // scale down resolution
-      useWebWorker: true,
-    };
-
-    try {
-      const compressedFile = await imageCompression(file, options);
-      return compressedFile;
-    } catch (err) {
-      console.error("Image compression failed", err);
-      return file; // fallback to original if compression fails
-    }
-  }));
-
-  files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
-
-  if (files.length === 0) {
-    alert("Captured file is invalid or empty. Please try again.");
-    return;
-  }
-
-  dispatch(uploadImages({ files, folderName: 'products' }));
-};
-
-// const handleThirdImage = (files) => {
-//   if (!files.length) return;
-//   setUploadTarget("signature");
-//   dispatch(uploadImages({ files, folderName: "products" }));
-// };
-
-// const handleFileChange = (files) => {
-//   if (!files.length) return;
-//   setUploadTarget("others");
-//   dispatch(uploadImages({ files, folderName: "products" }));
-// };
-
-
-
-// const handleFileChange = (fileList) => {
-//     setUploadTarget("others");
-
-//   let files = Array.from(fileList);
-
-//   // Check if it's missing File metadata (e.g., no name)
-//   files = files.map((file, index) => {
-//     if (!file.name || !file.lastModified) {
-//       // Create a "File" from the Blob
-//       return new File([file], `photo_${Date.now()}_${index}.jpg`, {
-//         type: file.type || 'image/jpeg',
-//         lastModified: Date.now(),
-//       });
-//     }
-//     return file;
-//   });
-
-//   // Filter valid images (non-zero size and type)
-//   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
-
-//   if (files.length === 0) {
-//     alert("Captured file is invalid or empty. Please try again.");
-//     return;
-//   }
-
-//   dispatch(uploadImages({ files, folderName: 'products' }));
-// };
-const handleFileChange = async (fileList) => {
-  setUploadTarget("others");
-
-  let files = Array.from(fileList);
-
-  files = await Promise.all(files.map(async (file, index) => {
-    // Fix blob to file if needed
-    if (!file.name || !file.lastModified) {
-      file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
-        type: file.type || 'image/jpeg',
-        lastModified: Date.now(),
-      });
-    }
-
-    // Compress the image
-    const options = {
-      maxSizeMB: 0.5, // target size
-      maxWidthOrHeight: 800, // scale down resolution
-      useWebWorker: true,
-    };
-
-    try {
-      const compressedFile = await imageCompression(file, options);
-      return compressedFile;
-    } catch (err) {
-      console.error("Image compression failed", err);
-      return file; // fallback to original if compression fails
-    }
-  }));
-
-  files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
-
-  if (files.length === 0) {
-    alert("Captured file is invalid or empty. Please try again.");
-    return;
-  }
-
-  dispatch(uploadImages({ files, folderName: 'products' }));
-};
-
-useEffect(() => {
-  if (!loading && urls.length > 0 && uploadTarget) {
-    setFormData((prev) => ({
-      ...prev,
-      pictures: {
-        ...prev.pictures,
-        [uploadTarget]:
-          uploadTarget === "others"
-            ? [...prev.pictures.others, ...urls]
-            : urls[0],
-      },
-    }));
-    setUploadTarget(null);
-  }
-}, [urls, loading, uploadTarget]);
-
-
+  }, [urls, loading, target, dispatch]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-if (isValid) {
-    try {
-      
-      const res = await dispatch(submitLoanApplication(formData));
-      dispatch(setDropdownVisible());
-      dispatch(setDropSuccessVisible());
-      console.log(res);
-    } catch (error) {
-      console.log(error);
+    if (isValid) {
+      try {
+        const res = await dispatch(submitLoanApplication(formData));
+        dispatch(setDropdownVisible());
+        dispatch(setDropSuccessVisible());
+        console.log(res);
+      } catch (error) {
+        console.log(error);
+      }
     }
-  }
   };
 
   return (
     <LoanApplicationRap>
       <div className="dropdown-container">
         <form className="all-dropdown-div" onSubmit={handleSubmit}>
-          <div  className="cancel-btn">
-
-           <Icon onClick={handleVisisble}
-                         
-                          icon="stash:times-circle"
-                          width="24"
-                          height="24"
-                          style={{ color: "#005e78", cursor: "pointer" }}
-                        />
+          <div className="cancel-btn">
+            <Icon
+              onClick={handleVisisble}
+              icon="stash:times-circle"
+              width="24"
+              height="24"
+              style={{ color: "#005e78", cursor: "pointer" }}
+            />
           </div>
           <div className="loan-customers">
             <div className="detailssss">
@@ -545,7 +497,7 @@ if (isValid) {
                 placeholder="First Name"
                 required
               />
-               <input
+              <input
                 type="text"
                 name="customerDetails.middleName"
                 value={formData.customerDetails.middleName}
@@ -563,7 +515,7 @@ if (isValid) {
               />
               <label className="upload-label">Date of Birth</label>
 
-               <input
+              <input
                 type="date"
                 name="customerDetails.dateOfBirth"
                 value={formData.customerDetails.dateOfBirth}
@@ -579,7 +531,7 @@ if (isValid) {
                 placeholder="Email"
                 required
               /> */}
-            
+
               <input
                 type="text"
                 name="customerDetails.address"
@@ -588,7 +540,7 @@ if (isValid) {
                 placeholder="Address"
                 required
               />
-               {/* <input
+              {/* <input
                 type="text"
                 name="customerDetails.city"
                 value={formData.customerDetails.city}
@@ -596,7 +548,7 @@ if (isValid) {
                 placeholder="City"
                 required
               /> */}
-               {/* <input
+              {/* <input
                 type="text"
                 name="customerDetails.state"
                 value={formData.customerDetails.state}
@@ -612,7 +564,7 @@ if (isValid) {
                 placeholder="NIN"
                 required
               />
-                <input
+              <input
                 type="text"
                 name="customerDetails.phoneOne"
                 value={formData.customerDetails.phoneOne}
@@ -620,7 +572,7 @@ if (isValid) {
                 placeholder="Enter phone number in form of +234XXXXXXXXXX"
                 required
               />
-               {/* <input
+              {/* <input
                 type="text"
                 name="customerDetails.phoneTwo"
                 value={formData.customerDetails.phoneTwo}
@@ -628,7 +580,7 @@ if (isValid) {
                 placeholder="Mobile No 2 in form of +234XXXXXXXXXX"
               
               /> */}
-               {/* <input
+              {/* <input
                 type="text"
                 name="customerDetails.religion"
                 value={formData.customerDetails.religion}
@@ -642,7 +594,6 @@ if (isValid) {
                 value={formData.customerDetails.NextOfKin}
                 onChange={handleInputChange}
                 placeholder="Next of Kin"
-              
               />
               <input
                 type="number"
@@ -650,7 +601,6 @@ if (isValid) {
                 value={formData.customerDetails.NextOfKinNumber}
                 onChange={handleInputChange}
                 placeholder="Next of Kin Number"
-              
               />
             </div>
             <div className="detailssss">
@@ -680,7 +630,7 @@ if (isValid) {
                 placeholder="Business Address"
                 required
               />
-               <input
+              <input
                 type="text"
                 name="businessDetails.yearsHere"
                 value={formData.businessDetails.yearsHere}
@@ -688,7 +638,7 @@ if (isValid) {
                 placeholder="Years you've been in the business address"
                 required
               />
-               <input
+              <input
                 type="text"
                 name="businessDetails.nameKnown"
                 value={formData.businessDetails.nameKnown}
@@ -712,13 +662,12 @@ if (isValid) {
                 placeholder="What is the worth of your business"
                 required
               />
-               <input
+              <input
                 type="text"
                 name="businessDetails.additionalInfo"
                 value={formData.businessDetails.additionalInfo}
                 onChange={handleInputChange}
                 placeholder="Is your business seasonal?"
-          
               />
             </div>
             <div className="detailssss">
@@ -732,7 +681,7 @@ if (isValid) {
                 placeholder="Amount Requested"
                 required
               />
-              <select 
+              <select
                 name="loanDetails.loanType"
                 value={formData.loanDetails.loanType}
                 onChange={handleInputChange}
@@ -763,7 +712,7 @@ if (isValid) {
                 placeholder="Account Number"
                 required
               />
-                <input
+              <input
                 type="text"
                 name="bankDetails.bankName"
                 value={formData.bankDetails.bankName}
@@ -851,7 +800,7 @@ if (isValid) {
                 placeholder="Group Leader's Name"
                 required
               />
-                <input
+              <input
                 type="text"
                 name="groupDetails.mobileNo"
                 value={formData.groupDetails.mobileNo}
@@ -861,58 +810,71 @@ if (isValid) {
               />
             </div>
             <div className="detailssss">
-  <h3>Upload Pictures</h3>
+              <h3>Upload Pictures</h3>
 
-  <label className="upload-label">Upload customer picture</label>
-  <input
-    type="file"
-    capture="user"
-    onChange={(e) => handleFirstImage(e.target.files)}
-    required
-  />
-  <label className="upload-label">Upload business picture</label>
-  <input
-    type="file"
-    capture="user"
-    onChange={(e) => handleSecondImage(e.target.files)}
-    required
-  />
-  <label className="upload-label">Upload another business picture</label>
-  <input
-    type="file"
-    multiple
-    onChange={(e) => handleFileChange(Array.from(e.target.files))}
-  />
-</div>
-<div className="detailssss">
-  <h3>Signature</h3>
+              <label className="upload-label">Upload customer picture</label>
+              <input
+                type="file"
+                capture="user"
+                onChange={(e) => handleFirstImage(e.target.files)}
+                required
+              />
+              <label className="upload-label">Upload business picture</label>
+              <input
+                type="file"
+                capture="user"
+                onChange={(e) => handleSecondImage(e.target.files)}
+                required
+              />
+              <label className="upload-label">
+                Upload another business picture
+              </label>
+              <input
+                type="file"
+                multiple
+                onChange={(e) => handleFileChange(Array.from(e.target.files))}
+              />
+            </div>
+            <div className="detailssss">
+              <h3>Signature</h3>
 
-  <label className="upload-label">Upload customer's signature</label>
-  <input
-    type="file"
-    capture="user"
-    onChange={(e) => handleThirdImage(e.target.files)}
-    required
-  />
-</div>
+              <label className="upload-label">
+                Upload customer's signature
+              </label>
+              <input
+                type="file"
+                capture="user"
+                onChange={(e) => handleThirdImage(e.target.files)}
+                required
+              />
+            </div>
 
-            <button type="submit"
-            onClick={handleSubmit}
-            disabled={!isValid || submitLoanloading}
-            style={{
-              backgroundColor: isValid ? "#0c1d55" : "#727789",
-              cursor: submitLoanloading || !isValid ? "not-allowed" : "pointer",
-            }}
+            <button
+              type="submit"
+              onClick={handleSubmit}
+              disabled={!isValid || submitLoanloading}
+              style={{
+                backgroundColor: isValid ? "#0c1d55" : "#727789",
+                cursor:
+                  submitLoanloading || !isValid ? "not-allowed" : "pointer",
+              }}
             >
-              {submitLoanloading ? 
+              {submitLoanloading ? (
                 <PulseLoader color="white" size={10} />
-                  : "Confirm Application"
-            }
-              
-              </button>
+              ) : (
+                "Confirm Application"
+              )}
+            </button>
           </div>
         </form>
       </div>
+      {submitLoanloading ? (
+        <div className="dropdown-container">
+          <PulseLoader color="white" size={50} />
+        </div>
+      ) : (
+        ""
+      )}
     </LoanApplicationRap>
   );
 };

@@ -249,6 +249,41 @@ export const submitDailyRemittanceReport = createAsyncThunk(
   }
 );
 
+export const addRemitanceIssueCsoResolved = createAsyncThunk(
+  'remitanceIssues/addRemitanceIssueCsoResolved',
+  async ({ workId, issue }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${API_URL}/cso-remittance-resolve-issue/${workId}/add-issue`, issue);
+      return response.data.remitanceIssues;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Something went wrong');
+    }
+  }
+);
+
+// export const fetchCsoRemittanceRemttanceIssue = createAsyncThunk(
+//   'remittance/fetchCsoRemittanceRemttanceIssue',
+//   async (workId, { rejectWithValue }) => {
+//     try {
+//       const response = await axios.get(`${API_URL}/remittance-remittance-issue/${workId}`);
+//       return response.data;
+//     } catch (error) {
+//       return rejectWithValue(error.response?.data || error.message);
+//     }
+//   }
+// );
+
+export const fetchCsoRemittanceRemttanceIssue = createAsyncThunk(
+  'remittance/fetchCsoRemittanceRemttanceIssue',
+  async ({ workId, month, year }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/remittance-remittance-issue/${workId}?month=${month}&year=${year}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch remittance summary');
+    }
+  }
+);
 
 const csoSlice = createSlice({
   name: "cso",
@@ -287,6 +322,13 @@ const csoSlice = createSlice({
     remmitCsoData: [],
     remittanceuploadedSuccess: null,
     selectedRemiteDate: format(new Date(), "yyyy-MM-dd"),
+    remittanceCso: [],
+    remitanceCsoIssues: [],
+     dailyCsoCollections: [],
+    addRemittanceIssue: null,
+     month: null,
+    year: null,
+    issueResolveloading: false
   },
   reducers: {
     resetUploadState: (state) => {
@@ -303,7 +345,11 @@ const csoSlice = createSlice({
     setSelectedCSO: (state, action) => {
       state.selectedCSO = action.payload;
     },
-    
+     setRemittanceIssueResolve: (state, action) => {
+      state.addRemittanceIssue = action.payload;
+    },
+
+
     clearMessages: (state) => {
       state.error = null;
       state.successMessage = null;
@@ -350,6 +396,42 @@ const csoSlice = createSlice({
     state.loading = false;
     state.error = action.payload;
   });
+
+
+   builder
+      .addCase(addRemitanceIssueCsoResolved.pending, (state) => {
+        state.issueResolveloading = true;
+        state.error = null;
+      })
+      .addCase(addRemitanceIssueCsoResolved.fulfilled, (state, action) => {
+        state.issueResolveloading = false;
+        state.addRemittanceIssue = action.payload
+        
+      })
+      .addCase(addRemitanceIssueCsoResolved.rejected, (state, action) => {
+        state.issueResolveloading = false;
+        state.error = action.payload;
+      });
+
+ builder
+      .addCase(fetchCsoRemittanceRemttanceIssue.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCsoRemittanceRemttanceIssue.fulfilled, (state, action) => {
+        state.loading = false;
+        state.remittanceCso = action.payload.remittance;
+        state.remitanceCsoIssues = action.payload.remitanceIssues;
+         state.dailyCsoCollections = action.payload.dailyCollections;
+        state.month = action.payload.month;
+        state.year = action.payload.year;
+      })
+      .addCase(fetchCsoRemittanceRemttanceIssue.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+
   builder
       .addCase(submitDailyRemittanceReport.pending, (state) => {
         state.remiLoading = true;
@@ -572,5 +654,5 @@ const csoSlice = createSlice({
       });
   },
 });
-export const {clearTargetMessageMessages, setRemittanceUploadReset, clearUpdateSuccessMessages, resetUploadState, setSelectedRemmitDate, setSelectedCSO, clearMessages } = csoSlice.actions;
+export const {clearTargetMessageMessages, setRemittanceIssueResolve, setRemittanceUploadReset, clearUpdateSuccessMessages, resetUploadState, setSelectedRemmitDate, setSelectedCSO, clearMessages } = csoSlice.actions;
 export default csoSlice.reducer;

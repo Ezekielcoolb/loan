@@ -22,7 +22,10 @@ import axios from "axios";
 import { PulseLoader } from "react-spinners";
 import TopLoader from "../Preload/TopLoader";
 import { fetchOutstandingLoans } from "../redux/slices/otherLoanSlice";
-import { fetchCsoByWorkId, fetchRemittanceStatus } from "../redux/slices/csoSlice";
+import {
+  fetchCsoByWorkId,
+  fetchRemittanceStatus,
+} from "../redux/slices/csoSlice";
 
 const HomeCsoRap = styled.div`
   color: #005e78;
@@ -249,37 +252,37 @@ const HomeCsoRap = styled.div`
   .images-container h4 {
     max-width: 120px;
   }
-  .dropdown-content{ 
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 20px;
-}
-.dropdown-content p {
-  font-size: 20px;
-  color: #112240;
-  font-weight: 500;
-}
-.submit-btn {
+  .dropdown-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+  }
+  .dropdown-content p {
+    font-size: 20px;
+    color: #112240;
+    font-weight: 500;
+  }
+  .submit-btn {
     border: 1px solid #112240;
-  background-color: #112240;
-  color: white;
-  width: 380px;
-  height: 40px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 10px;
-}
-.submit-btn-2 {
-     border: 1px solid #112240;
-  color: #112240;
-  background: transparent;
-  width: 380px;
-  height: 40px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 10px;
-}
+    background-color: #112240;
+    color: white;
+    width: 380px;
+    height: 40px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 10px;
+  }
+  .submit-btn-2 {
+    border: 1px solid #112240;
+    color: #112240;
+    background: transparent;
+    width: 380px;
+    height: 40px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 10px;
+  }
 `;
 
 const CsoHome = () => {
@@ -298,8 +301,9 @@ const CsoHome = () => {
   const [popupMessage, setPopupMessage] = useState(null);
   const [popupColor, setPopupColor] = useState("#005e78");
   const [successGuarantorForm, setSuccessGuarantorForm] = useState(false);
-  const [remittanceAvailableShow, setRemittanceAvailableShow] = React.useState(false);
-  
+  const [remittanceAvailableShow, setRemittanceAvailableShow] =
+    React.useState(false);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -308,7 +312,9 @@ const CsoHome = () => {
   const { outstandingLoans, totalOutstandingLoans } = useSelector(
     (state) => state.otherLoan
   );
-  const { specificCso, remittancestatus, hoursLeft, minutesLeft } = useSelector((state) => state.cso);
+  const { specificCso, remittancestatus, hoursLeft, minutesLeft } = useSelector(
+    (state) => state.cso
+  );
 
   console.log(totalOutstandingLoans);
   const [query, setQuery] = useState("");
@@ -328,17 +334,16 @@ const CsoHome = () => {
   };
   const handleVisisble = () => {
     if (remittancestatus === false) {
-    dispatch(setDropdownVisible());
+      dispatch(setDropdownVisible());
     } else {
-          setRemittanceAvailableShow(true);
-
+      setRemittanceAvailableShow(true);
     }
   };
 
   const handleSuccessVisible = () => {
     dispatch(setDropSuccessVisible());
   };
- useEffect(() => {
+  useEffect(() => {
     if (csoId) {
       dispatch(fetchRemittanceStatus(csoId));
     }
@@ -472,6 +477,44 @@ const CsoHome = () => {
     return new Intl.NumberFormat().format(number);
   };
 
+  
+// 1️⃣ Get today's date in UTC (no time component)
+const now = new Date();
+const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+
+// 2️⃣ Calculate "effective yesterday" (adjusted for weekends)
+let effectiveDate = new Date(todayUTC);
+effectiveDate.setDate(effectiveDate.getDate() - 1); // Normal yesterday
+
+// If Saturday → move back to Friday
+if (effectiveDate.getDay() === 6) {
+  effectiveDate.setDate(effectiveDate.getDate() - 1);
+}
+
+// If Sunday → move back to Friday
+if (effectiveDate.getDay() === 0) {
+  effectiveDate.setDate(effectiveDate.getDate() - 2);
+}
+
+// 3️⃣ Format effective date as YYYY-MM-DD (to match item.date)
+const effectiveDateString = effectiveDate.toISOString().slice(0, 10);
+console.log(effectiveDateString); // e.g., "2023-10-01"
+
+// 4️⃣ Filter remittance items where date matches
+const filteredRemittance = user?.remittance?.filter(item => {
+  const itemDateString = new Date(item.date).toISOString().slice(0, 10);
+  return itemDateString === effectiveDateString;
+});
+
+const filteredRemittanceIssue = user?.remitanceIssues?.filter(item => {
+  const itemDateString = new Date(item.date).toISOString().slice(0, 10);
+  return itemDateString === effectiveDateString;
+});
+
+console.log("Filtered Remittance:", filteredRemittance);
+console.log(filteredRemittanceIssue);
+
+
   return (
     <HomeCsoRap>
       <div>
@@ -514,20 +557,21 @@ const CsoHome = () => {
                       key={loan._id}
                       onClick={() => handleCustomerClick(loan)}
                     >
-                     
-
-
                       <img
-  src={
-    loan?.pictures?.customer?.startsWith("http")
-      ? loan?.pictures?.customer // Cloudinary URL
-      : loan?.pictures?.customer
-      ? `https://api.jksolutn.com${loan?.pictures?.customer}` // Local image
-      : "fallback.jpg" // Optional fallback image
-  }
-  alt="customer"
-  style={{ width: "100px", height: "100px", objectFit: "contain" }}
-/>
+                        src={
+                          loan?.pictures?.customer?.startsWith("http")
+                            ? loan?.pictures?.customer // Cloudinary URL
+                            : loan?.pictures?.customer
+                            ? `https://api.jksolutn.com${loan?.pictures?.customer}` // Local image
+                            : "fallback.jpg" // Optional fallback image
+                        }
+                        alt="customer"
+                        style={{
+                          width: "100px",
+                          height: "100px",
+                          objectFit: "contain",
+                        }}
+                      />
                       <h4 className="custom-name">
                         {loan?.customerDetails?.firstName}{" "}
                         {loan?.customerDetails?.lastName}
@@ -613,7 +657,7 @@ const CsoHome = () => {
                   {" "}
                   {formatNumberWithCommas(defaultingTarget)}{" "}
                 </span>
-                . Try to clear the defaults in order to submit new loans. <br />{" "}
+                Try to clear the defaults in order to submit new loans. <br />{" "}
                 Thanks.
               </p>
               <button onClick={handleVisisble}>Exit</button>
@@ -708,21 +752,27 @@ const CsoHome = () => {
       )}
       {remittanceAvailableShow ? (
         <>
-         <div className="dropdown-container">
-      <div className="all-dropdown-div">
-
-       
-        <div className="dropdown-content">
-          <p >Sorry, you cannot submit a new loan after submitting remittance. <br /> Please wait till the next {hoursLeft}hr {minutesLeft} minutes. <br /> Thanks.</p>
-          <button className="submit-btn-2" onClick={() => setRemittanceAvailableShow(false)}>
-            Close
-            </button>
-        </div>
-        </div>
-        </div>
-        
+          <div className="dropdown-container">
+            <div className="all-dropdown-div">
+              <div className="dropdown-content">
+                <p>
+                  Sorry, you cannot submit a new loan after submitting
+                  remittance. <br /> Please wait till the next {hoursLeft}hr{" "}
+                  {minutesLeft} minutes. <br /> Thanks.
+                </p>
+                <button
+                  className="submit-btn-2"
+                  onClick={() => setRemittanceAvailableShow(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
         </>
-      ): ""}
+      ) : (
+        ""
+      )}
     </HomeCsoRap>
   );
 };

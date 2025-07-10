@@ -3,13 +3,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 
-
+import { createCso, fetchCso, searchCso } from "../redux/slices/csoSlice";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { MoonLoader, PulseLoader } from "react-spinners";
-import axios from "axios";
 import { fetchAllBranches } from "../redux/slices/branchSlice";
-import { activateCSO, clearMessages, createCso, deactivateCSO, fetchCso } from "../redux/slices/csoSlice";
+import axios from "axios";
+
 
 const ClientRap = styled.div`
   width: 100%;
@@ -49,35 +49,6 @@ const ClientRap = styled.div`
     display: flex;
     flex-direction: column;
     gap: 10px;
-  }
-  .button {
-    border-style: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 12px;
-    font-weight: 700;
-    color: white;
-    width: 80px;
-    height: 30px;
-    background: #0c1d55;
-    padding: 10px;
-    cursor: pointer;
-    border-radius: 10px;
-  }
-  .exit-btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 14px;
-    font-weight: 700;
-    color: #0c1d55;
-    width: 80px;
-    height: 30px;
-    padding: 10px;
-    cursor: pointer;
-    border: 1px solid #0c1d55 ;
-    border-radius: 10px;
   }
   .bill-custom h4 {
     cursor: pointer;
@@ -399,32 +370,15 @@ const ClientRap = styled.div`
   .client-dropdown-div {
     padding: 15px;
     display: flex;
+
     flex-direction: column;
     gap: 15px;
     padding-bottom: 20px;
   }
-  .client-dropdown-div::-webkit-scrollbar {
-    height: 3px; /* Set scrollbar width */
-  }
 
-  .client-dropdown-div::-webkit-scrollbar-thumb {
-    background: #888; /* Scrollbar thumb color */
-    border-radius: 4px; /* Optional for rounded scrollbar */
+  .client-all-dropdown-div::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, and newer Edge: Hide scrollbar */
   }
-
-  .client-dropdown-div::-webkit-scrollbar-thumb:hover {
-    background: #555; /* Thumb hover color */
-  }
-
-  .client-dropdown-div::-webkit-scrollbar-track {
-    background: #f1f1f1; /* Scrollbar track color */
-  }
-
-  /* Hide Up and Down Arrows in Scrollbar */
-  .client-dropdown-div::-webkit-scrollbar-button {
-    display: none; /* Hides the arrows */
-  }
-
   .client-dropdown-div input,
   .client-dropdown-div select {
     width: 380px;
@@ -509,18 +463,18 @@ const ClientRap = styled.div`
     overflow: hidden; /* Ensures uploaded image doesn't overflow */
     background-color: #ffffff; /* Light background color */
   }
-  .upper-image-display {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    width: 100%;
-    margin: auto;
-  }
-  .upper-image-display {
-    width: 200px;
-    height: 100px;
-  }
+.upper-image-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  margin: auto;
+}
+.upper-image-display {
+  width: 200px;
+  height: 100px;
+}
   /* Hide the actual file input */
   .image-upload-container input[type="file"] {
     display: none;
@@ -550,17 +504,14 @@ const ClientRap = styled.div`
   }
 `;
 
-const ManagerCsos = () => {
+const SolutionCsos = () => {
   const clientdropdownRef = useRef(null);
 
   const dispatch = useDispatch();
-  const { successMessage, cso, totalPages, currentPage, status, error } =
-    useSelector((state) => state.cso);
+  const { cso, totalPages, currentPage, status, error } = useSelector(
+    (state) => state.cso
+  );
   const limit = 10;
-  console.log(successMessage);
-
-  console.log(cso);
-  
 
   const [filter, setFilter] = useState("all");
   const [activeLink, setActiveLink] = useState("cso");
@@ -576,11 +527,6 @@ const ManagerCsos = () => {
   const { branches } = useSelector((state) => state.branches);
   const [query, setQuery] = useState("");
 
-  const [dropdownOpen, setDropdownOpen] = useState(null);
-
-  const toggleDropdownActivate = (csoId) => {
-    setDropdownOpen(dropdownOpen === csoId ? null : csoId);
-  };
 
   const handleMatricOpen = (links) => {
     setMatricOpen(links);
@@ -605,6 +551,7 @@ const ManagerCsos = () => {
     zipCode: "",
     country: "",
   });
+console.log(formData);
 
   // Update formData.branch whenever selectedBranch changes
   useEffect(() => {
@@ -729,37 +676,43 @@ const ManagerCsos = () => {
     formData.branch !== "" &&
     formData.phone !== "";
 
-  const handleSecondImage = async (e) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", e[0]);
-      formData.append("upload_preset", "ml_default");
 
-      const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
-        formData
-      );
+    const handleSecondImage = async (e) => {
+      try {
+        const formData = new FormData();
+        formData.append("file", e[0]);
+        formData.append("upload_preset", "ml_default");
+    
+        const response = await axios.post(
+          `https://api.cloudinary.com/v1_1/dmwhuekzh/image/upload`,
+          formData
+        );
+    
+        const imageUrl = response.data.secure_url;
+        console.log(imageUrl);
+    
+        setLoanerIamge(imageUrl);
+    
+        // Update formData state
+        setFormData((prevData) => ({
+          ...prevData,
+          profileImg: imageUrl,
+        }));
+      } catch (err) {
+        console.log(err);
+      }
+    };
 
-      const imageUrl = response.data.secure_url;
-      console.log(imageUrl);
 
-      setLoanerIamge(imageUrl);
 
-      // Update formData state
-      setFormData((prevData) => ({
-        ...prevData,
-        profileImg: imageUrl,
-      }));
-    } catch (err) {
-      console.log(err);
-    }
-  };
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isValid) {
       try {
-        dispatch(createCso(formData));
+     
+        dispatch(createCso(formData));        
         setDropdownVisible(false);
         setFormData({
           firstName: "",
@@ -804,11 +757,6 @@ const ManagerCsos = () => {
     }));
   };
 
-  const handleSuccessExit = () => {
-    dispatch(clearMessages())
-    window.location.reload();
-  }
-
   const handleImage = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -822,6 +770,10 @@ const ManagerCsos = () => {
     }
   };
 
+  
+  
+
+
   return (
     <ClientRap>
       <div>
@@ -834,294 +786,10 @@ const ManagerCsos = () => {
               CSO
             </Link>
           </div>
-          <div>
-            <Link onClick={toggleDropdown} className="create-new-client">
-              Add New CSO
-            </Link>
-          </div>
+          
 
           {/* Dropdown for Create New Case */}
-          <div
-            className={`client-dropdown-container ${
-              dropdownVisible ? "" : "hidden"
-            }`}
-            style={{ marginTop: "10px" }}
-          >
-            <div className="client-all-dropdown-div">
-              <div className="client-dropdown-header">
-                <h4>Add CSO</h4>
-                <Icon
-                  onClick={() => setDropdownVisible(false)}
-                  icon="uil:times"
-                  width="16"
-                  height="16"
-                  style={{ color: "black", cursor: "pointer" }}
-                />
-              </div>
-
-              <div className="client-dropdown-div">
-                <div className="upper-image-display">
-                  <div class="image-upload-container">
-                    <label for="upload-input">
-                      <div class="upload-icon"></div>
-                      <input
-                        type="file"
-                        id="upload-input"
-                        accept="images/*"
-                        onChange={(e) => handleSecondImage(e.target.files)}
-                      />
-                    </label>
-                  </div>
-                  <img src={`${loanerImage}`} alt="" />
-                </div>
-
-                <div className="client-input-div">
-                  <label>
-                    First Name
-                    <span className="star">*</span> <br />
-                    <input
-                      className="client-small-input-div"
-                      type="text"
-                      placeholder=""
-                      name="firstName"
-                      onChange={handleChange}
-                      value={formData.firstName}
-                    />
-                  </label>
-                  <label>
-                    Last Name
-                    <span className="star">*</span> <br />
-                    <input
-                      className="client-small-input-div"
-                      type="text"
-                      placeholder=""
-                      name="lastName"
-                      onChange={handleChange}
-                      value={formData.lastName}
-                    />
-                  </label>
-                </div>
-
-                <label>
-                  Email Address
-                  <span className="star">*</span> <br />
-                  <input
-                    type="text"
-                    placeholder=""
-                    onChange={handleChange}
-                    value={formData.email}
-                    name="email"
-                  />
-                </label>
-
-                <label>
-                  Phone Number
-                  <span className="star">*</span> <br />
-                  <input
-                    type="number"
-                    placeholder=""
-                    onChange={handleChange}
-                    name="phone"
-                    value={formData.phone}
-                  />
-                </label>
-                <label>
-                  Work Id
-                  <span className="star">*</span> <br />
-                  <input
-                    type="number"
-                    placeholder=""
-                    onChange={handleChange}
-                    name="workId"
-                    value={formData.workId}
-                  />
-                </label>
-                <label>
-                  Date employed
-                  <span className="star">*</span> <br />
-                  <input
-                    type="date"
-                    placeholder=""
-                    onChange={handleChange}
-                    name="date"
-                    value={formData.date}
-                  />
-                </label>
-                <label>
-                  Branch Assigned
-                  {status === "failed" && <p>Error: {error}</p>}
-                  <select
-                    value={selectedBranch}
-                    onChange={(e) => setSelectedBranch(e.target.value)}
-                  >
-                    <option value="">Select Branch</option>
-                    {branches.map((branch) => (
-                      <option key={branch.name} value={branch.name}>
-                        {branch.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Gender
-                  <span className="star">*</span> <br />
-                  <select
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option>Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                  </select>
-                </label>
-                <label>
-                  Address
-                  <input
-                    type="text"
-                    placeholder=""
-                    onChange={handleChange}
-                    name="address"
-                    value={formData.address}
-                  />
-                </label>
-
-                <div className="client-input-div">
-                  <label>
-                    City
-                    <span className="star">*</span> <br />
-                    <input
-                      className="client-small-input-div"
-                      type="text"
-                      placeholder=""
-                      onChange={handleChange}
-                      value={formData.city}
-                      name="city"
-                    />
-                  </label>
-
-                  <label>
-                    State
-                    <span className="star">*</span> <br />
-                    <input
-                      className="client-small-input-div"
-                      type="text"
-                      placeholder=""
-                      onChange={handleChange}
-                      name="state"
-                      value={formData.state}
-                    />
-                  </label>
-                </div>
-
-                <div className="client-input-div">
-                  <label>
-                    Zip code
-                    <span className="star">*</span> <br />
-                    <input
-                      className="client-small-input-div"
-                      type="text"
-                      placeholder=""
-                      onChange={handleChange}
-                      value={formData.zipCode}
-                      name="zipCode"
-                    />
-                  </label>
-
-                  <label>
-                    Country
-                    <span className="star">*</span> <br />
-                    <input
-                      className="client-small-input-div"
-                      type="text"
-                      placeholder=""
-                      onChange={handleChange}
-                      name="country"
-                      value={formData.country}
-                    />
-                  </label>
-                </div>
-                <div>
-                  <h4>Guarantor </h4>
-                  <label>
-                    Full name
-                    <span className="star">*</span> <br />
-                    <input
-                      className=""
-                      type="text"
-                      placeholder=""
-                      name="guaratorName"
-                      onChange={handleChange}
-                      value={formData.guaratorName}
-                    />
-                  </label>
-                  <label>
-                    Full Address
-                    <span className="star">*</span> <br />
-                    <input
-                      style={{ height: "90px" }}
-                      type="text"
-                      placeholder=""
-                      name="guaratorAddress"
-                      onChange={handleChange}
-                      value={formData.guaratorAddress}
-                    />
-                  </label>
-                  <label>
-                    Email
-                    <span className="star">*</span> <br />
-                    <input
-                      className=""
-                      type="text"
-                      placeholder=""
-                      name="guaratorEmail"
-                      onChange={handleChange}
-                      value={formData.guaratorEmail}
-                    />
-                  </label>
-                  <label>
-                    Phone Number
-                    <span className="star">*</span> <br />
-                    <input
-                      className=""
-                      type="number"
-                      placeholder=""
-                      name="guaratorPhone"
-                      onChange={handleChange}
-                      value={formData.guaratorPhone}
-                    />
-                  </label>
-                </div>
-
-                <div className="save-cancel-div">
-                  <Link
-                    className="client-cancel-btn"
-                    onClick={() => setDropdownVisible(false)}
-                  >
-                    Cancel
-                  </Link>
-                  <button
-                    className="client-create-btn"
-                    onClick={handleSubmit}
-                    disabled={!isValid}
-                    style={{
-                      backgroundColor: isValid ? "#0c1d55" : "#727789",
-                      cursor: !isValid ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    {isLoading ? (
-                      <>
-                        <PulseLoader color="white" size={10} />
-                      </>
-                    ) : (
-                      "Save"
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+         
         </div>
         <div style={{ margin: "0px 20px" }}>
           {activeLink === "cso" && (
@@ -1157,15 +825,15 @@ const ManagerCsos = () => {
                 </div>
               </div>
               <div className="table-container">
-      <div className="new-table-scroll">
-        <div className="table-div-con">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th style={{ width: "30px" }}>
-                  <input type="checkbox" />
-                </th>
-                <th>Name</th>
+                <div className="new-table-scroll">
+                  <div className="table-div-con">
+                    <table className="custom-table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: "30px" }}>
+                            <input type="checkbox" />
+                          </th>
+                          <th>Name</th>
                 <th>Email</th>
                 {/* <th>Phone Number</th>
                 <th>Gender</th> */}
@@ -1173,147 +841,114 @@ const ManagerCsos = () => {
                 <th>Default Limit Target</th>
                 <th>Loan Target</th>
                 <th>Disbursement Target</th>
-                <th>Action</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCso?.length > 0 ? (
-                filteredCso.map((caseItem) => (
-                  <tr key={caseItem?.id} onClick={() => handleRowClick(caseItem)} style={{ cursor: "pointer" }}>
-                    <td>
-                      <input
-                        type="checkbox"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRowClick(caseItem);
-                        }}
-                      />
-                    </td>
-                    <td>{caseItem?.firstName} {caseItem?.lastName}</td>
-                    <td>{caseItem?.email}</td>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredCso ? (
+                          filteredCso.map((caseItem) => (
+                            <tr
+                              key={caseItem?.id}
+                              onClick={() => handleRowClick(caseItem)}
+                              style={{ cursor: "pointer" }}
+                            >
+                              <td>
+                                <input
+                                  type="checkbox"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRowClick(caseItem);
+                                  }}
+                                />
+                              </td>
+                              <td>
+                                {caseItem?.firstName} {caseItem?.lastName}
+                              </td>
+                              <td>{caseItem?.email}</td>
                     {/* <td>{caseItem?.phone}</td> */}
                     {/* <td>{caseItem?.status}</td> */}
                     <td>{caseItem?.branch}</td>
                     <td>{caseItem?.defaultingTarget}</td>
                     <td>{caseItem?.loanTarget}</td>
                     <td>{caseItem?.disbursementTarget}</td>
-                    <td>
-                      <Link to={`/manager/csoDetails/${caseItem.workId}`}>View Details</Link>
-                    </td>
-                    <td style={{ position: "relative" }}>
-                      <button 
-                        style={{ background: "transparent", border: "none", cursor: "pointer" }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleDropdownActivate(caseItem._id);
+                              <td>
+                                {" "}
+                                <Link to={`/solution/csoDetails/${caseItem.workId}`}>
+                                  View Details
+                                </Link>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="10" className="no-case">
+                              <img src="/images/mask_img.png" alt="" />
+                              <h3>No cso found.</h3>
+                              <p style={{}}></p>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                {/* Pagination Controls */}
+
+                <div className="pagination-div">
+                  <Link
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="next-page-link"
+                  >
+                    <Icon
+                      icon="formkit:arrowleft"
+                      width="18"
+                      height="18"
+                      style={{ color: "#636878" }}
+                    />
+                    Previous
+                  </Link>
+
+                  <div>
+                    {Array.from(
+                      { length: totalPages },
+                      (_, index) => index + 1
+                    ).map((pageNumber) => (
+                      <Link
+                        className="paginations"
+                        key={pageNumber}
+                        onClick={() => handlePageChange(pageNumber)}
+                        style={{
+                          color:
+                            pageNumber === currentPage ? "#030b26" : "#727789",
                         }}
                       >
-                        &#8226;&#8226;&#8226;
-                      </button>
+                        {pageNumber}
+                      </Link>
+                    ))}
+                  </div>
 
-                      {dropdownOpen === caseItem._id && (
-                        <div 
-                          style={{
-                            position: "absolute",
-                            top: "100%",
-                            right: 0,
-                            background: "white",
-                            boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                            borderRadius: "5px",
-                            padding: "5px",
-                            zIndex: 10,
-                          }}
-                        >
-                          <button 
-                            className="button"
-                            onClick={() => {
-                              dispatch(caseItem.isActive ? deactivateCSO(caseItem._id) : activateCSO(caseItem._id));
-                              toggleDropdownActivate(null);
-                            }}
-                            disabled={isLoading}
-                            style={{
-                              background: caseItem.isActive ? "red" : "green",
-                              color: "white",
-                              padding: "10px",
-                              border: "none",
-                              width: "100%",
-                              cursor: "pointer",
-                            }}
-                          >
-                            {isLoading ? (
-                              <PulseLoader color="white" size={10} />
-                            ) : (
-                              caseItem.isActive ? "Suspend" : "Activate"
-                            )}
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="10" className="no-case">
-                    <img src="/images/mask_img.png" alt="" />
-                    <h3>No CSO found.</h3>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Pagination Controls */}
-      <div className="pagination-div">
-        <Link 
-          onClick={() => handlePageChange(currentPage - 1)} 
-          disabled={currentPage === 1} 
-          className="next-page-link"
-        >
-          <Icon icon="formkit:arrowleft" width="18" height="18" style={{ color: "#636878" }} />
-          Previous
-        </Link>
-
-        <div>
-          {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
-            <Link
-              className="paginations"
-              key={pageNumber}
-              onClick={() => handlePageChange(pageNumber)}
-              style={{ color: pageNumber === currentPage ? "#030b26" : "#727789" }}
-            >
-              {pageNumber}
-            </Link>
-          ))}
-        </div>
-
-        <Link 
-          onClick={() => handlePageChange(currentPage + 1)} 
-          disabled={currentPage === totalPages} 
-          className="next-page-link"
-        >
-          Next
-          <Icon icon="formkit:arrowright" width="18" height="18" style={{ color: "#636878" }} />
-        </Link>
-      </div>
-    </div>
+                  <Link
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="next-page-link"
+                  >
+                    Next
+                    <Icon
+                      icon="formkit:arrowright"
+                      width="18"
+                      height="18"
+                      style={{ color: "#636878" }}
+                    />
+                  </Link>
+                </div>
+              </div>
             </>
           )}
         </div>
       </div>
-      {successMessage !== null ? (
-        <div className="dropdown-container">
-          <div className="successPop">
-<p>{successMessage}</p>
-<button onClick={handleSuccessExit} className="exit-btn">Exit</button>
-</div>
-</div>
-      ): ""}
-      
     </ClientRap>
   );
 };
 
-export default ManagerCsos;
+export default SolutionCsos;

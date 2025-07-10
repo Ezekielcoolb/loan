@@ -141,6 +141,7 @@ const Home = () => {
                     <Link to="/superAdminLogin" className="login-btn">As Admin</Link>
                     <Link to="/disburseLogin" className="login-btn">As Disbursement officer</Link>
                     <Link to="/managerLogin" className="login-btn">As Manager</Link>
+                    <Link to="/solutionLogin" className="login-btn">Support/Reconciliation Officer</Link>
                     <Link to="/csoLogin" className="login-btn">As CSO</Link>
                 </div>
                 ): ""}

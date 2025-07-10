@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { fetchLoanById } from "../../redux/slices/LoanSlice";
+import { fetchLoanById } from "../redux/slices/LoanSlice";
 
 const CalendarRap = styled.div`
 height: 100vh;
@@ -153,7 +153,7 @@ console.log(loan);
   };
 
   const handleMoveBack = () => {
-    navigate(`/admin/customer/${loan?.customerDetails.bvn}`);
+    navigate(`/solution/customer/${loan?.customerDetails.bvn}`);
   };
   const closePopup = () => setPopupInfo(null);
 

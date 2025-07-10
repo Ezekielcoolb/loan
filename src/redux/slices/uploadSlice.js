@@ -5,16 +5,16 @@ import axios from 'axios';
 // Async thunk for uploading images
 export const uploadImages = createAsyncThunk(
   'upload/uploadImages',
-  async ({ files, folderName }, { rejectWithValue }) => {
+  async ({ files, folderName, target }, { rejectWithValue }) => {
     try {
       const uploadedUrls = [];
 
       for (const file of files) {
         const formData = new FormData();
-        formData.append('file', file); // Use 'file', not 'images[]'
+        formData.append('file', file);
 
         const response = await axios.post(
-          `https://api.jksolutn.com/api/fileupload/${folderName}`, // adjust domain if needed
+          `https://api.jksolutn.com/api/fileupload/${folderName}`,
           formData,
           {
             headers: {
@@ -23,27 +23,30 @@ export const uploadImages = createAsyncThunk(
           }
         );
 
-        uploadedUrls.push(response.data.data); // Push returned file path (e.g., "/uploads/folderName/filename.jpg")
+        uploadedUrls.push(response.data.data);
       }
 
-      return uploadedUrls; // Return array of uploaded image URLs
+      return { urls: uploadedUrls, target }; // 👈 Return both
     } catch (error) {
       return rejectWithValue(error.response?.data?.error || 'Upload failed');
     }
   }
 );
 
+
 // Upload slice
 const uploadSlice = createSlice({
   name: 'upload',
   initialState: {
     urls: [],
+    target: null, // 👈 Add this
     loading: false,
     error: null,
   },
   reducers: {
     resetUpload: (state) => {
       state.urls = [];
+      state.target = null;
       state.loading = false;
       state.error = null;
     },
@@ -56,7 +59,8 @@ const uploadSlice = createSlice({
       })
       .addCase(uploadImages.fulfilled, (state, action) => {
         state.loading = false;
-        state.urls = action.payload;
+        state.urls = action.payload.urls;
+        state.target = action.payload.target; // 👈 Set target here
       })
       .addCase(uploadImages.rejected, (state, action) => {
         state.loading = false;
@@ -64,6 +68,7 @@ const uploadSlice = createSlice({
       });
   },
 });
+
 
 export const { resetUpload } = uploadSlice.actions;
 

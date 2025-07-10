@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Calendar from "react-calendar"; // Import the calendar
-import { Icon } from "@iconify/react/dist/iconify.js";
-import { MoonLoader, PulseLoader } from "react-spinners";
-import { addRemitanceIssueCsoResolved, clearUpdateSuccessMessages, fetchallgetRemittances, fetchCsoRemittanceRemttanceIssue, fetchForAdminUpdateCSO, fetchLoanProgress, fetchLoanProgressChart, setRemittanceIssueResolve, updateByAdminCSO } from "../redux/slices/csoSlice";
-import { fetchOutstandingProgressChart } from "../redux/slices/otherLoanSlice";
-import { fetchRemittanceNewProgress } from "../redux/slices/remittanceSlice";
-import { fetchAllLoansByCsoId, fetchAllLoansByCsoIdLoanDashboardLoans, fetchCsoActiveLoans, fetchLoanAllTimeCounts, fetchLoanAppForms, fetchPieRepaymentData, setPage } from "../redux/slices/LoanSlice";
 
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
@@ -20,11 +14,18 @@ import {
   LinearScale,
   BarElement,
   LineElement,
-  PointElement,   // 👉 Add this
   Title,
 } from "chart.js";
-
 import ChartDataLabels from "chartjs-plugin-datalabels";
+
+
+import { Icon } from "@iconify/react/dist/iconify.js";
+import { MoonLoader, PulseLoader } from "react-spinners";
+import { fetchOutstandingProgressChart } from "../redux/slices/otherLoanSlice";
+import { clearUpdateSuccessMessages, fetchallgetRemittances, fetchForAdminUpdateCSO, fetchLoanProgress, fetchLoanProgressChart, setSelectedRemmitDate, updateByAdminCSO } from "../redux/slices/csoSlice";
+import { fetchRemittanceNewProgress } from "../redux/slices/remittanceSlice";
+import { fetchAllLoansByCsoId, fetchAllLoansByCsoIdLoanDashboardLoans, fetchCsoActiveLoans, fetchLoanAllTimeCounts, fetchLoanAppForms, fetchPieRepaymentData, setPage } from "../redux/slices/LoanSlice";
+
 
 ChartJS.register(
   ArcElement,
@@ -32,13 +33,11 @@ ChartJS.register(
   LinearScale,
   BarElement,
   LineElement,
-  PointElement,    // 👉 Add this
   Title,
   Tooltip,
   Legend,
   ChartDataLabels
 );
-
 
 const CollectRap = styled.div`
   width: 100%;
@@ -91,18 +90,6 @@ const CollectRap = styled.div`
     color: #030b26;
     font-size: 16px;
     font-weight: 700;
-  }
-  .all-dropdown-div img {
-    width: 100%;
-    object-fit: cover;
-    height: 400px;
-  }
-  .all-dropdown-div  {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    gap: 20px;
-    padding: 20px;
   }
   .summary-loan {
     display: flex;
@@ -290,27 +277,6 @@ const CollectRap = styled.div`
     padding: 0px 15px;
     margin-top: 20px;
   }
-
-  form input {
-     border: 1px solid #d0d5dd;
-    height: 40px;
-    width: 400px;
-     border-radius: 100px;
-    padding: 0px 15px;
-
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  form button {
-    width: 400px;
-    height: 40px;
-    border-radius: 10px;
-  }
   .remmittance-div p {
     font-size: 16px;
     color: #030b26;
@@ -442,7 +408,7 @@ const TextInfo = styled.div`
   }
 `;
 
-const CsoLoanCollection = () => {
+const SolutionCsoDetails = () => {
   const dispatch = useDispatch();
   const { id } = useParams();
   const workId = id;
@@ -456,37 +422,13 @@ const CsoLoanCollection = () => {
   const [showCalendar, setShowCalendar] = useState(false); // State for calendar visibility
   const [totalAmountPaid, setTotalAmountPaid] = useState(0);
   const [updatecsoShow, setUpdateCsoShow] = useState(false);
-  // const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedImage, setSelectedImage] = useState(null)
-  const [issueDropdown, setIssueDropdown] = useState(false)
 
-const [currentMonth, setCurrentMonth] = useState(() => {
-    const now = new Date();
-    return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-  });
-
-  const handleIssueDrop = () => {
-    setIssueDropdown(!issueDropdown)
-  }
-
-   const handleIssueDropTwo = () => {
-    setIssueDropdown(!issueDropdown)
-    dispatch(setRemittanceIssueResolve())
-  }
-  
   const handleUpdateCsoShow = () => {
     setUpdateCsoShow(!updatecsoShow);
   };
   const { totalOutstandingChart, defaultingTargetChart, percentageChart } =
     useSelector((state) => state.otherLoan);
   const [dayPicker, setDayPicker] = useState("today");
-
-
-const [date, setDate] = useState('');
-  const [issueMessage, setIssueMessage] = useState('');
-const isValid =
-    date !== "" &&
-    issueMessage !== ""
 
   const csoId = id;
   const {
@@ -523,23 +465,13 @@ const isValid =
     remmitdata,
     selectedRemiteDate,
     progressData,
-    remittanceCso,
-    remitanceCsoIssues,
     monthlyLoanCounts,
     loading,
-    addRemittanceIssue,
     specifiedCso,
     updatingCsoloading,
-    issueResolveloading,
     specifiedCsoTwo,
-    dailyCsoCollections,
     updateCsoSuccessMessage,
   } = useSelector((state) => state.cso);
-
-console.log(remittanceCso);
-console.log(addRemittanceIssue);
-console.log(addRemittanceIssue);
-console.log(dailyCsoCollections);
 
   const { remittanceProgress } = useSelector((state) => state.remittance);
 
@@ -596,18 +528,6 @@ console.log(dailyCsoCollections);
     dispatch(fetchLoanProgress(workId));
     dispatch(fetchRemittanceNewProgress(workId)); // Fetch remittance progress for this CSO
   }, [dispatch, workId]);
-
-const loadData = () => {
-    dispatch(fetchCsoRemittanceRemttanceIssue({
-      workId,
-      month: currentMonth.getUTCMonth() + 1,
-      year: currentMonth.getUTCFullYear()
-    }));
-  };
-
-  useEffect(() => {
-    if (workId) loadData();
-  }, [workId, currentMonth]);
 
   useEffect(() => {
     if (workId) {
@@ -927,53 +847,11 @@ const loadData = () => {
         <MoonLoader />
       </p>
     );
-
-
- const handlePrev = () => {
-    const prev = new Date(Date.UTC(currentMonth.getUTCFullYear(), currentMonth.getUTCMonth() - 1, 1));
-    setCurrentMonth(prev);
-  };
-
-  const handleNext = () => {
-    const next = new Date(Date.UTC(currentMonth.getUTCFullYear(), currentMonth.getUTCMonth() + 1, 1));
-    setCurrentMonth(next);
-  };
-
-  const monthLabel = currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
-
-  const mergedData = {};
-
-  dailyCsoCollections?.forEach(item => {
-    mergedData[item.date] = { amount: item.amount, image: '', issue: '' };
-  });
-
-  remittanceCso?.forEach(item => {
-    const dateKey = new Date(item.date).toISOString().split('T')[0];
-    if (!mergedData[dateKey]) mergedData[dateKey] = { amount: 0, image: '', issue: '' };
-    mergedData[dateKey].image = item.image || '';
-  });
-
-  remitanceCsoIssues?.forEach(item => {
-    const dateKey = new Date(item.date).toISOString().split('T')[0];
-    if (!mergedData[dateKey]) mergedData[dateKey] = { amount: 0, image: '', issue: '' };
-    mergedData[dateKey].issue = item.issueMessage || '';
-  });
-
-  const sortedDates = Object.keys(mergedData).sort((a, b) => new Date(b) - new Date(a));
-
-  const handleSubmitIssue = (e) => {
-    e.preventDefault();
-    if (!date || !issueMessage) return alert('Both fields are required.');
-
-    dispatch(addRemitanceIssueCsoResolved({ workId, issue: { date, issueMessage } }));
-  };
-
-
   return (
     <CollectRap>
       <div className="cso-1">
         <div className="cso-link-container">
-          <Link style={{}} className="cso-link" to="/manager/admincso">
+          <Link style={{}} className="cso-link" to="/admin/admincso">
             <Icon
               icon="formkit:arrowleft"
               width="90"
@@ -1701,9 +1579,10 @@ const loadData = () => {
         )}
         {activeLink === "remmitance" && (
           <>
-            {/* <div className="remmit">
+            <div className="remmit">
               <h2 className="text-xl font-bold mb-4">Remittances</h2>
 
+              {/* Date Picker */}
               <input
                 type="date"
                 value={selectedRemiteDate}
@@ -1713,6 +1592,7 @@ const loadData = () => {
                 className="date-input"
               />
 
+              {/* Display Remittances */}
               {status === "loading" && (
                 <p
                   style={{
@@ -1754,70 +1634,7 @@ const loadData = () => {
                   </div>
                 ))}
               </div>
-            </div> */}
-
-       <div>
-       <div style={{
-       display: "flex",
-       alignItems: "center",
-       justifyContent: "space-between"
-       }}>
-        <h3>Remittance</h3>
-
-        <button style={{
-          width: "fit-content",
-          padding: "10px",
-          color: "white",
-          background: "green",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "30px",
-          borderRadius: "8px",
-          border: "none"
-        }} onClick={handleIssueDrop}>Resolve Issue</button>
-       </div>
-     
-
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-        <button onClick={handlePrev}>&laquo; Prev</button>
-        <h4 style={{ margin: '0 15px' }}>{monthLabel}</h4>
-        <button onClick={handleNext}>Next &raquo;</button>
-      </div>
-     
-
-
-       <div className="table-container">
-                  <div className="new-table-scroll">
-                    <div className="table-div-con">
-      <table className="custom-table">
-        <thead>
-          <tr>
-            <th>Date (UTC)</th>
-            <th>Amount (₦)</th>
-            <th>Image</th>
-            <th>Issue</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedDates.map(date => (
-            <tr key={date}>
-              <td>{date}</td>
-              <td>₦{Number(mergedData[date].amount || 0).toLocaleString()}</td>
-              <td>
-  {mergedData[date].image ? (
-    <button onClick={() => setSelectedImage(mergedData[date].image)}>View</button>
-  ) : '-'}
-</td>
-              <td>{mergedData[date].issue || '-'}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      </div>
-      </div>
-      </div>
-    </div>
+            </div>
           </>
         )}
 
@@ -1862,7 +1679,7 @@ const loadData = () => {
                 <p>Guarantor Number</p>
                 <h6>{specifiedCso?.guaratorPhone} </h6>
               </div>
-              <button onClick={handleUpdateCsoShow}>Update Cso</button>
+              {/* <button onClick={handleUpdateCsoShow}>Update Cso</button> */}
             </div>
           </>
         )}
@@ -1990,79 +1807,8 @@ const loadData = () => {
       ) : (
         ""
       )}
-
-      {selectedImage ? (
-      <div className="dropdown-container">
-      <div className="all-dropdown-div">
-        <img
-                        src={
-                          selectedImage?.startsWith("http")
-                            ? selectedImage // Cloudinary URL
-                            : selectedImage
-                            ? `https://api.jksolutn.com${selectedImage}` // Local image
-                            : "fallback.jpg" // Optional fallback image
-                        }
-                        alt="Remitance"
-                       
-                      />
-
-                      <button style={{
-                      background: "red",
-                      color: "white",
-                      width: "150px",
-                      height: "50px",
-                      borderRadius: "8px",
-                      border: "none"
-                      
-                      }} onClick={() => setSelectedImage(null)}>Cancel</button>
-      </div>
-      
-      </div>
-      ):""}
-
-      {issueDropdown ? (
-      <div className="dropdown-container">
-        <div className="all-dropdown-div">
-         <h3>Add Remittance Issue</h3>
-      <form onSubmit={handleSubmitIssue}>
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-        <input type="text" value={issueMessage} onChange={(e) => setIssueMessage(e.target.value)} placeholder="Issue Message" required />
-       <button
-  style={{
-    background: isValid ? "blue" : "",
-     color: isValid ? "white" : ""
-  }}
-  type="submit"
-  disabled={issueResolveloading || !isValid}  // 🔑 Disable if loading or invalid
->
-  {issueResolveloading ? <PulseLoader color="white" size={10} /> : "Submit"}
-</button>
-<button style={{
-  background: "red",
-  color: "white"
-}} onClick={handleIssueDrop}>
-                  Exit
-                </button>
-      </form>
-        </div>
-      </div>
-      ): ""}
-
-      {addRemittanceIssue ? (
-        <div className="dropdown-container">
-          <div className="all-dropdown-div">
-            <p>Issue Ressolved Successfully</p>
-            <button style={{
-              background: "red",
-              color: "white",
-              width: "200px",
-              height: "30px"
-            }} onClick={handleIssueDropTwo}>Exit</button>
-          </div>
-        </div>
-      ): ""}
     </CollectRap>
   );
 };
 
-export default CsoLoanCollection;
+export default SolutionCsoDetails;

@@ -23,9 +23,6 @@ background: #005e78;
     font-size: 25px;
     color: #005e78;
   }
-  .cancel-icon {
-    padding-right: 10px;
-  }
   .pop-info {
     display: flex;
     flex-direction: column;
@@ -35,7 +32,6 @@ background: #005e78;
     background: #005e78;
     color: white;
     height: auto;
-    padding-top: 20px;
   }
   .pop-info button {
     color: #005e78;
@@ -108,15 +104,14 @@ background: #005e78;
   }
 `;
 
-const NewAdminCalendarPage = () => {
+const CalendarPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const loan = useSelector((state) => state?.loan?.selectedLoan);
   const [popupInfo, setPopupInfo] = useState(null);
+console.log(loan);
 
-  console.log(id);
-  
   useEffect(() => {
     dispatch(fetchLoanById(id));
   }, [dispatch, id]);
@@ -125,8 +120,7 @@ const NewAdminCalendarPage = () => {
 
   const today = new Date();
 
-  const dailyAmount = loan?.loanDetails?.amountToBePaid / 30;
-console.log(loan);
+  const dailyAmount = loan?.loanDetails?.amountToBePaid / 22;
 
   // Custom function to format the date
   const formatDate = (date) => {
@@ -154,12 +148,11 @@ console.log(loan);
       date: formatDate(new Date(schedule.date)),
       amountPaid: schedule.amountPaid,
       missedAmount: missedAmount - schedule.amountPaid,
-            holidayReason: schedule.holidayReason
-
+      holidayReason: schedule.holidayReason
     });
   };
 
-  const handleMoveBack = () => {
+   const handleMoveBack = () => {
     navigate(`/admin/new-customer/${loan?.customerDetails?.bvn}`);
   };
 
@@ -173,14 +166,14 @@ console.log(loan);
             {loan?.customerDetails?.firstName} {loan?.customerDetails?.lastName}
           </h1>
           <div className="cancel-icon">
-                     <Icon
-                       onClick={handleMoveBack}
-                       icon="stash:times-circle"
-                       width="50"
-                       height="50"
-                       style={{ color: "#ffffff", cursor: "pointer" }}
-                     />
-                   </div>
+            <Icon
+              onClick={handleMoveBack}
+              icon="stash:times-circle"
+              width="50"
+              height="50"
+              style={{ color: "#ffffff", cursor: "pointer" }}
+            />
+          </div>
         </div>
         <h6>
         Loan + Interest:
@@ -229,6 +222,7 @@ console.log(loan);
             gap: "2px",
           }}
         >
+          
           {loan?.repaymentSchedule?.map((schedule, index) => {
             const scheduleDate = new Date(schedule.date);
             const isStartDate =
@@ -236,8 +230,7 @@ console.log(loan);
               new Date(loan.disbursedAt).toDateString();
             const isEndDate = index === loan.repaymentSchedule.length - 1;
             const isPaid = schedule.status === "paid";
-                         const isHoliday = schedule.status === "holiday";
-
+             const isHoliday = schedule.status === "holiday";
             const isPartial = schedule.status === "partial";
             const isMissed =
               scheduleDate < today && schedule.status === "pending";
@@ -248,19 +241,22 @@ console.log(loan);
             else if (isEndDate) backgroundColor = "#afaf5a";
             else if (isMissed) backgroundColor = "black"; // Set missed background to black
 
-            const buttonColor = isPaid
-              ? scheduleDate.toDateString() === today.toDateString()
-                ? "green"
-                : isFuture
-                ? "orange"
-                : "green"
-              : isMissed
-              ? "red"
-              : isHoliday 
+            const buttonColor =
+  isStartDate // No button color on the first day
+    ? "transparent"
+    : isPaid
+    ? scheduleDate.toDateString() === today.toDateString()
+      ? "green"
+      : isFuture
+      ? "orange"
+      : "green"
+    : isMissed
+    ? "red"
+    : isHoliday 
     ? "blue"
-              : isPartial
-              ? "#e7c17b"
-              : "transparent";
+    : isPartial
+    ? "#e7c17b"
+    : "transparent";
 
             const missedAmount = isMissed
               ? schedule.expectedAmount - schedule.amountPaid
@@ -376,8 +372,9 @@ console.log(loan);
               <p>
                 <span>Amount Due: </span> {popupInfo.missedAmount}
               </p>
+
             )}{" "}
-            
+
             {popupInfo?.holidayReason ? (
               <p style={{
                 fontSize: "18px",
@@ -414,4 +411,4 @@ console.log(loan);
   );
 };
 
-export default NewAdminCalendarPage;
+export default CalendarPage;

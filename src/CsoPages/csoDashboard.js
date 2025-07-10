@@ -10,6 +10,7 @@ import {
   fetchAllLoansByCsoId,
   fetchCsoActiveLoans,
   fetchLoanAllTimeCounts,
+  secondfetchCsoActiveLoans,
 } from "../redux/slices/LoanSlice";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import LoanProgressChart from "./csoLoanChart";
@@ -140,9 +141,12 @@ const CsoDashboard = () => {
   const { remittanceProgress} = useSelector(
     (state) => state.remittance
   );
-  const {fullyPaidLoan, weekCount, todayCount, yesterdayCount, monthCount, customers } = useSelector(
+  const {fullyPaidLoan, weekCount, todayCount, yesterdayCount, monthCount, customers, secondcustomers } = useSelector(
     (state) => state.loan
   );
+
+
+  
 
   const csoId = user.workId;
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -150,6 +154,7 @@ const CsoDashboard = () => {
   const workId = user.workId;
   const { activeLoans } = useSelector((state) => state.loan);
   const [dayPicker, setDayPicker] = useState("today");
+console.log(activeLoans);
 
   const handleDayPicker = (link) => {
     setDayPicker(link);
@@ -174,8 +179,15 @@ const CsoDashboard = () => {
     }
   }, [dispatch, workId]);
 
-  useEffect(() => {
-    dispatch(fetchCsoActiveLoans({ csoId, date: selectedDate.toISOString() }));
+   useEffect(() => {
+    dispatch(secondfetchCsoActiveLoans({ csoId }));
+  }, [dispatch]);
+
+ useEffect(() => {
+    // Dispatch the action to fetch loans when the component mounts or date changes
+    dispatch(fetchCsoActiveLoans({ csoId, date: selectedDate.getFullYear() +
+  "-" + String(selectedDate.getMonth() + 1).padStart(2, "0") +
+  "-" + String(selectedDate.getDate()).padStart(2, "0") }));
   }, [dispatch, csoId, selectedDate]);
 
   const handleDateChange = (date) => {
@@ -217,8 +229,9 @@ const CsoDashboard = () => {
   } = progressData;
 
   const customersWithDue = customers.filter(
-    (customer) => customer.amountDue !== 0
+    (customer) => customer.amountPaidOnSelectedDate === 0
   ).length;
+
   const customersWithPayments = customers.filter(
     (customer) => customer.amountPaidOnSelectedDate !== 0
   ).length;
@@ -285,7 +298,7 @@ const CsoDashboard = () => {
               Total Collection <span>{customersWithPayments}</span>
             </p>
             <p className="due-pay">
-              Pending Collection: <span>{activeLoans - customersWithPayments}</span>
+              Pending Collection: <span>{customersWithDue}</span>
             </p>
 
             {dayPicker === "yearly" && (
