@@ -23,9 +23,6 @@ background: #005e78;
     font-size: 25px;
     color: #005e78;
   }
-  .cancel-icon {
-    padding-right: 10px;
-  }
   .pop-info {
     display: flex;
     flex-direction: column;
@@ -35,7 +32,6 @@ background: #005e78;
     background: #005e78;
     color: white;
     height: auto;
-    padding-top: 20px;
   }
   .pop-info button {
     color: #005e78;
@@ -114,6 +110,8 @@ const CustomerLoanCard = () => {
   const navigate = useNavigate();
   const loan = useSelector((state) => state?.loan?.selectedLoan);
   const [popupInfo, setPopupInfo] = useState(null);
+console.log(loan);
+
   useEffect(() => {
     dispatch(fetchLoanById(id));
   }, [dispatch, id]);
@@ -122,8 +120,7 @@ const CustomerLoanCard = () => {
 
   const today = new Date();
 
-  const dailyAmount = loan?.loanDetails?.amountToBePaid / 30;
-console.log(loan);
+  const dailyAmount = loan?.loanDetails?.amountToBePaid / 22;
 
   // Custom function to format the date
   const formatDate = (date) => {
@@ -151,8 +148,7 @@ console.log(loan);
       date: formatDate(new Date(schedule.date)),
       amountPaid: schedule.amountPaid,
       missedAmount: missedAmount - schedule.amountPaid,
-            holidayReason: schedule.holidayReason
-
+      holidayReason: schedule.holidayReason
     });
   };
 
@@ -170,14 +166,14 @@ console.log(loan);
             {loan?.customerDetails?.firstName} {loan?.customerDetails?.lastName}
           </h1>
           <div className="cancel-icon">
-                     <Icon
-                       onClick={handleMoveBack}
-                       icon="stash:times-circle"
-                       width="50"
-                       height="50"
-                       style={{ color: "#ffffff", cursor: "pointer" }}
-                     />
-                   </div>
+            <Icon
+              onClick={handleMoveBack}
+              icon="stash:times-circle"
+              width="50"
+              height="50"
+              style={{ color: "#ffffff", cursor: "pointer" }}
+            />
+          </div>
         </div>
         <h6>
         Loan + Interest:
@@ -226,6 +222,7 @@ console.log(loan);
             gap: "2px",
           }}
         >
+          
           {loan?.repaymentSchedule?.map((schedule, index) => {
             const scheduleDate = new Date(schedule.date);
             const isStartDate =
@@ -233,11 +230,12 @@ console.log(loan);
               new Date(loan.disbursedAt).toDateString();
             const isEndDate = index === loan.repaymentSchedule.length - 1;
             const isPaid = schedule.status === "paid";
-                         const isHoliday = schedule.status === "holiday";
-
+             const isHoliday = schedule.status === "holiday";
             const isPartial = schedule.status === "partial";
             const isMissed =
               scheduleDate < today && schedule.status === "pending";
+               const isDefaulted =
+              scheduleDate < today && schedule.status === "defaulting";
             const isFuture = scheduleDate > today;
 
             let backgroundColor = "black"; // Default for future dates
@@ -245,19 +243,24 @@ console.log(loan);
             else if (isEndDate) backgroundColor = "#afaf5a";
             else if (isMissed) backgroundColor = "black"; // Set missed background to black
 
-            const buttonColor = isPaid
-              ? scheduleDate.toDateString() === today.toDateString()
-                ? "green"
-                : isFuture
-                ? "orange"
-                : "green"
-              : isMissed
-              ? "red"
-              : isHoliday 
+            const buttonColor =
+  isStartDate // No button color on the first day
+    ? "transparent"
+    : isPaid
+    ? scheduleDate.toDateString() === today.toDateString()
+      ? "green"
+      : isFuture
+      ? "orange"
+      : "green"
+    : isMissed
+    ? "red"
+    : isDefaulted
+    ? "red"
+    : isHoliday 
     ? "blue"
-              : isPartial
-              ? "#e7c17b"
-              : "transparent";
+    : isPartial
+    ? "#e7c17b"
+    : "transparent";
 
             const missedAmount = isMissed
               ? schedule.expectedAmount - schedule.amountPaid
@@ -308,6 +311,22 @@ console.log(loan);
                     }}
                   />
                 )}
+                        {isDefaulted && (
+                  <button
+                    onClick={() => handleButtonClick(schedule)} // Pass missed amount
+                    style={{
+                      width: "30px",
+                      height: "30px",
+                      borderRadius: "50%",
+                      backgroundColor: buttonColor,
+                      border: "none",
+                      position: "absolute",
+                      top: "5px",
+                      right: "5px",
+                      cursor: "pointer",
+                    }}
+                  />
+                )}
                 {isPartial && (
                   <button
                     onClick={() => handleButtonClick(schedule)} // Pass missed amount
@@ -324,7 +343,7 @@ console.log(loan);
                     }}
                   />
                 )}
-                  {isHoliday && (
+                 {isHoliday && (
                   <button
                     onClick={() => handleButtonClick(schedule)} // Pass missed amount
                     style={{
@@ -373,8 +392,10 @@ console.log(loan);
               <p>
                 <span>Amount Due: </span> {popupInfo.missedAmount}
               </p>
+
             )}{" "}
-                  {popupInfo?.holidayReason ? (
+
+            {popupInfo?.holidayReason ? (
               <p style={{
                 fontSize: "18px",
                 maxWidth: "150px"

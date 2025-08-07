@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { submitLoanApplication } from "../redux/slices/LoanSlice";
 import axios from "axios";
@@ -11,6 +11,7 @@ import {
 import { PulseLoader } from "react-spinners";
 import imageCompression from "browser-image-compression";
 import { resetUpload, uploadImages } from "../redux/slices/uploadSlice";
+import SignatureCanvas from "react-signature-canvas";
 
 const LoanApplicationRap = styled.div`
   margin-bottom: 100px;
@@ -81,6 +82,7 @@ const LoanApplicationRap = styled.div`
 
 const LoanApplicationForm = () => {
   const dispatch = useDispatch();
+    const sigCanvas = useRef();
   const [ownerImage, setOwnerIamge] = useState("");
   const [loanerImage, setLoanerIamge] = useState("");
   const [otherImages, setOtherIamges] = useState("");
@@ -88,7 +90,7 @@ const LoanApplicationForm = () => {
   const [isLoading, setLoading] = useState(false);
   const user = JSON.parse(localStorage.getItem("csoUser"));
   const [uploadTarget, setUploadTarget] = useState(null);
-  const { urls, target, loading } = useSelector((state) => state.upload);
+  const { urls, target,  imageUploadloading } = useSelector((state) => state.upload);
 
   const [formData, setFormData] = useState({
     csoId: user.workId,
@@ -446,7 +448,7 @@ const LoanApplicationForm = () => {
   };
 
   useEffect(() => {
-    if (!loading && urls.length > 0 && target) {
+    if (!imageUploadloading && urls.length > 0 && target) {
       setFormData((prev) => ({
         ...prev,
         pictures: {
@@ -457,21 +459,81 @@ const LoanApplicationForm = () => {
       }));
       dispatch(resetUpload()); // 👈 Clear upload state after use
     }
-  }, [urls, loading, target, dispatch]);
+  }, [urls, imageUploadloading, target, dispatch]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (isValid) {
-      try {
-        const res = await dispatch(submitLoanApplication(formData));
-        dispatch(setDropdownVisible());
-        dispatch(setDropSuccessVisible());
-        console.log(res);
-      } catch (error) {
-        console.log(error);
-      }
+const clearSignature = () => {
+    sigCanvas.current.clear();
+  };
+
+  const handleSaveSignature = async () => {
+    if (sigCanvas.current.isEmpty()) {
+      alert("Please provide a signature.");
+      return;
+    }
+
+    // Convert signature to base64
+    const dataUrl = sigCanvas.current.toDataURL("image/png");
+
+    // Convert base64 to file
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const file = new File([blob], `signature_${Date.now()}.png`, { type: "image/png" });
+
+    // Optional: Compress the file
+    const compressedFile = await imageCompression(file, {
+      maxSizeMB: 0.5,
+      maxWidthOrHeight: 800,
+      useWebWorker: true,
+    });
+
+    // Upload the file
+    const result = await dispatch(uploadImages({ files: [compressedFile], folderName: "products" }));
+
+    if (result.payload?.urls?.length) {
+      const signatureUrl = result.payload.urls[0];
+
+      // Update formData
+      setFormData((prev) => ({
+        ...prev,
+        pictures: {
+          ...prev.pictures,
+          signature: signatureUrl,
+        },
+      }));
+
+      alert("Signature uploaded successfully!");
+    } else {
+      alert("Failed to upload signature.");
     }
   };
+
+  
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // Vibrate on click
+  if (navigator.vibrate) {
+    navigator.vibrate(100); // 100ms vibration
+  }
+
+  if (isValid) {
+    try {
+      const res = await dispatch(submitLoanApplication(formData));
+
+      // Vibrate again after successful submit
+      if (navigator.vibrate) {
+        navigator.vibrate([100, 50, 100]); // vibrate-pause-vibrate
+      }
+
+      dispatch(setDropdownVisible());
+      dispatch(setDropSuccessVisible());
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+};
+
 
   return (
     <LoanApplicationRap>
@@ -835,7 +897,7 @@ const LoanApplicationForm = () => {
                 onChange={(e) => handleFileChange(Array.from(e.target.files))}
               />
             </div>
-            <div className="detailssss">
+            {/* <div className="detailssss">
               <h3>Signature</h3>
 
               <label className="upload-label">
@@ -847,7 +909,41 @@ const LoanApplicationForm = () => {
                 onChange={(e) => handleThirdImage(e.target.files)}
                 required
               />
-            </div>
+            </div> */}
+
+            <div className="detailssss">
+      <h3>Customer Signature</h3>
+
+      <SignatureCanvas
+        ref={sigCanvas}
+        penColor="black"
+        canvasProps={{
+          mwidth: 300,
+          height: 400,
+          className: "sigCanvas",
+          style: { border: "1px solid #ccc", borderRadius: "8px", },
+        }}
+      />
+
+      <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+        <button onClick={clearSignature}>Clear</button>
+<button
+  onClick={handleSaveSignature}
+  disabled={!!formData.signature}
+  style={{
+    filter: formData.pictures.signature ? "blur(2px)" : "none",
+    cursor: formData.pictures.signature ? "not-allowed" : "pointer",
+    opacity: formData.pictures.signature ? 0.6 : 1,
+  }}
+>
+  {imageUploadloading ? (
+ <PulseLoader color="white" size={10} />
+  ) : "Save Signature"}
+  
+</button>      </div>
+
+     
+    </div>
 
             <button
               type="submit"

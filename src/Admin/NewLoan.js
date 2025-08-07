@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
 import { deleteLoan, fetchWaitingLoans, setPages } from "../redux/slices/LoanSlice";
 import { MoonLoader } from "react-spinners";
-import { fetchReport } from "../redux/slices/reportSlice";
+import { fetchAllCashAtHand, fetchReport } from "../redux/slices/reportSlice";
 
 const NewLoanRap = styled.div`
 .pagination {
@@ -188,6 +188,12 @@ const NewLoanRap = styled.div`
     font-size: 20px;
     font-weight: 700;
   }
+    @media (max-width: 1024px) { 
+        .dropdown-container {
+    left: 0%;
+      top: 60px;
+  }
+    }
 `;
 
 
@@ -211,7 +217,8 @@ console.log(cashAtHandError);
       error,
       cashMessage,
       expenseMessage,
-      cashAtHand,
+      
+      allCashAtHand,
       cashDeteleloading,
       cashDelete,
       expressDelete,
@@ -222,48 +229,75 @@ console.log(cashAtHandError);
     } = useSelector((state) => state.report);
   
 
-console.log(cashAtHand);
+console.log(allCashAtHand);
 
 const checkCashAtHand = () => {
-    const now = new Date();
-    const currentHour = now.getHours();
+  // ✅ Only check when allCashAtHand is available
+  if (!allCashAtHand || allCashAtHand.length === 0) return;
 
-    if (currentHour >= 8) {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
+  const now = new Date();
+  const currentHour = now.getHours(); // local hour
+  const currentDay = now.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
 
-      const year = yesterday.getFullYear();
-      const month = String(yesterday.getMonth() + 1).padStart(2, '0');
-      const day = String(yesterday.getDate()).padStart(2, '0');
-      const formattedYesterday = `${year}-${month}-${day}`;
+  if (currentHour >= 4) {
+    const utcNow = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate()
+    ));
 
-      const found = cashAtHand?.some(item => item.date === formattedYesterday);
+    const checkDate = new Date(utcNow);
 
-      if (!found) {
-        setCashAtHandError(`❌ Missing cash at hand for ${formattedYesterday}. Please submit cash at hand to proceed with action on this page. Thanks!`);
-      } else {
-        setCashAtHandError(null);
-      }
+    if (currentDay === 6) {
+      checkDate.setUTCDate(checkDate.getUTCDate() - 1);
+    } else if (currentDay === 0) {
+      checkDate.setUTCDate(checkDate.getUTCDate() - 2);
+    } else if (currentDay === 1) {
+      checkDate.setUTCDate(checkDate.getUTCDate() - 3);
+    } else {
+      checkDate.setUTCDate(checkDate.getUTCDate() - 1);
+    }
+
+    const formattedDate = checkDate.toISOString().split("T")[0];
+
+    const found = allCashAtHand?.some(item => item.date === formattedDate);
+
+    if (!found) {
+      setCashAtHandError(
+        `❌ Missing cash at hand for ${formattedDate}. Please submit cash at hand to proceed with action on this page. Thanks!`
+      );
     } else {
       setCashAtHandError(null);
     }
-  };
+  } else {
+    setCashAtHandError(null);
+  }
+};
 
-  useEffect(() => {
-    checkCashAtHand();  // Run immediately on load
 
-    const interval = setInterval(() => {
-      checkCashAtHand();
-    }, 30000); // Check every 60 seconds
 
-    return () => clearInterval(interval); // Clean up
-  }, []);
+
+useEffect(() => {
+  checkCashAtHand(); // Run immediately
+
+  const interval = setInterval(() => {
+    checkCashAtHand();
+  }, 30000); // Check every 30 seconds
+
+  return () => clearInterval(interval); // Cleanup on unmount
+}, [allCashAtHand]); // Re-check if cashAtHand changes
+
 
 
 
   useEffect(() => {
     dispatch(fetchWaitingLoans({ page: currentPage }));
   }, [dispatch, currentPage]);
+
+ useEffect(() => {
+    dispatch(fetchAllCashAtHand());
+  }, [dispatch]);
+
 
 
   useEffect(() => {
@@ -295,12 +329,13 @@ const checkCashAtHand = () => {
 };
 
   
-  if (loading === "loading") return <p style={{display: "flex", 
+  if (!allCashAtHand && loading === "loading") return 
+  <p style={{display: "flex", 
     flexDirection: "column", 
     height: "90vh",
     justifyContent: "center",
    alignItems: "center"}} > <MoonLoader /></p>;;
-  if (loading === "failed") return <p>Error loading loans</p>;
+  // if (loading === "failed") return <p>Error loading loans</p>;
   
   return (
     <NewLoanRap>

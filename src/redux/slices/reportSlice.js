@@ -73,6 +73,20 @@ export const fetchReport = createAsyncThunk(
   }
 );
 
+export const fetchAllCashAtHand = createAsyncThunk(
+  "report/fetchAllCashAtHand",
+  async (__, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(
+        `${API_URL}/all-reports/cash-at-hand`
+      );
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message);
+    }
+  }
+);
+
 const getCurrentMonthYear = () => {
   const now = new Date();
   return { month: now.getMonth(), year: now.getFullYear() };
@@ -109,6 +123,7 @@ const reportSlice = createSlice({
     cashDeteleloading: false,
     deleteExploading: false,
     expenses: [],
+    allCashAtHand: null,
     cashAtHand: [],
     expressDelete: null, // To store the message from the expense deletion response
     cashDelete: null, // To store the message from the cash deletion response
@@ -206,6 +221,21 @@ const reportSlice = createSlice({
         state.cashAtHand = action.payload.cashAtHand;
       })
       .addCase(fetchReport.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+
+
+             builder
+      .addCase(fetchAllCashAtHand.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAllCashAtHand.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allCashAtHand = action.payload;
+      })
+      .addCase(fetchAllCashAtHand.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });

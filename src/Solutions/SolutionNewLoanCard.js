@@ -234,6 +234,8 @@ console.log(loan);
             const isPartial = schedule.status === "partial";
             const isMissed =
               scheduleDate < today && schedule.status === "pending";
+                            const isDefaulted =
+              scheduleDate < today && schedule.status === "defaulting";
             const isFuture = scheduleDate > today;
 
             let backgroundColor = "black"; // Default for future dates
@@ -251,6 +253,8 @@ console.log(loan);
       ? "orange"
       : "green"
     : isMissed
+    ? "red"
+    : isDefaulted
     ? "red"
     : isHoliday 
     ? "blue"
@@ -292,6 +296,22 @@ console.log(loan);
                   />
                 )}
                 {isMissed && (
+                  <button
+                    onClick={() => handleButtonClick(schedule)} // Pass missed amount
+                    style={{
+                      width: "30px",
+                      height: "30px",
+                      borderRadius: "50%",
+                      backgroundColor: buttonColor,
+                      border: "none",
+                      position: "absolute",
+                      top: "5px",
+                      right: "5px",
+                      cursor: "pointer",
+                    }}
+                  />
+                )}
+                        {isDefaulted && (
                   <button
                     onClick={() => handleButtonClick(schedule)} // Pass missed amount
                     style={{

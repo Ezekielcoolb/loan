@@ -19,7 +19,7 @@ import {
 } from "../redux/slices/LoanSlice";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { PulseLoader } from "react-spinners";
+import { MoonLoader, PulseLoader } from "react-spinners";
 import TopLoader from "../Preload/TopLoader";
 import { fetchOutstandingLoans } from "../redux/slices/otherLoanSlice";
 import {
@@ -323,7 +323,7 @@ const CsoHome = () => {
   const workId = user.workId;
   const defaultingTarget = specificCso?.defaultingTarget;
 
-  console.log(user);
+  console.log(specificCso);
 
   const handleChange = (e) => {
     const value = e.target.value;
@@ -452,7 +452,7 @@ const CsoHome = () => {
       setCurrentPage(newPage);
     }
   };
-  if (!finalLoans) {
+  if (!specificCso && !csoHomeloans) {
     return (
       <div style={{ paddingTop: "50px" }}>
         {" "}
@@ -501,12 +501,12 @@ const effectiveDateString = effectiveDate.toISOString().slice(0, 10);
 console.log(effectiveDateString); // e.g., "2023-10-01"
 
 // 4️⃣ Filter remittance items where date matches
-const filteredRemittance = user?.remittance?.filter(item => {
+const filteredRemittance = specificCso?.remittance?.filter(item => {
   const itemDateString = new Date(item.date).toISOString().slice(0, 10);
   return itemDateString === effectiveDateString;
 });
 
-const filteredRemittanceIssue = user?.remitanceIssues?.filter(item => {
+const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
   const itemDateString = new Date(item.date).toISOString().slice(0, 10);
   return itemDateString === effectiveDateString;
 });
@@ -517,6 +517,8 @@ console.log(filteredRemittanceIssue);
 
   return (
     <HomeCsoRap>
+      {specificCso && csoHomeloans ? (<>
+      {filteredRemittance?.length > 0 || filteredRemittanceIssue?.length > 0 ? (
       <div>
         <div className="homes">
           <div className="home-first-div">
@@ -641,7 +643,29 @@ console.log(filteredRemittanceIssue);
           </ul>
         </div>
       </div>
+):
+    (<>
+        <div className="dropdown-container">
+          <div className="all-dropdown-div">
+            <p style={{
+              color: "red",
+              fontSize: "20px",
+              fontWeight: "600",
+              margin: "20px",
+              maxWidth: "500px"
+            }}> You did not submit remittance for {effectiveDateString}. Please  contact the manager to resolve issue. Thanks.</p>
+          </div>
+        </div>
+        </>)
+      
+}
 
+</>) : ( <p style={{
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  height: "100vh",
+}}> <MoonLoader /></p>)}
       {dropdowVisible &&
         (totalOutstandingLoans > defaultingTarget && defaultingTarget !== 0 ? (
           <div className="dropdown-container">

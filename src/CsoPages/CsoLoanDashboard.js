@@ -18,6 +18,9 @@ import CsoCollectionReportCollection from "./CsoCollectionReport";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom";
+import TopLoader from "../Preload/TopLoader";
+import { MoonLoader } from "react-spinners";
+import { fetchCsoByWorkId } from "../redux/slices/csoSlice";
 
 
 const LoanCsoRap = styled.div`
@@ -263,6 +266,9 @@ const LoanCsoDashboard = () => {
     status,
     error,
   } = useSelector((state) => state.loan);
+   const { specificCso, remittancestatus, hoursLeft, minutesLeft } = useSelector(
+      (state) => state.cso
+    );
   // console.log(csoLoanDashdordLoans);
   // console.log(totalLoans);
   
@@ -294,6 +300,8 @@ const totalLoanBalanceForActiveLoans = allActiveLoans?.reduce((total, customer) 
   const balance = toBePaid - paidSoFar;
   return total + balance;
 }, 0);
+
+ const workId = user.workId;
 
 const handleOpenActiveLoans = () => {
   setAllActive(!allActive)
@@ -333,7 +341,9 @@ const handleOpenActiveLoans = () => {
   useEffect(() => {
     dispatch(fetchAllLoansByCsoId({ csoId }));
   }, [dispatch]);
-
+  useEffect(() => {
+    if (workId) dispatch(fetchCsoByWorkId(workId));
+  }, [workId, dispatch]);
 
   useEffect(() => {
     dispatch(fetchAllLoansByCsoIdLoanDashboardLoans(csoId));
@@ -445,12 +455,12 @@ const effectiveDateString = effectiveDate.toISOString().slice(0, 10);
 console.log(effectiveDateString); // e.g., "2023-10-01"
 
 // 4️⃣ Filter remittance items where date matches
-const filteredRemittance = user?.remittance?.filter(item => {
+const filteredRemittance = specificCso?.remittance?.filter(item => {
   const itemDateString = new Date(item.date).toISOString().slice(0, 10);
   return itemDateString === effectiveDateString;
 });
 
-const filteredRemittanceIssue = user?.remitanceIssues?.filter(item => {
+const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
   const itemDateString = new Date(item.date).toISOString().slice(0, 10);
   return itemDateString === effectiveDateString;
 });
@@ -460,6 +470,8 @@ console.log(filteredRemittanceIssue);
 
   return (
     <LoanCsoRap>
+         {specificCso  ? (<>
+      {filteredRemittance?.length > 0 || filteredRemittanceIssue?.length > 0 ? (
 
 
       <div className="all-loan">
@@ -860,7 +872,28 @@ console.log(filteredRemittanceIssue);
         </div>
         <div></div>
       </div>
-
+):
+    (<>
+        <div className="dropdown-container">
+          <div className="all-dropdown-div">
+            <p style={{
+              color: "red",
+              fontSize: "20px",
+              fontWeight: "600",
+              margin: "20px",
+              maxWidth: "500px"
+            }}> You did not submit remittance for {effectiveDateString}. Please  contact the manager to resolve issue. Thanks.</p>
+          </div>
+        </div>
+        </>)
+      
+}
+</>) :  ( <p style={{
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  height: "100vh",
+}}> <MoonLoader /></p>)}
       <div>
         {submitted ? (
           <>

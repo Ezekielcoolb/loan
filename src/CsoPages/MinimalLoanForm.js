@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-    clearMessages,
+  clearMessages,
   fetchAllLoansByCsoId,
   submitLoanApplication,
 } from "../redux/slices/LoanSlice";
@@ -15,9 +15,11 @@ import {
 import { PulseLoader } from "react-spinners";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { resetUpload, uploadImages } from "../redux/slices/uploadSlice";
-import imageCompression from 'browser-image-compression';
+import imageCompression from "browser-image-compression";
 import { fetchOutstandingLoans } from "../redux/slices/otherLoanSlice";
 import { fetchCsoByWorkId } from "../redux/slices/csoSlice";
+import SignatureCanvas from "react-signature-canvas";
+
 
 
 const ModalOverlay = styled.div`
@@ -90,6 +92,7 @@ const LoanApplicationRap = styled.div`
   }
   .all-dropdown-div {
     padding-bottom: 50px !important;
+    height: auto;
   }
   .upper-mininal h1 {
     color: #005e78;
@@ -151,13 +154,12 @@ const LoanApplicationRap = styled.div`
   .success-visible p {
     font-size: 18px;
   }
-  
 `;
 
 const MinimalApplicationForm = () => {
-  
   const navigate = useNavigate();
   const dispatch = useDispatch();
+   const sigCanvas = useRef();
   const { id } = useParams();
 
   const [ownerImage, setOwnerIamge] = useState("");
@@ -169,11 +171,11 @@ const MinimalApplicationForm = () => {
   const [signImage, setSignImage] = useState("");
   const [loading, setLoading] = useState(false);
   const user = JSON.parse(localStorage.getItem("csoUser"));
-    const [uploadTarget, setUploadTarget] = useState(null);
-      const { urls, target  } = useSelector((state) => state.upload);
+  const [uploadTarget, setUploadTarget] = useState(null);
+  const { urls, target , imageUploadloading} = useSelector((state) => state.upload);
   const { submitLoanloading, status, error } = useSelector(
-      (state) => state.loan
-    );
+    (state) => state.loan
+  );
   const loans = useSelector((state) => state.loan.loans);
   const successMessage = useSelector((state) => state.loan.successMessage);
   const loan = loans.find((loan) => loan._id === id);
@@ -239,19 +241,17 @@ const MinimalApplicationForm = () => {
       signature: "",
     },
   });
-  
+
   const { outstandingLoans, totalOutstandingLoans } = useSelector(
     (state) => state.otherLoan
   );
-   const { specificCso, remittancestatus, hoursLeft, minutesLeft } = useSelector(
-      (state) => state.cso
-    );
+  const { specificCso, remittancestatus, hoursLeft, minutesLeft } = useSelector(
+    (state) => state.cso
+  );
 
+  const defaultingTarget = specificCso?.defaultingTarget;
 
-      const defaultingTarget = specificCso?.defaultingTarget;
-
-      console.log(totalOutstandingLoans, defaultingTarget);
-      
+  console.log(totalOutstandingLoans, defaultingTarget);
 
   console.log(target);
   console.log(formData);
@@ -259,15 +259,10 @@ const MinimalApplicationForm = () => {
   const isValid =
     formData.customerDetails.firstName !== "" &&
     formData.customerDetails.lastName !== "" &&
-    formData.customerDetails.middleName !== "" &&
-    formData.customerDetails.email !== "" &&
     formData.customerDetails.phoneOne !== "" &&
     formData.customerDetails.address !== "" &&
-    formData.customerDetails.city !== "" &&
-    formData.customerDetails.state !== "" &&
     formData.customerDetails.bvn !== "" &&
     formData.customerDetails.dateOfBirth !== "" &&
-    formData.customerDetails.religion !== "" &&
     formData.customerDetails.NextOfKin !== "" &&
     formData.customerDetails.NextOfKinNumber !== "" &&
     formData.businessDetails.natureOfBusiness !== "" &&
@@ -284,7 +279,6 @@ const MinimalApplicationForm = () => {
     formData.loanDetails.loanType !== "" &&
     formData.guarantorDetails.name !== "" &&
     formData.guarantorDetails.address !== "" &&
-    formData.guarantorDetails.email !== "" &&
     formData.guarantorDetails.phone !== "" &&
     formData.guarantorDetails.relationship !== "" &&
     formData.guarantorDetails.yearsKnown !== "" &&
@@ -292,25 +286,24 @@ const MinimalApplicationForm = () => {
     formData.groupDetails.leaderName !== "" &&
     formData.groupDetails.mobileNo !== "" &&
     formData.pictures.business !== "" &&
-                  formData.pictures.customer !== "" &&
-                 formData.pictures.signature !== "" ;
+    formData.pictures.customer !== "" &&
+    formData.pictures.signature !== "";
 
   const { dropdowVisible } = useSelector((state) => state.app);
 
   const csoId = user.workId;
-const workId = user.workId;
+  const workId = user.workId;
   useEffect(() => {
     dispatch(fetchAllLoansByCsoId({ csoId }));
   }, [dispatch]);
 
-
- useEffect(() => {
+  useEffect(() => {
     if (csoId) dispatch(fetchOutstandingLoans(csoId));
   }, [csoId, dispatch]);
 
-    useEffect(() => {
-      if (workId) dispatch(fetchCsoByWorkId(workId));
-    }, [workId, dispatch]);
+  useEffect(() => {
+    if (workId) dispatch(fetchCsoByWorkId(workId));
+  }, [workId, dispatch]);
 
   const handleVisisbleNow = () => {
     navigate(`/cso/customer-details/${loan?._id}`);
@@ -330,91 +323,101 @@ const workId = user.workId;
     });
   };
 
-const handleFirstImage = async (fileList) => {
-  const target = "customer"; // 👈 local value, not setState
-  let files = Array.from(fileList);
+  const handleFirstImage = async (fileList) => {
+    const target = "customer"; // 👈 local value, not setState
+    let files = Array.from(fileList);
 
-  files = await Promise.all(files.map(async (file, index) => {
-    if (!file.name || !file.lastModified) {
-      file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
-        type: file.type || 'image/jpeg',
-        lastModified: Date.now(),
-      });
-    }
+    files = await Promise.all(
+      files.map(async (file, index) => {
+        if (!file.name || !file.lastModified) {
+          file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+            type: file.type || "image/jpeg",
+            lastModified: Date.now(),
+          });
+        }
 
-    const options = { maxSizeMB: 0.5, maxWidthOrHeight: 800, useWebWorker: true };
-    try {
-      return await imageCompression(file, options);
-    } catch {
-      return file;
-    }
-  }));
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 800,
+          useWebWorker: true,
+        };
+        try {
+          return await imageCompression(file, options);
+        } catch {
+          return file;
+        }
+      })
+    );
 
-  files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
-  if (files.length === 0) return alert("Captured file is invalid or empty.");
+    files = files.filter((f) => f.size > 0 && f.type.startsWith("image/"));
+    if (files.length === 0) return alert("Captured file is invalid or empty.");
 
-  dispatch(uploadImages({ files, folderName: 'products', target })); // 👈 pass target
-};
+    dispatch(uploadImages({ files, folderName: "products", target })); // 👈 pass target
+  };
 
+  const handleSecondImage = async (fileList) => {
+    const target = "business"; // 👈 local value, not setState
+    let files = Array.from(fileList);
 
+    files = await Promise.all(
+      files.map(async (file, index) => {
+        if (!file.name || !file.lastModified) {
+          file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+            type: file.type || "image/jpeg",
+            lastModified: Date.now(),
+          });
+        }
 
- 
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 800,
+          useWebWorker: true,
+        };
+        try {
+          return await imageCompression(file, options);
+        } catch {
+          return file;
+        }
+      })
+    );
 
- const handleSecondImage = async (fileList) => {
-  const target = "business"; // 👈 local value, not setState
-  let files = Array.from(fileList);
+    files = files.filter((f) => f.size > 0 && f.type.startsWith("image/"));
+    if (files.length === 0) return alert("Captured file is invalid or empty.");
 
-  files = await Promise.all(files.map(async (file, index) => {
-    if (!file.name || !file.lastModified) {
-      file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
-        type: file.type || 'image/jpeg',
-        lastModified: Date.now(),
-      });
-    }
-
-    const options = { maxSizeMB: 0.5, maxWidthOrHeight: 800, useWebWorker: true };
-    try {
-      return await imageCompression(file, options);
-    } catch {
-      return file;
-    }
-  }));
-
-  files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
-  if (files.length === 0) return alert("Captured file is invalid or empty.");
-
-  dispatch(uploadImages({ files, folderName: 'products', target })); // 👈 pass target
-};
-
- 
- 
-
+    dispatch(uploadImages({ files, folderName: "products", target })); // 👈 pass target
+  };
 
   const handleThirdImage = async (fileList) => {
-  const target = "signature"; // 👈 local value, not setState
-  let files = Array.from(fileList);
+    const target = "signature"; // 👈 local value, not setState
+    let files = Array.from(fileList);
 
-  files = await Promise.all(files.map(async (file, index) => {
-    if (!file.name || !file.lastModified) {
-      file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
-        type: file.type || 'image/jpeg',
-        lastModified: Date.now(),
-      });
-    }
+    files = await Promise.all(
+      files.map(async (file, index) => {
+        if (!file.name || !file.lastModified) {
+          file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+            type: file.type || "image/jpeg",
+            lastModified: Date.now(),
+          });
+        }
 
-    const options = { maxSizeMB: 0.5, maxWidthOrHeight: 800, useWebWorker: true };
-    try {
-      return await imageCompression(file, options);
-    } catch {
-      return file;
-    }
-  }));
+        const options = {
+          maxSizeMB: 0.5,
+          maxWidthOrHeight: 800,
+          useWebWorker: true,
+        };
+        try {
+          return await imageCompression(file, options);
+        } catch {
+          return file;
+        }
+      })
+    );
 
-  files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
-  if (files.length === 0) return alert("Captured file is invalid or empty.");
+    files = files.filter((f) => f.size > 0 && f.type.startsWith("image/"));
+    if (files.length === 0) return alert("Captured file is invalid or empty.");
 
-  dispatch(uploadImages({ files, folderName: 'products', target })); // 👈 pass target
-};
+    dispatch(uploadImages({ files, folderName: "products", target })); // 👈 pass target
+  };
 
   const handleGuarantorChange = () => {
     setGuarantorChange(!guarantorChange);
@@ -428,315 +431,381 @@ const handleFirstImage = async (fileList) => {
     setBusinessInfo(!businessInfo);
   };
 
- const handleFileChange = async (fileList) => {
-   setUploadTarget("others");
- 
-   let files = Array.from(fileList);
- 
-   files = await Promise.all(files.map(async (file, index) => {
-     // Fix blob to file if needed
-     if (!file.name || !file.lastModified) {
-       file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
-         type: file.type || 'image/jpeg',
-         lastModified: Date.now(),
-       });
-     }
- 
-     // Compress the image
-     const options = {
-       maxSizeMB: 0.5, // target size
-       maxWidthOrHeight: 800, // scale down resolution
-       useWebWorker: true,
-     };
- 
-     try {
-       const compressedFile = await imageCompression(file, options);
-       return compressedFile;
-     } catch (err) {
-       console.error("Image compression failed", err);
-       return file; // fallback to original if compression fails
-     }
-   }));
- 
-   files = files.filter(f => f.size > 0 && f.type.startsWith("image/"));
- 
-   if (files.length === 0) {
-     alert("Captured file is invalid or empty. Please try again.");
-     return;
-   }
- 
-   dispatch(uploadImages({ files, folderName: 'products' }));
- };
+  const handleFileChange = async (fileList) => {
+    setUploadTarget("others");
 
-useEffect(() => {
-  if (!loading && urls.length > 0 && target) {
-    setFormData((prev) => ({
-      ...prev,
-      pictures: {
-        ...prev.pictures,
-        [target]: target === "others" ? [...prev.pictures.others, ...urls] : urls[0],
-      },
-    }));
-    dispatch(resetUpload()); // 👈 Clear upload state after use
-  }
-}, [urls, loading, target, dispatch]);
+    let files = Array.from(fileList);
 
+    files = await Promise.all(
+      files.map(async (file, index) => {
+        // Fix blob to file if needed
+        if (!file.name || !file.lastModified) {
+          file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+            type: file.type || "image/jpeg",
+            lastModified: Date.now(),
+          });
+        }
+
+        // Compress the image
+        const options = {
+          maxSizeMB: 0.5, // target size
+          maxWidthOrHeight: 800, // scale down resolution
+          useWebWorker: true,
+        };
+
+        try {
+          const compressedFile = await imageCompression(file, options);
+          return compressedFile;
+        } catch (err) {
+          console.error("Image compression failed", err);
+          return file; // fallback to original if compression fails
+        }
+      })
+    );
+
+    files = files.filter((f) => f.size > 0 && f.type.startsWith("image/"));
+
+    if (files.length === 0) {
+      alert("Captured file is invalid or empty. Please try again.");
+      return;
+    }
+
+    dispatch(uploadImages({ files, folderName: "products" }));
+  };
+
+  useEffect(() => {
+    if (!loading && urls.length > 0 && target) {
+      setFormData((prev) => ({
+        ...prev,
+        pictures: {
+          ...prev.pictures,
+          [target]:
+            target === "others" ? [...prev.pictures.others, ...urls] : urls[0],
+        },
+      }));
+      dispatch(resetUpload()); // 👈 Clear upload state after use
+    }
+  }, [urls, loading, target, dispatch]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-if (isValid) {
-    try {
-      
-      const res = await dispatch(submitLoanApplication(formData));
-     
-      console.log(res);
-    } catch (error) {
-      console.log(error);
+
+    // Vibrate on click
+    if (navigator.vibrate) {
+      navigator.vibrate(100); // 100ms vibration
     }
-  }
+
+    if (isValid) {
+      try {
+        const res = await dispatch(submitLoanApplication(formData));
+
+        // Vibrate again after successful submit
+        if (navigator.vibrate) {
+          navigator.vibrate([100, 50, 100]); // vibrate-pause-vibrate
+        }
+
+        console.log(res);
+      } catch (error) {
+        console.log(error);
+      }
+    }
   };
-  
+
   const handleClose = () => {
-    dispatch(clearMessages()); 
+    dispatch(clearMessages());
+    navigate("/cso");
   };
+
   const formatNumberWithCommas = (number) => {
     return new Intl.NumberFormat().format(number);
   };
 
+const clearSignature = () => {
+    sigCanvas.current.clear();
+  };
 
+  const handleSaveSignature = async () => {
+    if (sigCanvas.current.isEmpty()) {
+      alert("Please provide a signature.");
+      return;
+    }
+
+    // Convert signature to base64
+    const dataUrl = sigCanvas.current.toDataURL("image/png");
+
+    // Convert base64 to file
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const file = new File([blob], `signature_${Date.now()}.png`, { type: "image/png" });
+
+    // Optional: Compress the file
+    const compressedFile = await imageCompression(file, {
+      maxSizeMB: 0.5,
+      maxWidthOrHeight: 800,
+      useWebWorker: true,
+    });
+
+    // Upload the file
+    const result = await dispatch(uploadImages({ files: [compressedFile], folderName: "products" }));
+
+    if (result.payload?.urls?.length) {
+      const signatureUrl = result.payload.urls[0];
+
+      // Update formData
+      setFormData((prev) => ({
+        ...prev,
+        pictures: {
+          ...prev.pictures,
+          signature: signatureUrl,
+        },
+      }));
+
+      alert("Signature uploaded successfully!");
+    } else {
+      alert("Failed to upload signature.");
+    }
+  };
 
   const handleVisisble = () => {
-    navigate("/cso")
-  }
+    navigate("/cso");
+  };
   return (
     <LoanApplicationRap>
-{totalOutstandingLoans > defaultingTarget && defaultingTarget !== 0 ?(
-(
-     <div className="dropdown-container">
-            <div className="success-visible">
-              <p style={{ color: "red" }}>
-                You have exceeded your defaulting limit of
-                <span
-                  style={{
-                    fontWeight: "900",
-                    fontSize: "40px",
-                  }}
-                >
-                  {" "}
-                  {formatNumberWithCommas(defaultingTarget)}{" "}
-                </span>
-                Try to clear the defaults in order to submit new loans. <br />{" "}
-                Thanks.
-              </p>
-              <button onClick={handleVisisble}>Exit</button>
-            </div>
+      {totalOutstandingLoans > defaultingTarget && defaultingTarget !== 0 ? (
+        <div className="dropdown-container">
+          <div className="success-visible">
+            <p style={{ color: "red" }}>
+              You have exceeded your defaulting limit of
+              <span
+                style={{
+                  fontWeight: "900",
+                  fontSize: "40px",
+                }}
+              >
+                {" "}
+                {formatNumberWithCommas(defaultingTarget)}{" "}
+              </span>
+              Try to clear the defaults in order to submit new loans. <br />{" "}
+              Thanks.
+            </p>
+            <button onClick={handleVisisble}>Exit</button>
           </div>
-)
-): 
-(
-  <div className="">
-        <form className="all-dropdown-div" onSubmit={handleSubmit}>
-          <div className="upper-mininal">
-            <h1> REAPPLICATION FORM</h1>
+        </div>
+      ) : (
+        <div className="">
+          <form className="all-dropdown-div" onSubmit={handleSubmit}>
+            <div className="upper-mininal">
+              <h1> REAPPLICATION FORM</h1>
 
-            <div className="cancel-btn">
-              <Icon
-                onClick={handleVisisbleNow}
-                icon="stash:times-circle"
-                width="24"
-                height="24"
-                style={{ color: "#005e78", cursor: "pointer" }}
-              />
-            </div>
-          </div>
-          <div className="loan-customers">
-            <Link className="change-guarantor" onClick={handleAddressChange}>
-              Does your address change?
-            </Link>
-            {personalAddress ? (
-              <div className="detailssss">
-                <h3>Customer Details</h3>
-
-                <input
-                  type="text"
-                  name="customerDetails.address"
-                  value={formData.customerDetails.address}
-                  onChange={handleInputChange}
-                  placeholder="Address"
-                  required
-                />
-                <input
-                  type="text"
-                  name="customerDetails.city"
-                  value={formData.customerDetails.city}
-                  onChange={handleInputChange}
-                  placeholder="City"
-                  required
-                />
-                <input
-                  type="text"
-                  name="customerDetails.state"
-                  value={formData.customerDetails.state}
-                  onChange={handleInputChange}
-                  placeholder="State"
-                  required
+              <div className="cancel-btn">
+                <Icon
+                  onClick={handleVisisbleNow}
+                  icon="stash:times-circle"
+                  width="24"
+                  height="24"
+                  style={{ color: "#005e78", cursor: "pointer" }}
                 />
               </div>
-            ) : (
-              ""
-            )}
-            <div className="detailssss">
-              {/* Loan Details */}
-              <h3>Loan Details</h3>
-              <input
-                type="number"
-                name="loanDetails.amountRequested"
-                value={formData.loanDetails.amountRequested}
-                onChange={handleInputChange}
-                placeholder="Amount Requested"
-                required
-              />
-              <select
-                name="loanDetails.loanType"
-                value={formData.loanDetails.loanType}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="daily">Daily</option>
-                {/* <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option> */}
-              </select>
             </div>
+            <div className="loan-customers">
+              <Link className="change-guarantor" onClick={handleAddressChange}>
+                Does your address or phone number change?
+              </Link>
+              {personalAddress ? (
+                <div className="detailssss">
+                  <h3>Customer Details</h3>
 
-            <Link className="change-guarantor" onClick={handleBusinessChange}>
-              Does the business information change?
-            </Link>
-            {businessInfo ? (
+                  <input
+                    type="text"
+                    name="customerDetails.address"
+                    value={formData.customerDetails.address}
+                    onChange={handleInputChange}
+                    placeholder="Address"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="customerDetails.city"
+                    value={formData.customerDetails.city}
+                    onChange={handleInputChange}
+                    placeholder="City"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="customerDetails.state"
+                    value={formData.customerDetails.state}
+                    onChange={handleInputChange}
+                    placeholder="State"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="customerDetails.phoneOne"
+                    value={formData.customerDetails.phoneOne}
+                    onChange={handleInputChange}
+                    placeholder="Phone Number"
+                    required
+                  />
+                </div>
+              ) : (
+                ""
+              )}
               <div className="detailssss">
-                {/* Business Details */}
-                <h3>Business Details</h3>
+                {/* Loan Details */}
+                <h3>Loan Details</h3>
                 <input
-                  type="text"
-                  name="businessDetails.businessName"
-                  value={formData.businessDetails.businessName}
+                  type="number"
+                  name="loanDetails.amountRequested"
+                  value={formData.loanDetails.amountRequested}
                   onChange={handleInputChange}
-                  placeholder="Business Name"
+                  placeholder="Amount Requested"
                   required
                 />
-                <input
-                  type="text"
-                  name="businessDetails.natureOfBusiness"
-                  value={formData.businessDetails.natureOfBusiness}
+                <select
+                  name="loanDetails.loanType"
+                  value={formData.loanDetails.loanType}
                   onChange={handleInputChange}
-                  placeholder="Nature of Business"
                   required
-                />
+                >
+                  <option value="daily">Daily</option>
+                  {/* <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option> */}
+                </select>
+              </div>
+
+              <Link className="change-guarantor" onClick={handleBusinessChange}>
+                Does the business information change?
+              </Link>
+              {businessInfo ? (
+                <div className="detailssss">
+                  {/* Business Details */}
+                  <h3>Business Details</h3>
+                  <input
+                    type="text"
+                    name="businessDetails.businessName"
+                    value={formData.businessDetails.businessName}
+                    onChange={handleInputChange}
+                    placeholder="Business Name"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="businessDetails.natureOfBusiness"
+                    value={formData.businessDetails.natureOfBusiness}
+                    onChange={handleInputChange}
+                    placeholder="Nature of Business"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="businessDetails.address"
+                    value={formData.businessDetails.address}
+                    onChange={handleInputChange}
+                    placeholder="Business Address"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="businessDetails.yearsHere"
+                    value={formData.businessDetails.yearsHere}
+                    onChange={handleInputChange}
+                    placeholder="Years you've been in the business address"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="businessDetails.nameKnown"
+                    value={formData.businessDetails.nameKnown}
+                    onChange={handleInputChange}
+                    placeholder="Name you are know as in the business area"
+                    required
+                  />
+                  <input
+                    type="number"
+                    name="businessDetails.estimatedValue"
+                    value={formData.businessDetails.estimatedValue}
+                    onChange={handleInputChange}
+                    placeholder="How much do you make in a month"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="businessDetails.operationalStatus"
+                    value={formData.businessDetails.operationalStatus}
+                    onChange={handleInputChange}
+                    placeholder="What is the worth of your business"
+                    required
+                  />
+                </div>
+              ) : (
+                ""
+              )}
+
+              <div className="detailssss">
+                {/* Loan Details */}
+                <h3>Bank Details</h3>
                 <input
                   type="text"
-                  name="businessDetails.address"
-                  value={formData.businessDetails.address}
+                  name="bankDetails.accountName"
+                  value={formData.bankDetails.accountName}
                   onChange={handleInputChange}
-                  placeholder="Business Address"
-                  required
-                />
-                <input
-                  type="text"
-                  name="businessDetails.yearsHere"
-                  value={formData.businessDetails.yearsHere}
-                  onChange={handleInputChange}
-                  placeholder="Years you've been in the business address"
-                  required
-                />
-                <input
-                  type="text"
-                  name="businessDetails.nameKnown"
-                  value={formData.businessDetails.nameKnown}
-                  onChange={handleInputChange}
-                  placeholder="Name you are know as in the business area"
+                  placeholder="Name of Account"
                   required
                 />
                 <input
                   type="number"
-                  name="businessDetails.estimatedValue"
-                  value={formData.businessDetails.estimatedValue}
+                  name="bankDetails.accountNo"
+                  value={formData.bankDetails.accountNo}
                   onChange={handleInputChange}
-                  placeholder="How much do you make in a month"
+                  placeholder="Account Number"
                   required
                 />
                 <input
                   type="text"
-                  name="businessDetails.operationalStatus"
-                  value={formData.businessDetails.operationalStatus}
+                  name="bankDetails.bankName"
+                  value={formData.bankDetails.bankName}
                   onChange={handleInputChange}
-                  placeholder="What is the worth of your business"
+                  placeholder="Bank Name"
                   required
                 />
               </div>
-            ) : (
-              ""
-            )}
 
-            <div className="detailssss">
-              {/* Loan Details */}
-              <h3>Bank Details</h3>
-              <input
-                type="text"
-                name="bankDetails.accountName"
-                value={formData.bankDetails.accountName}
-                onChange={handleInputChange}
-                placeholder="Name of Account"
-                required
-              />
-              <input
-                type="number"
-                name="bankDetails.accountNo"
-                value={formData.bankDetails.accountNo}
-                onChange={handleInputChange}
-                placeholder="Account Number"
-                required
-              />
-              <input
-                type="text"
-                name="bankDetails.bankName"
-                value={formData.bankDetails.bankName}
-                onChange={handleInputChange}
-                placeholder="Bank Name"
-                required
-              />
-            </div>
-
-            <Link className="change-guarantor" onClick={handleGuarantorChange}>
-              Will you like to change Guarantor?
-            </Link>
-            {guarantorChange ? (
-              <div className="detailssss">
-                {/* Guarantor Details */}
-                <h3>Guarantor Details</h3>
-                <input
-                  type="text"
-                  name="guarantorDetails.name"
-                  value={formData.guarantorDetails.name}
-                  onChange={handleInputChange}
-                  placeholder=" Name in Full"
-                  required
-                />
-                <input
-                  type="text"
-                  name="guarantorDetails.address"
-                  value={formData.guarantorDetails.address}
-                  onChange={handleInputChange}
-                  placeholder="Guarantor Address"
-                  required
-                />
-                <input
-                  type="text"
-                  name="guarantorDetails.phone"
-                  value={formData.guarantorDetails.phone}
-                  onChange={handleInputChange}
-                  placeholder="Enter phone number in form of +234XXXXXXXXXX"
-                  required
-                />
-                {/* <input
+              <Link
+                className="change-guarantor"
+                onClick={handleGuarantorChange}
+              >
+                Will you like to change Guarantor?
+              </Link>
+              {guarantorChange ? (
+                <div className="detailssss">
+                  {/* Guarantor Details */}
+                  <h3>Guarantor Details</h3>
+                  <input
+                    type="text"
+                    name="guarantorDetails.name"
+                    value={formData.guarantorDetails.name}
+                    onChange={handleInputChange}
+                    placeholder=" Name in Full"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="guarantorDetails.address"
+                    value={formData.guarantorDetails.address}
+                    onChange={handleInputChange}
+                    placeholder="Guarantor Address"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="guarantorDetails.phone"
+                    value={formData.guarantorDetails.phone}
+                    onChange={handleInputChange}
+                    placeholder="Enter phone number in form of +234XXXXXXXXXX"
+                    required
+                  />
+                  {/* <input
                 type="text"
                 name="guarantorDetails.phoneTwo"
                 value={formData.guarantorDetails.phoneTwo}
@@ -744,52 +813,52 @@ if (isValid) {
                 placeholder="Mobile No 2 in form of +234XXXXXXXXXX"
                
               /> */}
-                <input
-                  type="email"
-                  name="guarantorDetails.email"
-                  value={formData.guarantorDetails.email}
-                  onChange={handleInputChange}
-                  placeholder="Guarantor Email"
-                />
-                <input
-                  type="text"
-                  name="guarantorDetails.relationship"
-                  value={formData.guarantorDetails.relationship}
-                  onChange={handleInputChange}
-                  placeholder="Relationship to Guarantor"
-                  required
-                />
-                <input
-                  type="number"
-                  name="guarantorDetails.yearsKnown"
-                  value={formData.guarantorDetails.yearsKnown}
-                  onChange={handleInputChange}
-                  placeholder="Years Known"
-                  required
-                />
-              </div>
-            ) : (
-              ""
-            )}
+                  <input
+                    type="email"
+                    name="guarantorDetails.email"
+                    value={formData.guarantorDetails.email}
+                    onChange={handleInputChange}
+                    placeholder="Guarantor Email"
+                  />
+                  <input
+                    type="text"
+                    name="guarantorDetails.relationship"
+                    value={formData.guarantorDetails.relationship}
+                    onChange={handleInputChange}
+                    placeholder="Relationship to Guarantor"
+                    required
+                  />
+                  <input
+                    type="number"
+                    name="guarantorDetails.yearsKnown"
+                    value={formData.guarantorDetails.yearsKnown}
+                    onChange={handleInputChange}
+                    placeholder="Years Known"
+                    required
+                  />
+                </div>
+              ) : (
+                ""
+              )}
 
-            <div className="detailssss">
-              {/* Pictures */}
-              <h3>Upload Pictures</h3>
-              <label className="upload-label">Upload customer picture</label>
-              <input
-                type="file"
-                capture="user"
-                onChange={(e) => handleFirstImage(e.target.files)}
-                required
-              />
-              <label className="upload-label">Upload business picture</label>
-              <input
-                type="file"
-                capture="user"
-                onChange={(e) => handleSecondImage(e.target.files)}
-                required
-              />
-              {/* <label className="upload-label">
+              <div className="detailssss">
+                {/* Pictures */}
+                <h3>Upload Pictures</h3>
+                <label className="upload-label">Upload customer picture</label>
+                <input
+                  type="file"
+                  capture="user"
+                  onChange={(e) => handleFirstImage(e.target.files)}
+                  required
+                />
+                <label className="upload-label">Upload business picture</label>
+                <input
+                  type="file"
+                  capture="user"
+                  onChange={(e) => handleSecondImage(e.target.files)}
+                  required
+                />
+                {/* <label className="upload-label">
                 {" "}
                 Upload another business picture
               </label>
@@ -798,42 +867,67 @@ if (isValid) {
                 multiple
                 onChange={(e) => handleFileChange(Array.from(e.target.files))}
               /> */}
-            </div>
-            <div className="detailssss">
-              {/* Pictures */}
-              <h3>Signature</h3>
+              </div>
 
-              <label className="upload-label">
-                Upload customer's signature
-              </label>
-              <input
-                type="file"
-                capture="user"
-                onChange={(e) => handleThirdImage(e.target.files)}
-                required
-              />
+
+                      <div className="detailssss">
+                   <h3>Customer Signature</h3>
+             
+                   <SignatureCanvas
+                     ref={sigCanvas}
+                     penColor="black"
+                     canvasProps={{
+                       mwidth: 300,
+                       height: 400,
+                       className: "sigCanvas",
+                       style: { border: "1px solid #ccc", borderRadius: "8px", },
+                     }}
+                   />
+             
+                   <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+                     <button onClick={clearSignature}>Clear</button>
+<button
+  onClick={handleSaveSignature}
+  disabled={!!formData.signature}
+  style={{
+    filter: formData.pictures.signature ? "blur(2px)" : "none",
+    cursor: formData.pictures.signature ? "not-allowed" : "pointer",
+    opacity: formData.pictures.signature ? 0.6 : 1,
+  }}
+>
+  {imageUploadloading ? (
+ <PulseLoader color="white" size={10} />
+  ) : "Save Signature"}
+  
+</button>
+                   </div>
+             
+                  
+                 </div>
+             
+
+
+              <button
+                type="submit"
+                onClick={handleSubmit}
+                disabled={!isValid}
+                style={{
+                  backgroundColor: isValid ? "#0c1d55" : "#727789",
+                  cursor:
+                    submitLoanloading || !isValid ? "not-allowed" : "pointer",
+                }}
+              >
+                {submitLoanloading ? (
+                  <PulseLoader color="white" size={10} />
+                ) : (
+                  "Confirm Application"
+                )}
+              </button>
             </div>
-            <button
-              type="submit"
-              onClick={handleSubmit}
-              disabled={!isValid}
-              style={{
-                backgroundColor: isValid ? "#0c1d55" : "#727789",
-                cursor: submitLoanloading || !isValid ? "not-allowed" : "pointer",
-              }}
-            >
-              {submitLoanloading ? (
-                <PulseLoader color="white" size={10} />
-              ) : (
-                "Confirm Application"
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-)
-}
-      
+          </form>
+        </div>
+      )}
+
       {successMessage && (
         <ModalOverlay>
           <ModalContent>
@@ -843,17 +937,20 @@ if (isValid) {
               style={{
                 backgroundColor: "#0067D0",
               }}
-              onClick={handleClose}             >
+              onClick={handleClose}
+            >
               Continue
             </button>
           </ModalContent>
         </ModalOverlay>
       )}
-            {submitLoanloading ? (
-      <div className="dropdown-container">
-         <PulseLoader color="white" size={50} />
-      </div>
-            ): ""}
+      {submitLoanloading ? (
+        <div className="dropdown-container">
+          <PulseLoader color="white" size={50} />
+        </div>
+      ) : (
+        ""
+      )}
     </LoanApplicationRap>
   );
 };

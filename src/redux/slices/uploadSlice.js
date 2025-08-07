@@ -40,7 +40,7 @@ const uploadSlice = createSlice({
   initialState: {
     urls: [],
     target: null, // 👈 Add this
-    loading: false,
+    imageUploadloading: false,
     error: null,
   },
   reducers: {
@@ -54,16 +54,16 @@ const uploadSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(uploadImages.pending, (state) => {
-        state.loading = true;
+        state.imageUploadloading = true;
         state.error = null;
       })
       .addCase(uploadImages.fulfilled, (state, action) => {
-        state.loading = false;
+        state.imageUploadloading = false;
         state.urls = action.payload.urls;
         state.target = action.payload.target; // 👈 Set target here
       })
       .addCase(uploadImages.rejected, (state, action) => {
-        state.loading = false;
+        state.imageUploadloading = false;
         state.error = action.payload;
       });
   },

@@ -13,7 +13,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { MoonLoader, PulseLoader } from "react-spinners";
 import { fetchAllTheCsos } from "../redux/slices/csoSlice";
-import { fetchReport } from "../redux/slices/reportSlice";
+import { fetchAllCashAtHand, fetchReport } from "../redux/slices/reportSlice";
 
 const NewLoanRap = styled.div`
   width: 100%;
@@ -153,6 +153,12 @@ const NewLoanRap = styled.div`
     align-items: center;
     gap: 10px;
   }
+    @media (max-width: 1024px) { 
+        .dropdown-container {
+    left: 0%;
+    top: 60px;
+  }
+    }
 `;
 
 const Disbursment = () => {
@@ -181,6 +187,7 @@ const Disbursment = () => {
       cashMessage,
       expenseMessage,
       cashAtHand,
+      allCashAtHand,
       cashDeteleloading,
       cashDelete,
       expressDelete,
@@ -209,30 +216,49 @@ const Disbursment = () => {
 
   console.log(filteredData);
 
-  const checkCashAtHand = () => {
-      const now = new Date();
-      const currentHour = now.getHours();
-  
-      if (currentHour >= 8) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-  
-        const year = yesterday.getFullYear();
-        const month = String(yesterday.getMonth() + 1).padStart(2, '0');
-        const day = String(yesterday.getDate()).padStart(2, '0');
-        const formattedYesterday = `${year}-${month}-${day}`;
-  
-        const found = cashAtHand?.some(item => item.date === formattedYesterday);
-  
-        if (!found) {
-          setCashAtHandError(`❌ Missing cash at hand for ${formattedYesterday}. Please submit cash at hand to proceed with action on this page. Thanks!`);
-        } else {
-          setCashAtHandError(null);
-        }
-      } else {
-        setCashAtHandError(null);
-      }
-    };
+const checkCashAtHand = () => {
+  // ✅ Only check when allCashAtHand is available
+  if (!allCashAtHand || allCashAtHand.length === 0) return;
+
+  const now = new Date();
+  const currentHour = now.getHours(); // local hour
+  const currentDay = now.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+
+  if (currentHour >= 4) {
+    const utcNow = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate()
+    ));
+
+    const checkDate = new Date(utcNow);
+
+    if (currentDay === 6) {
+      checkDate.setUTCDate(checkDate.getUTCDate() - 1);
+    } else if (currentDay === 0) {
+      checkDate.setUTCDate(checkDate.getUTCDate() - 2);
+    } else if (currentDay === 1) {
+      checkDate.setUTCDate(checkDate.getUTCDate() - 3);
+    } else {
+      checkDate.setUTCDate(checkDate.getUTCDate() - 1);
+    }
+
+    const formattedDate = checkDate.toISOString().split("T")[0];
+
+    const found = allCashAtHand?.some(item => item.date === formattedDate);
+
+    if (!found) {
+      setCashAtHandError(
+        `❌ Missing cash at hand for ${formattedDate}. Please submit cash at hand to proceed with action on this page. Thanks!`
+      );
+    } else {
+      setCashAtHandError(null);
+    }
+  } else {
+    setCashAtHandError(null);
+  }
+};
+
   
     useEffect(() => {
       checkCashAtHand();  // Run immediately on load
@@ -242,7 +268,7 @@ const Disbursment = () => {
       }, 30000); // Check every 60 seconds
   
       return () => clearInterval(interval); // Clean up
-    }, []);
+    }, [allCashAtHand]);
   
  useEffect(() => {
       dispatch(fetchReport({ month, year }));
@@ -252,6 +278,11 @@ const Disbursment = () => {
   useEffect(() => {
     dispatch(fetchWaitingDisbursementLoans());
   }, [dispatch]);
+
+  
+   useEffect(() => {
+      dispatch(fetchAllCashAtHand());
+    }, [dispatch]);
   
   useEffect(() => {
     dispatch(fetchAllTheCsos());
@@ -288,7 +319,7 @@ const Disbursment = () => {
     return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   };
 
-  if (loading === "loading")
+  if (!allCashAtHand && loading === "loading")
     return (
       <p
         style={{

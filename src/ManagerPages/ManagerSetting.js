@@ -454,7 +454,7 @@ const SettingRap = styled.div`
 `;
 
 const ManagerSetting = () => {
-  const [activeLink, setActiveLink] = useState("target");
+  const [activeLink, setActiveLink] = useState("security");
   const [isOn, setIsOn] = useState(true);
   const [onCal, setOnCal] = useState(true);
   const [onCalen, setOnCalen] = useState(true);
@@ -495,7 +495,7 @@ const ManagerSetting = () => {
 
 const adminId = user?._id
 
-  console.log(user.password);
+  console.log(user?.password);
 
    useEffect(() => {
       dispatch(fetchAllBranches());
@@ -694,14 +694,14 @@ const adminId = user?._id
                     required
                   />
                 </label>
-                <Icon
+                {/* <Icon
                   onClick={togglePasswordVisibility}
                   className="icon-post"
                   icon="basil:eye-outline"
                   width="25"
                   height="25"
                   style={{ color: "#727789" }}
-                />
+                /> */}
               </div>
               <div className="input-post">
                 <label>
@@ -714,14 +714,14 @@ const adminId = user?._id
                     required
                   />
                 </label>
-                <Icon
+                {/* <Icon
                   onClick={togglePasswordVisibility}
                   className="icon-post"
                   icon="basil:eye-outline"
                   width="25"
                   height="25"
                   style={{ color: "#727789" }}
-                />
+                /> */}
               </div>
               <div className="input-post">
                 <label>
@@ -734,14 +734,14 @@ const adminId = user?._id
                     required
                   />
                 </label>
-                <Icon
+                {/* <Icon
                   onClick={togglePasswordVisibility}
                   className="icon-post"
                   icon="basil:eye-outline"
                   width="25"
                   height="25"
                   style={{ color: "#727789" }}
-                />
+                /> */}
               </div>
               <div className="profile-info-links">
                 <button onClick={handleCancel}  className="pro-cancel-btn">Cancel</button>

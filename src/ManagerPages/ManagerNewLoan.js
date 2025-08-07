@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
 import { deleteLoan, fetchWaitingLoans, setPages } from "../redux/slices/LoanSlice";
 import { MoonLoader } from "react-spinners";
+import { fetchAllCashAtHand, fetchReport } from "../redux/slices/reportSlice";
 
 const NewLoanRap = styled.div`
 .pagination {
@@ -111,6 +112,12 @@ const NewLoanRap = styled.div`
   .reject-btn {
     background-color: red !important;
   }
+   .dropdown-container {
+    left: 15%;
+  }
+
+  
+
   .delete-client {
     height: 30px;
     width: 86px;
@@ -185,12 +192,19 @@ const NewLoanRap = styled.div`
     font-size: 20px;
     font-weight: 700;
   }
+    @media (max-width: 1024px) { 
+        .dropdown-container {
+    left: 0%;
+      top: 60px;
+  }
+    }
 `;
 
 
 const ManagerNewLoan = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(null);
+  const [cashAtHandError, setCashAtHandError] = useState(null)
 
   const toggleDropdown = (loanId) => {
     setDropdownOpen(dropdownOpen === loanId ? null : loanId);
@@ -200,12 +214,90 @@ const ManagerNewLoan = () => {
   const { loans, loading, totalPages, currentPage } = useSelector(
     (state) => state.loan
   );
-  
+   const {
+      
+        error,
+        cashMessage,
+        expenseMessage,
+        cashAtHand,
+        allCashAtHand,
+        cashDeteleloading,
+        cashDelete,
+        expressDelete,
+        deleteExploading,
+        expenses,
+        month,
+        year,
+      } = useSelector((state) => state.report);
+console.log(cashAtHand);
+
+
+       useEffect(() => {
+            dispatch(fetchReport({ month, year }));
+          }, [dispatch, month, year]); 
+
+
+           useEffect(() => {
+              dispatch(fetchAllCashAtHand());
+            }, [dispatch]);
+
   useEffect(() => {
     dispatch(fetchWaitingLoans({ page: currentPage }));
   }, [dispatch, currentPage]);
 
+const checkCashAtHand = () => {
+  // ✅ Only check when allCashAtHand is available
+  if (!allCashAtHand || allCashAtHand.length === 0) return;
 
+  const now = new Date();
+  const currentHour = now.getHours(); // local hour
+  const currentDay = now.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
+
+  if (currentHour >= 4) {
+    const utcNow = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate()
+    ));
+
+    const checkDate = new Date(utcNow);
+
+    if (currentDay === 6) {
+      checkDate.setUTCDate(checkDate.getUTCDate() - 1);
+    } else if (currentDay === 0) {
+      checkDate.setUTCDate(checkDate.getUTCDate() - 2);
+    } else if (currentDay === 1) {
+      checkDate.setUTCDate(checkDate.getUTCDate() - 3);
+    } else {
+      checkDate.setUTCDate(checkDate.getUTCDate() - 1);
+    }
+
+    const formattedDate = checkDate.toISOString().split("T")[0];
+
+    const found = allCashAtHand?.some(item => item.date === formattedDate);
+
+    if (!found) {
+      setCashAtHandError(
+        `❌ Missing cash at hand for ${formattedDate}. Please submit cash at hand to proceed with action on this page. Thanks!`
+      );
+    } else {
+      setCashAtHandError(null);
+    }
+  } else {
+    setCashAtHandError(null);
+  }
+};
+
+  
+    useEffect(() => {
+      checkCashAtHand();  // Run immediately on load
+  
+      const interval = setInterval(() => {
+        checkCashAtHand();
+      }, 30000); // Check every 60 seconds
+  
+      return () => clearInterval(interval); // Clean up
+    }, [allCashAtHand]);
   
   const handlePageChange = (page) => {
     dispatch(setPages(page));
@@ -239,6 +331,22 @@ const ManagerNewLoan = () => {
   
   return (
     <NewLoanRap>
+         {cashAtHandError ? (
+        (<>
+        <div className="dropdown-container">
+          <div className="all-dropdown-div">
+            <p style={{
+              color: "red",
+              fontSize: "20px",
+              fontWeight: "600",
+              margin: "20px",
+              maxWidth: "500px"
+            }}> {cashAtHandError}</p>
+          </div>
+        </div>
+        </>)
+      ): 
+      (
       <div className="new-loan">
         <div className="find-lawyer-header">
           <h2>Loan Requests</h2>
@@ -345,6 +453,7 @@ const ManagerNewLoan = () => {
       </div>
     </div>
       </div>
+        )}
     </NewLoanRap>
   );
 };

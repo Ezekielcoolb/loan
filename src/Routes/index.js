@@ -196,6 +196,7 @@ export default function Routess() {
                         { path: "/manager/customer/:bvn", element: <ManagerCustomerDetails /> },
                         { path: "/manager/new-customer/:bvn", element: <ManagerNewCustomerDetailsInfo /> },
                         { path: "/manager/new-loan-customer/calender/:id", element: <ManagerNewLoanCard /> },
+                        { path: "/manager/disbursement", element: <Disbursment /> },
 
                         { path: "/manager/customer/calender/:id", element: <ManagerCustomerCard /> },
                         { path: "/manager/calendar/:id", element: <CalendarPage /> },

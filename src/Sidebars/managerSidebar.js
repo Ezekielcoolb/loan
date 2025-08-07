@@ -32,12 +32,12 @@ const sidebarConfig = [
   },
 
 
-//   {
-//     id: 5,
-//     icon: "carbon:money",
-//     link: "/disbursement",
-//     title: "Disbursement",
-//   },
+  {
+    id: 5,
+    icon: "carbon:money",
+    link: "/manager/disbursement",
+    title: "Disbursement",
+  },
   {
     id: 5,
     icon: "streamline:information-desk-customer",
@@ -152,13 +152,14 @@ const SIDEBAR = styled.div`
   padding-top: 40px;
   width: 15%;
   position: relative;
-  z-index: 999;
+  z-index: 10000;
   margin-top: 45px !important;
   @media (max-width: 1024px) {
     
      width: 300px;
   height: 100vh;
   position: fixed;
+margin-top: 60px !important;
 
 }
   .container {

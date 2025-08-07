@@ -361,7 +361,7 @@ const LoanDetails = () => {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [isCalled, setIsCalled] = useState(false);
-  const { callCso, callGuarantor, callCustomer, verifyCustomer } = useSelector(
+  const { callCso, callGuarantor, callGroupLeader, callCustomer, verifyCustomer } = useSelector(
     (state) => state.loan
   );
   const [popup, setPopup] = useState(null); // Track which popup is open
@@ -690,6 +690,16 @@ const LoanDetails = () => {
                 onClick={() => setPopup("callGuarantor")}
                 active={callGuarantor}
                 disabled={callGuarantor}
+              >
+                Call{" "}
+              </Button>
+            </div>
+             <div className="inner-verify">
+              <p>Call Group Leader </p>
+              <Button
+                onClick={() => setPopup("callGroupLeader")}
+                active={callGroupLeader}
+                disabled={callGroupLeader}
               >
                 Call{" "}
               </Button>

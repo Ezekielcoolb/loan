@@ -11,8 +11,8 @@ import "react-calendar/dist/Calendar.css"; // Import calendar styles
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import axios from "axios";
-import { setRemittanceUploadReset, submitDailyRemittanceReport, uploadRemittance } from "../redux/slices/csoSlice";
-import { PulseLoader } from "react-spinners";
+import { fetchCsoByWorkId, setRemittanceUploadReset, submitDailyRemittanceReport, uploadRemittance } from "../redux/slices/csoSlice";
+import { MoonLoader, PulseLoader } from "react-spinners";
 import { Link, useNavigate } from "react-router-dom";
 import { uploadImages } from "../redux/slices/uploadSlice";
 
@@ -242,6 +242,10 @@ const ActiveLoansTable = () => {
   const { customers, loanAppForm, loading, error } = useSelector(
     (state) => state.loan
   );
+
+   const { specificCso, remittancestatus, hoursLeft, minutesLeft } = useSelector(
+      (state) => state.cso
+    );
   const user = JSON.parse(localStorage.getItem("csoUser"));
   const csoId = user.workId;
   const [selectedDate, setSelectedDate] = useState(new Date()); // State for selected date
@@ -325,6 +329,10 @@ useEffect(() => {
       setTime(0); // Disable the timer for today
     }
   }, [uploaded, formattedDate]);
+
+  useEffect(() => {
+      if (workId) dispatch(fetchCsoByWorkId(workId));
+    }, [workId, dispatch]);
 
   useEffect(() => {
     // Dispatch the action to fetch loans when the component mounts or date changes
@@ -445,12 +453,12 @@ const effectiveDateString = effectiveDate.toISOString().slice(0, 10);
 console.log(effectiveDateString); // e.g., "2023-10-01"
 
 // 4️⃣ Filter remittance items where date matches
-const filteredRemittance = user?.remittance?.filter(item => {
+const filteredRemittance = specificCso?.remittance?.filter(item => {
   const itemDateString = new Date(item.date).toISOString().slice(0, 10);
   return itemDateString === effectiveDateString;
 });
 
-const filteredRemittanceIssue = user?.remitanceIssues?.filter(item => {
+const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
   const itemDateString = new Date(item.date).toISOString().slice(0, 10);
   return itemDateString === effectiveDateString;
 });
@@ -463,6 +471,8 @@ console.log(filteredRemittanceIssue);
 
   return (
     <CollectionRap>
+     {specificCso && customers ? (<>
+      {filteredRemittance?.length > 0 || filteredRemittanceIssue?.length > 0 ? (
 
       <div>
         <div className="collect-1">
@@ -739,7 +749,28 @@ console.log(filteredRemittanceIssue);
         )}
       </div>
 
-
+):
+    (<>
+        <div className="dropdown-container">
+          <div className="all-dropdown-div">
+            <p style={{
+              color: "red",
+              fontSize: "20px",
+              fontWeight: "600",
+              margin: "20px",
+              maxWidth: "500px"
+            }}> You did not submit remittance for {effectiveDateString}. Please  contact the manager to resolve issue. Thanks.</p>
+          </div>
+        </div>
+        </>)
+      
+}
+</>) :  ( <p style={{
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  height: "100vh",
+}}> <MoonLoader /></p>)}
       {remittanceuploadedSuccess ? (
         <div className="dropdown-container">
           <div className="pay-dropdown">
