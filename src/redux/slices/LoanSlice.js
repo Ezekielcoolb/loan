@@ -4,8 +4,8 @@ import axios from "axios";
 
 // Async Thunks for API Calls
 
-const API_URL = "https://api.jksolutn.com/api/loan";
-// const API_URL = "http://localhost:5000/api/loan";
+// const API_URL = "https://api.jksolutn.com/api/loan";
+const API_URL = "http://localhost:5000/api/loan";
 
 export const submitLoanApplication = createAsyncThunk(
   "loans/submitApplication",
@@ -628,6 +628,27 @@ export const fetchDisbursedLoansByDate = createAsyncThunk(
     }
   }
 );
+
+
+
+// Async thunk to update the disbursement picture
+export const updateDisbursementPicture = createAsyncThunk(
+  "loan/updateDisbursementPicture",
+  async ({ id, disbursementPicture }, { rejectWithValue }) => {
+    try {
+      const response = await axios.patch(
+        `${API_URL}/user-loan/${id}/disbursement-picture`,
+        { disbursementPicture }
+      );
+      return response.data.loan; // Returning the updated loan
+    } catch (err) {
+      return rejectWithValue(err.response?.data || "Failed to update disbursement picture");
+    }
+  }
+);
+
+
+
 // Slice
 const loanSlice = createSlice({
   name: "loans",
@@ -637,7 +658,8 @@ const loanSlice = createSlice({
     dibursedSuccessMessage: "",
     total: 0,
     page: 1,
-
+disbursePictureUpload: null,
+disbursePictureloading: false,
     summarypage: 1,
     summarytotalPages: 1,
     summarytotalRecords: 0,
@@ -732,6 +754,9 @@ csoWeeklyReport: null,
     },
     clearPaymentMessages: (state) => {
       state.paymentSuccess = "";
+    },
+    clearDisbursementPicture: (state) => {
+      state.disbursePictureUpload = null;
     },
     clearDisbursedMessages: (state) => {
       state.dibursedSuccessMessage = "";
@@ -901,6 +926,26 @@ csoWeeklyReport: null,
         state.submitLoanloading = false;
         state.error = action.error.message;
       });
+
+
+
+  builder
+      .addCase(updateDisbursementPicture.pending, (state) => {
+        state.disbursePictureloading = true;
+        state.success = false;
+        state.error = null;
+      })
+      .addCase(updateDisbursementPicture.fulfilled, (state, action) => {
+        state.disbursePictureloading = false;
+        state.success = true;
+        state.disbursePictureUpload = action.payload;
+      })
+      .addCase(updateDisbursementPicture.rejected, (state, action) => {
+        state.disbursePictureloading = false;
+        state.success = false;
+        state.error = action.payload;
+      });
+
 
        builder
       .addCase(fetchDisbursedLoansByDate.pending, (state) => {
@@ -1481,6 +1526,7 @@ export const {
   calculateDefaultingCustomers,
   calculateNoPaymentYesterday,
   fetchFullyPaidLoansStart,
+  clearDisbursementPicture,
   fetchFullyPaidLoansSuccess,
   fetchFullyPaidLoansFailure,
   setCsoHomePage,

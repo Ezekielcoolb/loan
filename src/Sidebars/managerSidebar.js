@@ -32,12 +32,12 @@ const sidebarConfig = [
   },
 
 
-  {
-    id: 5,
-    icon: "carbon:money",
-    link: "/manager/disbursement",
-    title: "Disbursement",
-  },
+  // {
+  //   id: 5,
+  //   icon: "carbon:money",
+  //   link: "/manager/disbursement",
+  //   title: "Disbursement",
+  // },
   {
     id: 5,
     icon: "streamline:information-desk-customer",
@@ -57,12 +57,12 @@ const sidebarConfig = [
 //     link: "/admin-members",
 //     title: "Admin Panel",
 //   },
-  {
-    id: 7,
-    icon: "ri:home-office-line",
-    link: "/manager/branches",
-    title: "Branch",
-  },
+  // {
+  //   id: 7,
+  //   icon: "ri:home-office-line",
+  //   link: "/manager/branches",
+  //   title: "Branch",
+  // },
     {
     id: 7,
     icon: "healthicons:emergency-operations-center-outline",
@@ -76,7 +76,7 @@ const sidebarConfig = [
     title: "Reports",
   },
   {
-    id: 8,
+    id: 9,
     icon: "lets-icons:setting-line",
     link: "/manager/settings",
     title: "Setting",

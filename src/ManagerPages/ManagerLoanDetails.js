@@ -631,7 +631,7 @@ const ManagerLoanDetails = () => {
                 </div>
               </div>
             </div>
-            <div>
+            {/* <div>
               <h5>Other Images</h5>
               <div className="customerimages">
                 {loan?.pictures?.others.map((img, index) => (
@@ -649,7 +649,7 @@ const ManagerLoanDetails = () => {
                   />
                 ))}
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 

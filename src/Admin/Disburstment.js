@@ -4,16 +4,19 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import {
   clearDisbursedMessages,
+  clearDisbursementPicture,
   deleteLoan,
   disburseLoan,
   fetchDisbursedLoansByDate,
   fetchWaitingDisbursementLoans,
   setDisbursedSelectedDate,
+  updateDisbursementPicture,
 } from "../redux/slices/LoanSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { MoonLoader, PulseLoader } from "react-spinners";
 import { fetchAllTheCsos } from "../redux/slices/csoSlice";
 import { fetchAllCashAtHand, fetchReport } from "../redux/slices/reportSlice";
+import { uploadImages } from "../redux/slices/uploadSlice";
 
 const NewLoanRap = styled.div`
   width: 100%;
@@ -131,6 +134,36 @@ const NewLoanRap = styled.div`
     font-weight: 600;
     font-size: 16px;
   }
+  form input,
+  form select {
+    width: 300px;
+    height: 40px;
+    border-radius: 15px;
+    padding: 10px;
+    background: #eaeaea;
+  }
+  form   button {
+    background: #005e78;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    color: #ffffff;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    width: 200px;
+    height: 40px;
+    padding: 20px;
+    border-style: none;
+    margin: auto;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
   .find-lawyer-header {
     display: flex;
     align-items: center;
@@ -166,20 +199,32 @@ const Disbursment = () => {
   const [activeLink, setActiveLink] = useState("new");
   const [disbursingLoanId, setDisbursingLoanId] = useState(null);
   const [cashAtHandError, setCashAtHandError] = useState(null)
-
+const [pictureUrl, setPictureUrl] = useState("");
+const [selectedImage, setSelectedImage] = useState(null)
+const [pictureDropdown, setPictureDropdown] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false);
+  const [loanIdReal, setLoanIdReal] =  useState("")
   const [filterCSO, setFilterCSO] = useState("");
   const handleLinkClick = (link) => {
     setActiveLink(link);
   };
+  console.log(selectedImage);
+  
+  
   const {
     dibursedSuccessMessage,
     loans,
+    disbursePictureloading,
     selectedDisburseDate,
     dailyDisburseLoans,
+    disbursePictureUpload,
     disburseloading,
     loading,
   } = useSelector((state) => state.loan);
+
+        const { urls, imageUploadloading } = useSelector((state) => state.upload);
+
+console.log(loans);
 
    const {
     
@@ -197,13 +242,15 @@ const Disbursment = () => {
       year,
     } = useSelector((state) => state.report);
   
+console.log(disbursePictureUpload);
+
+
   const { list: csos } = useSelector((state) => state.cso);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   
     const toggleDropdown = (loanId) => {
       setDropdownOpen(dropdownOpen === loanId ? null : loanId);
     };
-  console.log(csos);
 
   const [isLoading, setIsLoading] = useState(false);
   console.log(dailyDisburseLoans);
@@ -212,9 +259,7 @@ const Disbursment = () => {
     ? dailyDisburseLoans.filter((item) => item.csoName === filterCSO)
     : dailyDisburseLoans;
 
-  console.log(filterCSO);
 
-  console.log(filteredData);
 
 const checkCashAtHand = () => {
   // ✅ Only check when allCashAtHand is available
@@ -259,6 +304,13 @@ const checkCashAtHand = () => {
   }
 };
 
+
+useEffect(() => {
+  if (urls?.length > 0 ) {
+    // If multiple files, you can store them as array or string (e.g., first one)
+    setPictureUrl(urls[0]); // Or store all: setImageUrl(urls);
+  }
+}, [urls]);
   
     useEffect(() => {
       checkCashAtHand();  // Run immediately on load
@@ -334,6 +386,45 @@ const checkCashAtHand = () => {
         <MoonLoader />
       </p>
     );
+
+    const handleSetLoandIdReal = (loanId) => {
+            setPictureDropdown(!pictureDropdown)
+
+      setLoanIdReal(loanId)
+    }
+
+
+     const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!pictureUrl) return alert("Please enter picture URL");
+    dispatch(updateDisbursementPicture({ id: loanIdReal, disbursementPicture: pictureUrl }));
+  };
+
+
+  const handleFileChange = (files) => {
+    if (!files.length) return;
+    dispatch(uploadImages({ files, folderName: "products" }));
+  };
+
+
+  const handleCloseDiburePicturePop = () => {
+    setPictureUrl("");
+    setPictureDropdown(false)
+  }
+
+  const handleClose = () => {
+     setPictureUrl("");
+  dispatch(clearDisbursementPicture());
+  window.location.reload(); // Refresh the page
+};
+
+const handleSelectedImage = (image) => {
+  setSelectedImage(image)
+}
+
+const handleCloseSelectedImage = () => {
+  setSelectedImage(null)
+}
   return (
     <NewLoanRap>
         {cashAtHandError ? (
@@ -389,13 +480,14 @@ const checkCashAtHand = () => {
                       <th>Account Number</th>
                       <th>Bank Name</th>
                       <th>Status</th>
+                      <th>Disbursement Receipt</th>
                       <th>Action</th>
                       <th>Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {loans?.map((loan) => (
-                      <tr key={loan?.id}>
+                      <tr key={loan?._id}>
                         <td>{`${loan?.customerDetails?.firstName} ${loan?.customerDetails?.lastName}`}</td>
                         <td className="amount-approved">
                           {loan?.loanDetails?.amountApproved}
@@ -404,11 +496,29 @@ const checkCashAtHand = () => {
                         <td>{loan?.bankDetails?.accountNo} </td>
                         <td>{loan?.bankDetails?.bankName} </td>
                         <td style={{ color: "green" }}>{loan?.status}</td>
+                        {loan?.loanDetails?.disbursementPicture && loan?.loanDetails?.disbursementPicture !== "" ? (
+                        <td><button style={{
+                          width: "150px",
+                          height: "40px"
+                        }} onClick={()=> handleSelectedImage(loan?.loanDetails?.disbursementPicture  )}>View</button></td>
+                        ) :  
+                                                <td><button style={{
+                          width: "150px",
+                          height: "40px"
+                        }} onClick={()=> handleSetLoandIdReal(loan._id )}>Upload</button></td>
+
+                        }
                         <td>
                           <button
                             className="approve"
                             onClick={() => handleDisburse(loan._id)}
-                          >
+
+                    style={{
+    filter: !loan?.loanDetails?.disbursementPicture ? "blur(2px)" : "none",
+    cursor: !loan?.loanDetails?.disbursementPicture ? "not-allowed" : "pointer",
+    opacity: !loan?.loanDetails?.disbursementPicture ? 0.6 : 1,
+  }}
+  disabled={!loan?.loanDetails?.disbursementPicture}    >
                             {disbursingLoanId === loan._id ? (
                               <PulseLoader color="white" size={10} />
                             ) : (
@@ -567,6 +677,95 @@ const checkCashAtHand = () => {
             </div>
             <p>{dibursedSuccessMessage}</p>
             <button onClick={handleCancel} className="exist-btn">
+              Exit
+            </button>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
+
+      {disbursePictureUpload ? (
+        <div className="dropdown-container">
+          <div className="all-dropdown-div">
+            <div className="pay-green-circle">
+              <Icon
+                icon="twemoji:check-mark"
+                width="40"
+                height="40"
+                style={{ color: "black" }}
+              />
+            </div>
+            <p>Disbursement receipt uploaded successfully. Thanks.</p>
+            <button onClick={handleClose} className="exist-btn">
+              Exit
+            </button>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
+
+      {pictureDropdown ? (
+        <div className="dropdown-container">
+          <div className="all-dropdown-div">
+         <form onSubmit={handleSubmit}>
+        <div className="file-upload">
+                    <input
+                      id="fileInput"
+                      type="file"
+                      onChange={(e) => handleFileChange(e.target.files)}
+                      className="hidden-input"
+                    />
+                   
+                  </div>
+                   <label htmlFor="fileInput" className="custom-file-upload">
+                      {pictureUrl ==="" ? "Upload proof of disbursement" 
+                      :  (
+                         <img
+                src={ `https://api.jksolutn.com${pictureUrl}` // Local image
+               
+                }
+                alt="disbursement"
+                style={{ objectFit: "contain", width: "100px", height: "100px" }}
+              />
+                      )
+                    }
+                    </label>{" "}
+                    <br />
+        <button type="submit" 
+        disabled={disbursePictureloading}
+          style={{
+                    filter: pictureUrl ==="" ? "blur(2px)" : "none",
+                    cursor: pictureUrl ===""
+                      ? "not-allowed"
+                      : "pointer",
+                    opacity: pictureUrl ==="" ? 0.6 : 1,
+                  }}
+        >
+          {disbursePictureloading ? <PulseLoader color="white" size={10} /> : "Update"}
+        </button>
+      </form>
+            <button onClick={handleCloseDiburePicturePop} className="exist-btn">
+              Exit
+            </button>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
+
+       {selectedImage ? (
+        <div className="dropdown-container">
+          <div className="all-dropdown-div">
+            <img
+                src={ `https://api.jksolutn.com${selectedImage}` // Local image
+               
+                }
+                alt="disbursement"
+                style={{ objectFit: "contain", width: "300px", height: "400px" }}
+              />
+            <button onClick={handleCloseSelectedImage} className="exist-btn">
               Exit
             </button>
           </div>

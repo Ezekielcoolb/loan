@@ -285,6 +285,29 @@ export const fetchCsoRemittanceRemttanceIssue = createAsyncThunk(
   }
 );
 
+
+export const updateCsoSignature = createAsyncThunk(
+  "cso/updateCsoSignature",
+  async ({ id, signature }, { rejectWithValue }) => {
+    try {
+      const response = await axios.patch(
+        `${API_URL}/cso-updating/${id}/signature`,
+        { signature },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data; // { message, data }
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || error.message
+      );
+    }
+  }
+);
+
 const csoSlice = createSlice({
   name: "cso",
   initialState: {
@@ -296,6 +319,8 @@ const csoSlice = createSlice({
     currentPage: 1,
     remiLoading: false,
     remisuccess: false,
+    signatureloading: false,
+    successSignatureMessage: null,
     cso: [],
     specifiedCso: null,
     specificCso: null,
@@ -335,6 +360,10 @@ const csoSlice = createSlice({
       state.isUploading = false;
       state.error = null;
       state.uploaded = false;
+    },
+     resetSignatureState: (state) => {
+      state.signatureloading = false;
+      state.successSignatureMessage = null;
     },
     setSelectedRemmitDate: (state, action) => {
       state.selectedRemiteDate = action.payload;
@@ -381,6 +410,24 @@ const csoSlice = createSlice({
       // Handle createCso
       .addCase(createCso.fulfilled, (state, action) => {
         state.cso.push(action.payload);
+      });
+
+
+
+        builder
+      .addCase(updateCsoSignature.pending, (state) => {
+        state.signatureloading = true;
+        state.error = null;
+        state.successSignatureMessage = null;
+      })
+      .addCase(updateCsoSignature.fulfilled, (state, action) => {
+        state.signatureloading = false;
+        state.cso = action.payload.data;
+        state.successSignatureMessage = action.payload.message;
+      })
+      .addCase(updateCsoSignature.rejected, (state, action) => {
+        state.signatureloading = false;
+        state.error = action.payload;
       });
 
       builder
@@ -654,5 +701,5 @@ const csoSlice = createSlice({
       });
   },
 });
-export const {clearTargetMessageMessages, setRemittanceIssueResolve, setRemittanceUploadReset, clearUpdateSuccessMessages, resetUploadState, setSelectedRemmitDate, setSelectedCSO, clearMessages } = csoSlice.actions;
+export const {clearTargetMessageMessages, setRemittanceIssueResolve, setRemittanceUploadReset, resetSignatureState, clearUpdateSuccessMessages, resetUploadState, setSelectedRemmitDate, setSelectedCSO, clearMessages } = csoSlice.actions;
 export default csoSlice.reducer;

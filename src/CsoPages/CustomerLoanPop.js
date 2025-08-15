@@ -82,19 +82,25 @@ const LoanApplicationRap = styled.div`
 
 const LoanApplicationForm = () => {
   const dispatch = useDispatch();
-    const sigCanvas = useRef();
+  const sigCanvas = useRef();
+   const guaCanvas = useRef();
+
   const [ownerImage, setOwnerIamge] = useState("");
   const [loanerImage, setLoanerIamge] = useState("");
   const [otherImages, setOtherIamges] = useState("");
   const [signImage, setSignImage] = useState("");
   const [isLoading, setLoading] = useState(false);
+
   const user = JSON.parse(localStorage.getItem("csoUser"));
   const [uploadTarget, setUploadTarget] = useState(null);
-  const { urls, target,  imageUploadloading } = useSelector((state) => state.upload);
+  const { urls, target, imageUploadloading } = useSelector(
+    (state) => state.upload
+  );
 
   const [formData, setFormData] = useState({
     csoId: user.workId,
     branch: user.branch,
+    csoSignature: user?.signature,
     csoName: `${user.firstName} ${user.lastName}`,
     customerDetails: {
       firstName: "",
@@ -136,6 +142,7 @@ const LoanApplicationForm = () => {
       email: "",
       relationship: "",
       yearsKnown: null,
+      signature: "",
     },
     groupDetails: {
       groupName: "",
@@ -145,7 +152,7 @@ const LoanApplicationForm = () => {
     pictures: {
       customer: "",
       business: "",
-      others: [], // Ensure it's initialized as an empty array
+      others: "", // Ensure it's initialized as an empty array
       signature: "",
     },
   });
@@ -158,20 +165,19 @@ const LoanApplicationForm = () => {
   );
 
   const isValid =
+    formData.csoSignature !== "" &&
+    formData.csoSignature !== undefined &&
     formData.customerDetails.firstName !== "" &&
     formData.customerDetails.lastName !== "" &&
     formData.customerDetails.phoneOne !== "" &&
     formData.customerDetails.address !== "" &&
     formData.customerDetails.bvn !== "" &&
-    formData.customerDetails.dateOfBirth !== "" &&
     formData.customerDetails.NextOfKin !== "" &&
     formData.customerDetails.NextOfKinNumber !== "" &&
     formData.businessDetails.natureOfBusiness !== "" &&
-    formData.businessDetails.estimatedValue !== "" &&
     formData.businessDetails.operationalStatus !== "" &&
     formData.businessDetails.businessName !== "" &&
     formData.businessDetails.address !== "" &&
-    formData.businessDetails.yearsHere !== "" &&
     formData.businessDetails.nameKnown !== "" &&
     formData.bankDetails.accountName !== "" &&
     formData.bankDetails.accountNo !== "" &&
@@ -180,7 +186,7 @@ const LoanApplicationForm = () => {
     formData.loanDetails.loanType !== "" &&
     formData.guarantorDetails.name !== "" &&
     formData.guarantorDetails.address !== "" &&
-    formData.guarantorDetails.email !== "" &&
+    formData.guarantorDetails.signature !== "" &&
     formData.guarantorDetails.phone !== "" &&
     formData.guarantorDetails.relationship !== "" &&
     formData.guarantorDetails.yearsKnown !== "" &&
@@ -189,6 +195,7 @@ const LoanApplicationForm = () => {
     formData.groupDetails.mobileNo !== "" &&
     formData.pictures.business !== "" &&
     formData.pictures.customer !== "" &&
+      formData.pictures.others !== "" &&
     formData.pictures.signature !== "";
 
   console.log(isValid);
@@ -454,14 +461,14 @@ const LoanApplicationForm = () => {
         pictures: {
           ...prev.pictures,
           [target]:
-            target === "others" ? [...prev.pictures.others, ...urls] : urls[0],
+             urls[0],
         },
       }));
       dispatch(resetUpload()); // 👈 Clear upload state after use
     }
   }, [urls, imageUploadloading, target, dispatch]);
 
-const clearSignature = () => {
+  const clearSignature = () => {
     sigCanvas.current.clear();
   };
 
@@ -477,7 +484,9 @@ const clearSignature = () => {
     // Convert base64 to file
     const res = await fetch(dataUrl);
     const blob = await res.blob();
-    const file = new File([blob], `signature_${Date.now()}.png`, { type: "image/png" });
+    const file = new File([blob], `signature_${Date.now()}.png`, {
+      type: "image/png",
+    });
 
     // Optional: Compress the file
     const compressedFile = await imageCompression(file, {
@@ -487,7 +496,9 @@ const clearSignature = () => {
     });
 
     // Upload the file
-    const result = await dispatch(uploadImages({ files: [compressedFile], folderName: "products" }));
+    const result = await dispatch(
+      uploadImages({ files: [compressedFile], folderName: "products" })
+    );
 
     if (result.payload?.urls?.length) {
       const signatureUrl = result.payload.urls[0];
@@ -507,34 +518,83 @@ const clearSignature = () => {
     }
   };
 
-  
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // Vibrate on click
-  if (navigator.vibrate) {
-    navigator.vibrate(100); // 100ms vibration
-  }
-
-  if (isValid) {
-    try {
-      const res = await dispatch(submitLoanApplication(formData));
-
-      // Vibrate again after successful submit
-      if (navigator.vibrate) {
-        navigator.vibrate([100, 50, 100]); // vibrate-pause-vibrate
-      }
-
-      dispatch(setDropdownVisible());
-      dispatch(setDropSuccessVisible());
-      console.log(res);
-    } catch (error) {
-      console.log(error);
+    // Vibrate on click
+    if (navigator.vibrate) {
+      navigator.vibrate(100); // 100ms vibration
     }
-  }
-};
+
+    if (isValid) {
+      try {
+        const res = await dispatch(submitLoanApplication(formData));
+
+        // Vibrate again after successful submit
+        if (navigator.vibrate) {
+          navigator.vibrate([100, 50, 100]); // vibrate-pause-vibrate
+        }
+
+        dispatch(setDropdownVisible());
+        dispatch(setDropSuccessVisible());
+        console.log(res);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
 
 
+
+  const clearSignatureTwo = () => {
+    guaCanvas.current.clear();
+  };
+
+  const handleSaveSignatureTwo = async () => {
+    if (guaCanvas.current.isEmpty()) {
+      alert("Please provide a signature.");
+      return;
+    }
+
+    // Convert signature to base64
+    const dataUrl = guaCanvas.current.toDataURL("image/png");
+
+    // Convert base64 to file
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const file = new File([blob], `signature_${Date.now()}.png`, {
+      type: "image/png",
+    });
+
+    // Optional: Compress the file
+    const compressedFile = await imageCompression(file, {
+      maxSizeMB: 0.5,
+      maxWidthOrHeight: 800,
+      useWebWorker: true,
+    });
+
+    // Upload the file
+    const result = await dispatch(
+      uploadImages({ files: [compressedFile], folderName: "products" })
+    );
+
+    if (result.payload?.urls?.length) {
+      const signatureUrl = result.payload.urls[0];
+
+      // Update formData
+      setFormData((prev) => ({
+        ...prev,
+        guarantorDetails: {
+          ...prev.guarantorDetails,
+          signature: signatureUrl,
+        },
+      }));
+
+      alert("Signature uploaded successfully!");
+    } else {
+      alert("Failed to upload signature.");
+    }
+  };
   return (
     <LoanApplicationRap>
       <div className="dropdown-container">
@@ -559,14 +619,14 @@ const clearSignature = () => {
                 placeholder="First Name"
                 required
               />
-              <input
+              {/* <input
                 type="text"
                 name="customerDetails.middleName"
                 value={formData.customerDetails.middleName}
                 onChange={handleInputChange}
                 placeholder="Middle Name (Optional"
                 required
-              />
+              /> */}
               <input
                 type="text"
                 name="customerDetails.lastName"
@@ -575,7 +635,7 @@ const clearSignature = () => {
                 placeholder="Last Name"
                 required
               />
-              <label className="upload-label">Date of Birth</label>
+              {/* <label className="upload-label">Date of Birth</label>
 
               <input
                 type="date"
@@ -584,7 +644,7 @@ const clearSignature = () => {
                 onChange={handleInputChange}
                 placeholder="Date of Birth"
                 required
-              />
+              /> */}
               {/* <input
                 type="email"
                 name="customerDetails.email"
@@ -692,14 +752,14 @@ const clearSignature = () => {
                 placeholder="Business Address"
                 required
               />
-              <input
+              {/* <input
                 type="text"
                 name="businessDetails.yearsHere"
                 value={formData.businessDetails.yearsHere}
                 onChange={handleInputChange}
                 placeholder="Years you've been in the business address"
                 required
-              />
+              /> */}
               <input
                 type="text"
                 name="businessDetails.nameKnown"
@@ -708,14 +768,14 @@ const clearSignature = () => {
                 placeholder="Name you are know as in the business area"
                 required
               />
-              <input
+              {/* <input
                 type="number"
                 name="businessDetails.estimatedValue"
                 value={formData.businessDetails.estimatedValue}
                 onChange={handleInputChange}
                 placeholder="How much do you make in a month"
                 required
-              />
+              /> */}
               <input
                 type="text"
                 name="businessDetails.operationalStatus"
@@ -724,13 +784,13 @@ const clearSignature = () => {
                 placeholder="What is the worth of your business"
                 required
               />
-              <input
+              {/* <input
                 type="text"
                 name="businessDetails.additionalInfo"
                 value={formData.businessDetails.additionalInfo}
                 onChange={handleInputChange}
                 placeholder="Is your business seasonal?"
-              />
+              /> */}
             </div>
             <div className="detailssss">
               {/* Loan Details */}
@@ -818,13 +878,13 @@ const clearSignature = () => {
                 placeholder="Mobile No 2 in form of +234XXXXXXXXXX"
                
               /> */}
-              <input
+              {/* <input
                 type="email"
                 name="guarantorDetails.email"
                 value={formData.guarantorDetails.email}
                 onChange={handleInputChange}
                 placeholder="Guarantor Email"
-              />
+              /> */}
               <input
                 type="text"
                 name="guarantorDetails.relationship"
@@ -841,6 +901,40 @@ const clearSignature = () => {
                 placeholder="Years Known"
                 required
               />
+            <div className="detailssss">
+              <h3>Guarantor Signature</h3>
+
+              <SignatureCanvas
+                ref={guaCanvas}
+                penColor="black"
+                canvasProps={{
+                  width: 305,
+                  height: 350,
+                  className: "sigCanvas",
+                  style: { border: "1px solid #ccc", borderRadius: "8px" },
+                }}
+              />
+              <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+                <button onClick={clearSignatureTwo}>Clear</button>
+                <button
+                  onClick={handleSaveSignatureTwo}
+                  disabled={!!formData.guarantorDetails.signature}
+                  style={{
+                    filter: formData.guarantorDetails.signature ? "blur(2px)" : "none",
+                    cursor: formData.guarantorDetails.signature
+                      ? "not-allowed"
+                      : "pointer",
+                    opacity: formData.guarantorDetails.signature ? 0.6 : 1,
+                  }}
+                >
+                  {imageUploadloading ? (
+                    <PulseLoader color="white" size={10} />
+                  ) : (
+                    "Save Signature"
+                  )}
+                </button>{" "}
+              </div>
+              </div>
             </div>
 
             <div className="detailssss">
@@ -889,7 +983,7 @@ const clearSignature = () => {
                 required
               />
               <label className="upload-label">
-                Upload another business picture
+                Upload Loan Disclosure Document
               </label>
               <input
                 type="file"
@@ -912,38 +1006,40 @@ const clearSignature = () => {
             </div> */}
 
             <div className="detailssss">
-      <h3>Customer Signature</h3>
+              <h3>Customer Signature</h3>
 
-      <SignatureCanvas
-        ref={sigCanvas}
-        penColor="black"
-        canvasProps={{
-          mwidth: 300,
-          height: 400,
-          className: "sigCanvas",
-          style: { border: "1px solid #ccc", borderRadius: "8px", },
-        }}
-      />
+              <SignatureCanvas
+                ref={sigCanvas}
+                penColor="black"
+                canvasProps={{
+                  mwidth: 300,
+                  height: 600,
+                  className: "sigCanvas",
+                  style: { border: "1px solid #ccc", borderRadius: "8px" },
+                }}
+              />
 
-      <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
-        <button onClick={clearSignature}>Clear</button>
-<button
-  onClick={handleSaveSignature}
-  disabled={!!formData.signature}
-  style={{
-    filter: formData.pictures.signature ? "blur(2px)" : "none",
-    cursor: formData.pictures.signature ? "not-allowed" : "pointer",
-    opacity: formData.pictures.signature ? 0.6 : 1,
-  }}
->
-  {imageUploadloading ? (
- <PulseLoader color="white" size={10} />
-  ) : "Save Signature"}
-  
-</button>      </div>
-
-     
-    </div>
+              <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+                <button onClick={clearSignature}>Clear</button>
+                <button
+                  onClick={handleSaveSignature}
+                  disabled={!!formData.pictures.signature}
+                  style={{
+                    filter: formData.pictures.signature ? "blur(2px)" : "none",
+                    cursor: formData.pictures.signature
+                      ? "not-allowed"
+                      : "pointer",
+                    opacity: formData.pictures.signature ? 0.6 : 1,
+                  }}
+                >
+                  {imageUploadloading ? (
+                    <PulseLoader color="white" size={10} />
+                  ) : (
+                    "Save Signature"
+                  )}
+                </button>{" "}
+              </div>
+            </div>
 
             <button
               type="submit"

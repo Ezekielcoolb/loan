@@ -380,7 +380,7 @@ const checkCashAtHand = () => {
                   <td>{loan?.branch}</td>
                   <td style={{ color: "green" }}>{loan?.status}</td>
                   <td>
-                    <Link to={`/admin/loan/${loan._id}`}>View Details</Link>
+                    <Link to={`/manager/loan/${loan._id}`}>View Details</Link>
                   </td>
                   <td style={{ position: "relative" }}>
                     <button 

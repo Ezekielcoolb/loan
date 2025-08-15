@@ -316,6 +316,9 @@ const CsoHome = () => {
     (state) => state.cso
   );
 
+  console.log(specificCso);
+  
+
   console.log(totalOutstandingLoans);
   const [query, setQuery] = useState("");
 
@@ -348,6 +351,8 @@ const CsoHome = () => {
       dispatch(fetchRemittanceStatus(csoId));
     }
   }, [csoId, dispatch]);
+
+  
   useEffect(() => {
     const fetchLoans = async () => {
       await dispatch(fetchAllLoansByCsoId({ csoId }));

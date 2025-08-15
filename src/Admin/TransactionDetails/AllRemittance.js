@@ -180,7 +180,10 @@ useEffect(() => {
   </tr>
 </thead>
 <tbody>
-  {remittances?.slice().reverse().map((remit, index) => {
+  {remittances
+  ?.slice()
+  .sort((a, b) => new Date(b.date) - new Date(a.date)) // sort by date+time descending
+  .map((remit, index) => {
     const dateObj = new Date(remit.date);
     return (
       <tr key={index}>
@@ -202,16 +205,24 @@ useEffect(() => {
           )}
         </td>
         <td>
-          {remit.remark === "Auto Clear" ? "Auto Clear" : remit.issueResolution}
+          {remit.remark === "Auto Clear"
+            ? "Auto Clear"
+            : remit.issueResolution}
         </td>
-        <td> 
-            {remit.manuallyCleared ? "Manually Cleared" : remit.remark === "Auto Clear" ? "Auto Clear": ""}</td>
+        <td>
+          {remit.manuallyCleared
+            ? "Manually Cleared"
+            : remit.remark === "Auto Clear"
+            ? "Auto Clear"
+            : ""}
+        </td>
         <td>
           <button onClick={() => handleUpdateAmounts(remit)}>Review</button>
         </td>
       </tr>
     );
   })}
+
 </tbody>
 
 

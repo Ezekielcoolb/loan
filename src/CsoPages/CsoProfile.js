@@ -1,12 +1,18 @@
 import { Icon } from "@iconify/react/dist/iconify.js";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { PulseLoader } from "react-spinners";
 import styled from "styled-components";
 import { updateCsoPassword } from "../redux/slices/authSlice";
-import { updateCSODetails } from "../redux/slices/csoSlice";
+import { resetSignatureState, updateCSODetails, updateCsoSignature } from "../redux/slices/csoSlice";
 import axios from "axios";
+import SignatureCanvas from "react-signature-canvas";
+import imageCompression from "browser-image-compression";
+import { uploadImages } from "../redux/slices/uploadSlice";
+import { fetchAllLoansByCsoId } from "../redux/slices/LoanSlice";
+
+
 
 const ProfileRap = styled.div`
   padding: 20px;
@@ -127,11 +133,36 @@ const ProfileRap = styled.div`
     flex-direction: column;
     gap: 15px;
   }
+  .detailssss h3 {
+    
+    color: #005e78;
+    font-weight: 700px;
+    size: 16px;
+
+      
+  }
+
+   .detailssss button {
+    background: #005e78;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    color: #ffffff;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    width: 200px;
+    height: 40px;
+    padding: 20px;
+    border-style: none;
+    margin: auto;
+  }
 `;
 
 const CsoProfile = () => {
   const dispatch = useDispatch();
-
+ const sigCanvas = useRef();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -139,11 +170,16 @@ const CsoProfile = () => {
   const [csoLoading, setCsoLoading] = useState(false);
   const [successPop, setSuccessPop] = useState(false);
   const [loanerImage, setLoanerIamge] = useState("");
-
+const [signature, setSignature] = useState("");
   const [csoSuccessPop, setCsoSuccessPop] = useState(false);
   const navigate = useNavigate();
   const { token, csoSuccess } = useSelector((state) => state.auth);
   const user = JSON.parse(localStorage.getItem("csoUser"));
+  const { urls, target , imageUploadloading} = useSelector((state) => state.upload);
+
+const { specificCso, remittancestatus, signatureloading, successSignatureMessage, hoursLeft, minutesLeft } = useSelector(
+    (state) => state.cso
+  );
 
   const [formData, setFormData] = useState({
     address: "",
@@ -153,7 +189,6 @@ const CsoProfile = () => {
     country: "",
     profileImg: "",
   });
-console.log(formData);
 
   const submitValid =
     currentPassword !== "" &&
@@ -171,9 +206,9 @@ const csoSubmitValid =
       formData.country !== "" ||
       formData.profileImg !== ""
 
-
+ const csoId = user?.workId;
   const adminId = user?._id;
-
+console.log(specificCso);
   const handleSecondImage = async (e) => {
     try {
       const formData = new FormData();
@@ -246,6 +281,61 @@ const csoSubmitValid =
     }
   };
   
+ useEffect(() => {
+    const fetchLoans = async () => {
+      await dispatch(fetchAllLoansByCsoId({ csoId }));
+    };
+
+    fetchLoans();
+  }, [csoId]);
+
+
+const clearSignature = () => {
+    sigCanvas.current.clear();
+  };
+
+  const handleSaveSignature = async () => {
+  if (sigCanvas.current.isEmpty()) {
+    alert("Please provide a signature.");
+    return;
+  }
+
+  // Convert signature to base64
+  const dataUrl = sigCanvas.current.toDataURL("image/png");
+
+  // Convert base64 to file
+  const res = await fetch(dataUrl);
+  const blob = await res.blob();
+  const file = new File([blob], `signature_${Date.now()}.png`, { type: "image/png" });
+
+  // Optional: Compress the file
+  const compressedFile = await imageCompression(file, {
+    maxSizeMB: 0.5,
+    maxWidthOrHeight: 800,
+    useWebWorker: true,
+  });
+
+  // Upload the file
+  const result = await dispatch(
+    uploadImages({ files: [compressedFile], folderName: "signature" })
+  );
+
+  if (result.payload?.urls?.length) {
+    const signatureUrl = result.payload.urls[0];
+
+    // Instead of updating formData, just set local signature state
+    setSignature(signatureUrl);
+
+    alert("Signature saved successfully. Now click upload button!");
+  } else {
+    alert("Failed to upload signature.");
+  }
+};
+
+const handleUpdate = () => {
+    if (!signature) return alert("Please enter a signature URL");
+    dispatch(updateCsoSignature({ id: adminId, signature }));
+  };
 
   const handleLogOut = () => {
     localStorage.removeItem("csoToken");
@@ -407,6 +497,67 @@ const csoSubmitValid =
               </button>
             </form>
           </div>
+
+
+                 <div className="detailssss">
+                             <h3>Upload Signature</h3>
+           {signature ? (
+            <button onClick={handleUpdate} disabled={signatureloading}>
+        {signatureloading ?  <PulseLoader color="white" size={10} />
+         : "Update Signature"}
+      </button>
+         
+           ): (
+            <>              
+                          <SignatureCanvas
+  ref={sigCanvas}
+  penColor="black"
+  canvasProps={{
+    width: 320, // actual pixel width (larger for sharper lines)
+    height: 500, // actual pixel height
+    className: "sigCanvas",
+    style: {
+      border: "1px solid #ccc",
+      borderRadius: "8px",
+      backgroundColor: "#f9f9f9",
+      // width: "100%", // responsive display
+      // height: "200px"
+    },
+  }}
+/>
+                       
+                             <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+                               <button onClick={clearSignature}>Clear</button>
+          
+        
+             <button
+            onClick={handleSaveSignature}
+            disabled={signature}
+            // style={{
+            //   filter: signature ? "blur(2px)" : "none",
+            //   cursor: signature ? "not-allowed" : "pointer",
+            //   opacity: signature ? 0.6 : 1,
+            // }}
+          >
+            { imageUploadloading ? (
+           <PulseLoader color="white" size={10} />
+            ) : 
+            (
+              
+             "Save Signature"
+             
+            )
+            
+            }
+            
+          </button>
+          
+          
+                             </div>
+                       </>
+          )}
+                            
+                           </div>
         </div>
         <div className="profile-2">
           <h5>Logout</h5>
@@ -431,6 +582,17 @@ const csoSubmitValid =
           <div className="successPop">
             <p>Profile updated successfully</p>
             <button onClick={() => setCsoSuccessPop(false)}>Exit</button>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
+
+            {successSignatureMessage ? (
+        <div className="dropdown-container">
+          <div className="successPop">
+            <p>Signature updated successfully</p>
+            <button onClick={() => dispatch(resetSignatureState())}>Exit</button>
           </div>
         </div>
       ) : (

@@ -494,9 +494,9 @@ const LoanDetails = () => {
               <span>Customer Name:</span>{" "}
               {`${loan?.customerDetails?.firstName} ${loan?.customerDetails?.lastName}`}
             </p>
-            <p>
+            {/* <p>
               <span>Email:</span> {loan?.customerDetails?.email}
-            </p>
+            </p> */}
             <p>
               <span>Phone:</span> {loan?.customerDetails?.phoneOne}
             </p>
@@ -516,10 +516,10 @@ const LoanDetails = () => {
               <span>Nature of Business:</span>{" "}
               {loan?.businessDetails?.natureOfBusiness}
             </p>
-            <p>
+            {/* <p>
               <span>Business Estimated Value:</span>{" "}
               {loan?.businessDetails?.estimatedValue}
-            </p>
+            </p> */}
             <p>
               <span>Business Operational Status:</span>{" "}
               {loan?.businessDetails?.operationalStatus}
@@ -558,18 +558,28 @@ const LoanDetails = () => {
             <p>
               <span>Guarantor Address:</span> {loan?.guarantorDetails?.address}
             </p>
+           
+          
             <p>
-              <span>Guarantor Number:</span> {loan?.guarantorDetails?.phone}
-            </p>
-            <p>
-              <span>Guarantor Email:</span> {loan?.guarantorDetails?.email}
-            </p>
-            <p>
-              <span>Relationship with Custoomer:</span>{" "}
+              <span>Relationship with Customer:</span>{" "}
               {loan?.guarantorDetails?.relationship}
             </p>
             <p>
               <span>Years Known:</span> {loan?.guarantorDetails?.yearsKnown}
+            </p>
+             <p>
+              <span>Guarantor Signature:</span>             <div className="signature">
+ <img
+                src={
+                  loan.guarantorDetails.signature?.startsWith("http")
+                    ? loan.guarantorDetails.signature // Cloudinary URL
+                    : loan.guarantorDetails.signature
+                    ? `https://api.jksolutn.com${loan.guarantorDetails.signature}` // Local image
+                    : "fallback.jpg" // Optional fallback image
+                }
+                alt="signature"
+                style={{ objectFit: "contain" }}
+              /> </div>
             </p>
           </div>
           <div className="inner-details">
@@ -636,7 +646,7 @@ const LoanDetails = () => {
                 </div>
               </div>
             </div>
-            <div>
+            {/* <div>
               <h5>Other Images</h5>
               <div className="customerimages">
                 {loan?.pictures?.others.map((img, index) => (
@@ -654,7 +664,7 @@ const LoanDetails = () => {
                   />
                 ))}
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 

@@ -182,6 +182,7 @@ const MinimalApplicationForm = () => {
   const [formData, setFormData] = useState({
     csoId: user?.workId,
     branch: user?.branch,
+    csoSignature: user?.signature,
     csoName: `${user?.firstName} ${user?.lastName}`,
     customerDetails: {
       firstName: loan?.customerDetails?.firstName,
@@ -257,6 +258,8 @@ const MinimalApplicationForm = () => {
   console.log(formData);
 
   const isValid =
+  formData.csoSignature !== "" &&
+   formData.csoSignature !== undefined &&
     formData.customerDetails.firstName !== "" &&
     formData.customerDetails.lastName !== "" &&
     formData.customerDetails.phoneOne !== "" &&
@@ -878,7 +881,7 @@ const clearSignature = () => {
                      penColor="black"
                      canvasProps={{
                        mwidth: 300,
-                       height: 400,
+                       height: 600,
                        className: "sigCanvas",
                        style: { border: "1px solid #ccc", borderRadius: "8px", },
                      }}
