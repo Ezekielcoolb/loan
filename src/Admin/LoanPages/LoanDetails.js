@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
   approveLoan,
+  clearUpdateLoanMessage,
+  editLoanStatus,
   fetchCustomerDetails,
   fetchWaitingLoans,
   rejectLoan,
@@ -10,6 +12,7 @@ import {
 } from "../../redux/slices/LoanSlice";
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { PulseLoader } from "react-spinners";
 
 const LoanDetailRap = styled.div`
   width: 100%;
@@ -288,6 +291,15 @@ const LoanDetailRap = styled.div`
     display: flex;
     gap: 15px;
   }
+  @media (max-width: 600px) {
+.loan-details {
+  flex-direction: column;
+}
+.left-loan-detail, .right-loan-detail {
+  border: none;
+  width: 100%;
+}
+  }
 `;
 
 const Button = styled.button`
@@ -361,15 +373,20 @@ const LoanDetails = () => {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [isCalled, setIsCalled] = useState(false);
-  const { callCso, callGuarantor, callGroupLeader, callCustomer, verifyCustomer } = useSelector(
+  const { callCso, callGuarantor, editLoading, callGroupLeader, updatedLoan, callCustomer, verifyCustomer } = useSelector(
     (state) => state.loan
   );
+  console.log(updatedLoan);
+  
   const [popup, setPopup] = useState(null); // Track which popup is open
   const [approveLoading, setApprovedLoading] = useState(false);
   const [rejectLoading, setRejectLoading] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
   const [isRejected, setIsRejected] = useState(false);
+   const [isEdited, setIsEdited] = useState(false);
   const { details } = useSelector((state) => state.loan);
+
+
 
   console.log(details);
   const filteredLoansDetails = details?.filter(
@@ -446,6 +463,23 @@ const LoanDetails = () => {
     setIsRejected(false);
     setRejectLoading(true);
   };
+
+
+  const handleOpenEdit = () => {
+    setIsEdited(!isEdited);
+    setApproveOpen(false);
+    setRejectOpen(false);
+}
+
+  const handleEdit = () => {
+    dispatch(editLoanStatus(id));
+     
+  };
+
+  const handleCloseEditPop = () =>{
+  dispatch(clearUpdateLoanMessage());
+  navigate("/admin/newloan");
+}
 
   const handleMoveToCustomerInfo = () => {
     navigate(`/admin/new-customer/${loan?.customerDetails?.bvn}`);
@@ -558,7 +592,9 @@ const LoanDetails = () => {
             <p>
               <span>Guarantor Address:</span> {loan?.guarantorDetails?.address}
             </p>
-           
+            <p>
+              <span>Guarantor Number:</span> {loan?.guarantorDetails?.phone}
+            </p>
           
             <p>
               <span>Relationship with Customer:</span>{" "}
@@ -646,25 +682,22 @@ const LoanDetails = () => {
                 </div>
               </div>
             </div>
-            {/* <div>
-              <h5>Other Images</h5>
-              <div className="customerimages">
-                {loan?.pictures?.others.map((img, index) => (
-                  <img
-                    key={index}
+            <div style={{
+              marginTop: "30px"
+            }}>
+              <h5>Loan Disclosure Document</h5>
+              <img
                     src={
-                      img?.startsWith("http")
-                        ? img // Cloudinary URL
-                        : img
-                        ? `https://api.jksolutn.com${img}` // Local image
+                      loan?.pictures?.disclosure?.startsWith("http")
+                        ? loan?.pictures?.disclosure // Cloudinary URL
+                        : loan?.pictures?.disclosure
+                        ? `https://api.jksolutn.com${loan?.pictures?.disclosure}` // Local image
                         : "fallback.jpg" // Optional fallback image
                     }
-                    alt="others"
-                    style={{ objectFit: "contain" }}
+                    alt="business"
+                    style={{ objectFit: "contain", width: "300px", height: "400px" }}
                   />
-                ))}
-              </div>
-            </div> */}
+            </div>
           </div>
         </div>
 
@@ -747,6 +780,11 @@ const LoanDetails = () => {
               </button>
               <button className="reject" onClick={handleOpenReject}>
                 Reject
+              </button>
+              <button style={{
+                backgroundColor: "blue"
+              }} className="reject" onClick={handleOpenEdit}>
+                Ask to Edit
               </button>
             </div>
             {approveOpen ? (
@@ -836,6 +874,58 @@ const LoanDetails = () => {
             ) : (
               ""
             )}
+
+             {isEdited ? (
+              <div className="dropdown-container">
+                <div className="all-dropdown-div">
+                  <h5 className="">
+                    You are about to ask CSO to edit this loan. <br />
+                    Note that you are not rejecting the loan, therefore the loan can be resubmitted.{" "}
+                  </h5>
+                  <div className="btn-div">
+                    <button style={{
+                      backgroundColor: "blue"
+                    }} className="reject" onClick={handleEdit}>
+                     {editLoading ? (
+                     <PulseLoader color="white" size={10} />
+                      ) : "Ask to Edit"}
+                    </button>
+                    <button
+                      onClick={() => setIsEdited(false)}
+                      className="approve"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
+
+              {updatedLoan ? (
+              <div className="dropdown-container">
+                <div className="all-dropdown-div">
+                  <h5 className="">
+                   Action performed successfully. <br />
+                    The Cso will be notified to edit the loan.{" "}
+                  </h5>
+                  <div className="btn-div">
+                    
+                    <button
+                      onClick={handleCloseEditPop}
+                      className="approve"
+                    >
+                      close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
+
+
             {approveLoading ? (
               <div className="dropdown-container ">
                 <div className="approved-div">

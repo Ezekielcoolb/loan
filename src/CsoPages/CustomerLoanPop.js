@@ -152,8 +152,9 @@ const LoanApplicationForm = () => {
     pictures: {
       customer: "",
       business: "",
-      others: "", // Ensure it's initialized as an empty array
+      others: [], // Ensure it's initialized as an empty array
       signature: "",
+      disclosure: "",
     },
   });
 
@@ -195,7 +196,7 @@ const LoanApplicationForm = () => {
     formData.groupDetails.mobileNo !== "" &&
     formData.pictures.business !== "" &&
     formData.pictures.customer !== "" &&
-      formData.pictures.others !== "" &&
+      formData.pictures.disclosure !== "" &&
     formData.pictures.signature !== "";
 
   console.log(isValid);
@@ -423,7 +424,7 @@ const LoanApplicationForm = () => {
   //   dispatch(uploadImages({ files, folderName: 'products' }));
   // };
   const handleFileChange = async (fileList) => {
-    const target = "others"; // 👈 local value, not setState
+    const target = "disclosure"; // 👈 local value, not setState
     let files = Array.from(fileList);
 
     files = await Promise.all(
@@ -943,7 +944,7 @@ const LoanApplicationForm = () => {
               <input
                 type="text"
                 name="groupDetails.groupName"
-                value={formData.bankDetails.groupName}
+                value={formData.groupDetails.groupName}
                 onChange={handleInputChange}
                 placeholder="Group Name"
                 required

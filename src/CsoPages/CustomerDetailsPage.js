@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate, Link } from "react-router-dom"; // For routing
 import {
@@ -296,6 +296,14 @@ const CustomerDetailsPage = () => {
 const [remittanceAvailableShow, setRemittanceAvailableShow] = React.useState(false);
   const bvn = loan?.customerDetails?.bvn;
   const csoId = user?.workId;
+
+const [disburesementDrop, setDisbursementDrop] =useState(false)
+
+
+const handleDisbursementDrop = () => {
+setDisbursementDrop(true)
+}
+
   useEffect(() => {
     if (!loan) {
       dispatch(fetchWaitingLoans());
@@ -602,6 +610,15 @@ if (repaymentScheduleLengthTillToday > 22) {
                 ) : (
                   ""
                 )}
+                 <button
+                  className="check-loan-card"
+                  onClick={handleDisbursementDrop}
+                  style={{
+                    background:"#009a49"
+                  }}
+                >
+                  Disbursement Receipt
+                </button>
               </div>
             </div>
           </div>
@@ -719,7 +736,10 @@ if (repaymentScheduleLengthTillToday > 22) {
                 >
                   Previous Loans
                 </button>
+
+                 
               </div>
+             
             </div>
           )}
         </div>
@@ -734,6 +754,30 @@ if (repaymentScheduleLengthTillToday > 22) {
         <div className="dropdown-content">
           <p >Sorry, you cannot post a new payment after submitting remittance. <br /> Please wait till the next {hoursLeft}hr {minutesLeft} minutes. <br /> Thanks.</p>
           <button className="submit-btn-2" onClick={() => setRemittanceAvailableShow(false)}>
+            Close
+            </button>
+        </div>
+        </div>
+        </div>
+        
+        </>
+      ): ""}
+
+
+         {disburesementDrop && loan?.loanDetails?.disbursementPicture
+ ? (
+        <>
+         <div className="dropdown-container">
+      <div className="all-dropdown-div">
+
+       
+        <div className="dropdown-content">
+          <img style={{
+            width: "300px",
+            height: "400px",
+            margin: "auto"
+          }} src={`https://api.jksolutn.com${loan?.loanDetails?.disbursementPicture}`} alt="" />
+          <button className="submit-btn-2" onClick={() => setDisbursementDrop(false)}>
             Close
             </button>
         </div>

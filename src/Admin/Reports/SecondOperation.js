@@ -235,8 +235,8 @@ const SecondReportPage = () => {
     profit: 0,
   };
 
-  weeklyReports.forEach((week) => {
-    week.days.forEach((day) => {
+  weeklyReports?.forEach((week) => {
+    week?.days?.forEach((day) => {
       monthlyTotals.totalDisbursement += day.totalDisbursement || 0;
       monthlyTotals.totalInterest += day.totalInterest || 0;
       monthlyTotals.totalExpenses += day.totalExpenses || 0;

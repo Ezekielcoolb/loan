@@ -24,6 +24,7 @@ import SolutionCustomers from "../Solutions/SolutionCustomers";
 import SolutionOperations from "../Solutions/SolutionOperation";
 import ManagerNewCustomerDetailsInfo from "../ManagerPages/ManagerNewCustomerInfo";
 import ManagerNewLoanCard from "../ManagerPages/ManagerNewLoanCard";
+import EditApplicationForm from "../CsoPages/EditLoanForm";
 
 const AdminDashboardLayout = lazy(() => import("../Controller/adminController"));
 const AdminDashboard = lazy(() => import("../Admin/AdminDashboard"));
@@ -150,6 +151,7 @@ export default function Routess() {
                         { path: "/cso", element: <CsoHome /> },
                         { path: "/cso/customer-details/:id", element: <CustomerDetailsPage /> },
                         { path: "/cso/minimalApplication/:id", element: <MinimalApplicationForm /> },
+                        { path: "/cso/editApplication/:id", element: <EditApplicationForm /> },
                         { path: "/cso/calendar/:id", element: <CalendarPage /> },
                         { path: "/cso/loans/:id/payment", element: <PaymentPage /> },
                         { path: "/cso/loans-dashboard", element: <LoanCsoDashboard /> },

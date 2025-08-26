@@ -5,6 +5,8 @@ import styled from "styled-components";
 import { fetchAdminLoans, fetchWaitingLoans } from "../redux/slices/LoanSlice";
 import { useReactToPrint } from "react-to-print";
 import generatePDF from "react-to-pdf";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { fetchGuarantor } from "../redux/slices/guarantorSlice";
 
@@ -200,6 +202,51 @@ const DownloadRap = styled.div`
   flex-direction: column;
   gap: 30px;
 } 
+@media (max-width: 900px) {
+.header-info-1 h2, .header-info-1 p {
+  text-align: center;
+}
+.header-info-1 {
+  align-items: center;
+}
+.form-body-info-sub-img img {
+  width: 300px;
+  height: 400px;
+}
+}
+@media (max-width: 700px) {
+.form-body-info, .picture-divs-sub {
+  flex-direction: column;
+  gap: 20px;
+}
+.form-body-info-sub {
+  width: 100% !important;
+}
+}
+@media (max-width: 600px) {
+.loan-form-app {
+  display: none;
+}
+}
+@media (max-width: 500px) {
+.image-div  img {
+  width: 100px;
+}
+.image-div p {
+  border-radius: 10px !important;
+  text-align: center;
+}
+.form-body-info-sub-img img {
+  width: 270px;
+  height: 300px;
+}
+}
+@media (max-width: 400px) {
+.form-header, .image-div {
+  flex-direction: column;
+  align-items: center;
+}
+}
 `;
 
 const DownloadLoanForm = () => {
@@ -207,7 +254,7 @@ const DownloadLoanForm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const loans = useSelector((state) => state.loan.loans);
-  const loan = loans.find((loan) => loan._id === id);
+  const loan = loans?.find((loan) => loan._id === id);
   const loanId = id;
   const formRef = useRef();
   const [opened, setOpen] = useState(false);
@@ -218,7 +265,13 @@ const DownloadLoanForm = () => {
 
 console.log(loan);
 
-
+  // const options = {
+  //   html2canvas: {
+  //     useCORS: true,
+  //     allowTaint: true,
+  //     scale: 2,
+  //   },
+  // };
 
   useEffect(() => {
     if (!loan) {
@@ -233,7 +286,69 @@ console.log(loan);
     }, [dispatch, loanId]);
   
    
-  
+  // Wait until all images are fully loaded
+  const waitForImagesToLoad = (ref) => {
+    const imgs = Array.from(ref.current.querySelectorAll("img"));
+    return Promise.all(
+      imgs.map(
+        (img) =>
+          new Promise((resolve) => {
+            if (img.complete) resolve();
+            else {
+              img.onload = () => resolve();
+              img.onerror = () => resolve();
+            }
+          })
+      )
+    );
+  };
+
+  const handleDownload = async () => {
+    console.log("Preparing PDF...");
+
+    // Wait for all images
+    await waitForImagesToLoad(formRef);
+    console.log("Images loaded, capturing...");
+
+    // Capture with html2canvas
+    const canvas = await html2canvas(formRef.current, {
+      scale: 2, // better quality
+      useCORS: true,
+      allowTaint: false,
+      imageTimeout: 0,
+    });
+
+    console.log("Canvas captured, generating PDF...");
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    let position = 0;
+    let heightLeft = pdfHeight;
+
+    // First page
+    pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
+    heightLeft -= pdf.internal.pageSize.getHeight();
+
+    // Additional pages
+    while (heightLeft > 0) {
+      position = heightLeft - pdfHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
+      heightLeft -= pdf.internal.pageSize.getHeight();
+    }
+
+    pdf.save(
+      `Loan form for ${loan?.customerDetails?.lastName || ""} ${
+        loan?.customerDetails?.firstName || ""
+      }.pdf`
+    );
+    console.log("PDF saved!");
+  };
+
   
     const handleClick = () => {
       setOpen(!opened);
@@ -261,7 +376,7 @@ console.log(loan);
         </Link>
         <div
           style={{
-            padding: "50px",
+            padding: "0px",
           }}
           ref={formRef}
         >
@@ -274,9 +389,9 @@ console.log(loan);
               <div className="header-sub-1">
                 <div className="header-info-1">
                   <h2>JK POS SOLUTION ENTERPRISES</h2>
-                  <p>20, Deji Oworu Street, Ketu Alapere, Lagos</p>
-                  <p>+234-9015047850 (Office)</p>
-                  <p>www.</p>
+                  <p>1, Adeniyi Street, Back of Rail Filling Stations, Oke Aro, Ogun State.</p>
+                  <p>+234-7017501294 (Office)</p>
+                  <p>https://jksolutn.com/</p>
                 </div>
                 <div className="loan-form-app">
                   <h4>
@@ -297,7 +412,8 @@ console.log(loan);
               </div>
               <div className="form-body-info-sub">
                 <h5>Date Submitted:</h5>
-                <p>{loan?.createdAt}</p>
+               <p>{new Date(loan?.createdAt)?.toLocaleDateString("en-US")}</p>
+
               </div>
             </div>
             <div className="personal-Details">
@@ -312,57 +428,41 @@ console.log(loan);
                   </p>
                 </div>
                 <div className="form-body-info-sub">
+                  <h5>NIN:</h5>
+                  <p>{loan?.customerDetails.bvn}</p>
+                </div>
+                {/* <div className="form-body-info-sub">
                   <h5>Date of Birth:</h5>
                   <p>{loan?.customerDetails.dateOfBirth}</p>
-                </div>
+                </div> */}
               </div>
               <div className="form-body-info">
                 <div className="form-body-info-sub">
                   <h5>Address:</h5>
                   <p>{loan?.customerDetails.address}</p>
                 </div>
-                <div className="form-body-info-sub">
-                  <h5>City:</h5>
-                  <p>{loan?.customerDetails.city}</p>
-                </div>
-              </div>
-              <div className="form-body-info">
-                <div className="form-body-info-sub">
-                  <h5>State:</h5>
-                  <p>{loan?.customerDetails.state}</p>
-                </div>
-                <div className="form-body-info-sub">
-                  <h5>Religion:</h5>
-                  <p>{loan?.customerDetails.religion}</p>
-                </div>
-              </div>
-              <div className="form-body-info">
-                <div className="form-body-info-sub">
-                  <h5>Email:</h5>
-                  <p>{loan?.customerDetails.email}</p>
-                </div>
-                <div className="form-body-info-sub">
-                  <h5>NIN:</h5>
-                  <p>{loan?.customerDetails.bvn}</p>
-                </div>
-              </div>
-              <div className="form-body-info">
-                <div className="form-body-info-sub">
+                  <div className="form-body-info-sub">
                   <h5>Mobile Number:</h5>
                   <p>{loan?.customerDetails.phoneOne}</p>
                 </div>
-                <div className="form-body-info-sub">
-                  <h5>OtherMobile Number:</h5>
-                  <p>{loan?.customerDetails.phoneTwo}</p>
-                </div>
+               {/* <div className="form-body-info-sub">
+                  <h5>Religion:</h5>
+                  <p>{loan?.customerDetails.religion}</p>
+                </div> */}
               </div>
+              {/* <div className="form-body-info">
+                
+                
+              </div> */}
+              
+             
               <div className="form-body-info">
                 <div className="form-body-info-sub">
                   <h5>Next of Kin:</h5>
                   <p>{loan?.customerDetails.NextOfKin}</p>
                 </div>
                 <div className="form-body-info-sub">
-                  <h5>OtherMobile Number:</h5>
+                  <h5>Next of Kin Number:</h5>
                   <p>{loan?.customerDetails.NextOfKinNumber}</p>
                 </div>
               </div>
@@ -384,26 +484,27 @@ console.log(loan);
                   <h5>Business Address:</h5>
                   <p>{loan?.businessDetails.address}</p>
                 </div>
-                <div className="form-body-info-sub">
+                {/* <div className="form-body-info-sub">
                   <h5>Years in Business Address:</h5>
                   <p>{loan?.businessDetails.yearsHere}</p>
-                </div>
-              </div>
-              <div className="form-body-info">
+                </div> */}
                 <div className="form-body-info-sub">
                   <h5>Name Known As in Business Area:</h5>
                   <p>{loan?.businessDetails.nameKnown}</p>
                 </div>
+              </div>
+              {/* <div className="form-body-info">
+                
                 <div className="form-body-info-sub">
                   <h5>Seasonal Business?:</h5>
                   <p>{loan?.businessDetails.additionalInfo}</p>
                 </div>
-              </div>
+              </div> */}
               <div className="form-body-info">
-                <div className="form-body-info-sub">
+                {/* <div className="form-body-info-sub">
                   <h5>Amount Made in a Month:</h5>
                   <p>{loan?.businessDetails.estimatedValue}</p>
-                </div>
+                </div> */}
                 <div className="form-body-info-sub">
                   <h5>Worth of Business:</h5>
                   <p>{loan?.businessDetails.operationalStatus}</p>
@@ -451,9 +552,13 @@ console.log(loan);
                   <p>{loan?.guarantorDetails.name}</p>
                 </div>
                 <div className="form-body-info-sub">
+                  <h5>Relationship:</h5>
+                  <p>{loan?.guarantorDetails.relationship}</p>
+                </div>
+                {/* <div className="form-body-info-sub">
                   <h5>Email:</h5>
                   <p>{loan?.guarantorDetails.email}</p>
-                </div>
+                </div> */}
               </div>
               <div className="form-body-info">
                 <div className="form-body-info-sub">
@@ -469,10 +574,7 @@ console.log(loan);
                 </div>
               </div>
               <div className="form-body-info">
-                <div className="form-body-info-sub">
-                  <h5>Relationship:</h5>
-                  <p>{loan?.guarantorDetails.relationship}</p>
-                </div>
+                
                 <div className="form-body-info-sub">
                   <h5>Years Known:</h5>
                   <p>{loan?.guarantorDetails.yearsKnown} years</p>
@@ -505,7 +607,7 @@ console.log(loan);
                 <div className="picture-divs-sub">
                 <div className="form-body-info-sub-img">
                   <h5>Customer picture:</h5>
-     <img
+     <img  
                     src={
                       loan?.pictures?.customer?.startsWith("http")
                         ? loan?.pictures?.customer // Cloudinary URL
@@ -518,7 +620,7 @@ console.log(loan);
                   />                </div>
                 <div className="form-body-info-sub-img">
                   <h5>Business picture:</h5>
-                      <img
+                      <img  
                     src={
                       loan?.pictures?.business?.startsWith("http")
                         ? loan?.pictures?.business // Cloudinary URL
@@ -532,7 +634,7 @@ console.log(loan);
                 </div>
                 </div>
                 <div className="picture-divs-sub">
-                <div className="form-body-info-sub-img">
+                {/* <div className="form-body-info-sub-img">
                   <h5>Other pictures:</h5>
                   <div className="other-pictures-div">
                   {loan?.pictures?.others.map((image, index) => (
@@ -549,7 +651,7 @@ console.log(loan);
                   />
                   ))}
                   </div>
-                </div>
+                </div> */}
                 </div>
               </div>
               
@@ -580,185 +682,74 @@ console.log(loan);
                 </ol>
               </div>
               <div className="signature">
-                <h5>Signature:</h5>
-                <img src={loan?.pictures.signature} alt="" />
-              </div>
-            </div>
-          </div>
-        </div>
-        <button
-          onClick={() => {
-            generatePDF(formRef, {
-              filename: `Loan form for ${loan.customerDetails.lastName} ${loan.customerDetails.firstName}`,
-            });
-          }}
-        >
-          Download{" "}
-        </button>{" "}
-      </div>
-      <div>
-        <h2 className="guaran-h2">Guarantor Form</h2>
-      {guarantorResponse ? (
-        <>
-          <div
-            style={{
-              padding: "50px",
-            }}
-            ref={formRef}
-          >
-            <div className="form-header">
-              <div className="image-div">
-                <img src="/images/login_img.png" alt="" />
-                <p>LOAN & SAVINGS</p>
-              </div>
-              <div className="header-1">
-                <div className="header-sub-1">
-                  <div className="header-info-1">
-                    <h2>JK POS SOLUTION ENTERPRISES</h2>
-                    <p>20, Deji Oworu Street, Ketu Alapere, Lagos</p>
-                    <p>+234-9015047850 (Office)</p>
-                    <p>www.</p>
-                  </div>
-                  <div className="loan-form-app">
-                    <h4>
-                      Guarantor <span>Form</span>
-                    </h4>
-                  </div>
-                </div>
-                <div className="form-details">
-                  <h5>GUARANTOR FORM DETAILS</h5>
-                </div>
-              </div>
-            </div>
-            <div className="form-body">
-              <div className="personal-Details">
-                <h3>GUARANTOR DETAILS</h3>
-                <div className="form-body-info">
-                  <div className="form-body-info-sub">
-                    <h5>Name:</h5>
-                    <p>{guarantorResponse.guarantorName}</p>
-                  </div>
-                  <div className="form-body-info-sub">
-                    <h5>Residential Address:</h5>
-                    <p>{guarantorResponse.address}</p>
-                  </div>
-                </div>
-                <div className="form-body-info">
-                  <div className="form-body-info-sub">
-                    <h5>Relationship with customer:</h5>
-                    <p>{guarantorResponse.relationship}</p>
-                  </div>
-                  <div className="form-body-info-sub">
-                    <h5>Business Address</h5>
-                    <p>{guarantorResponse.businessAddress}</p>
-                  </div>
-                </div>
-                <div className="form-body-info">
-                  <div className="form-body-info-sub">
-                    <h5>Phone Number:</h5>
-                    <p>{guarantorResponse.guaraphonentorName}</p>
-                  </div>
-                  <div className="form-body-info-sub">
-                    <h5> Known client for:</h5>
-                    <p>{guarantorResponse.knownDuration} years</p>
-                  </div>
-                </div>
-                
-              </div>
-              
-              <div className="personal-Details">
-                <h3>DECLARATION</h3>
-                <p>
-                  {" "}
-                  I <span style={{fontWeight: "700"}}>{guarantorResponse.guarantorName} </span> hereby confirm that
-                  Mr/Mrs/Miss<span style={{fontWeight: "700"}}> {loan?.customerDetails.lastName}{" "}
-                  {loan?.customerDetails.firstName} </span> of{" "}
-                  <span style={{fontWeight: "700"}}> {loan?.customerDetails.address} </span> has been known to me for{" "}
-                  <span style={{fontWeight: "700"}}> {guarantorResponse.knownDuration} years </span> and I am his/ her{" "}
-                  <span style={{fontWeight: "700"}}>  {guarantorResponse.relationship} </span>.
-                </p>
-                <p>
-                  I declare that all information, including NIN, picture, and ID
-                  tendered for this purpose, are valid and authentic; any false
-                  information given may disqualify the client from loan
-                  approval. I confirm that the client house address provided
-                  above is valid and correct.
-                </p>
-                <p>
-                  I have agreed to take responsibility for the payment of the
-                  principal Loan amount plus the interest in the event of
-                  default.
-                </p>
-              </div>
-              <div className="personal-Details">
-                <h3>SIGNATURE & DATE</h3>
-                <div className="form-body-info">
-                  <div className="form-body-info-sub">
-                    <h5>Signature</h5>
-                    <img src={guarantorResponse.signature} alt="Signature" />
-                  </div>
-                  <div className="form-body-info-sub">
-                    <h5> Date:</h5>
-                    <p>
-                      {new Date(guarantorResponse.submittedAt).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-          </div>
-          <button
-            onClick={() => {
-              generatePDF(guarantorRef, {
-                filename: `Guarantor form for ${loan.customerDetails.lastName} ${loan.customerDetails.firstName}`,
-              });
-            }}
-          >
-            Download{" "}
-          </button>
-        </>
-      ) : (
-        <div className="alternative-form">
-          <p>
-          Guarantor Form not submitted yet{" "}
-            <span onClick={handleClick}>See if guarantor form was uploaded </span>
-          </p>
-          {opened ? (
-            <>
-              <div ref={picRef}>
-                <h4>Uploaded Guarantor Form Picture</h4>
-
-                <div className="guarantor-pic">
-                     <img
+                <h5>Customer Signature:</h5>
+               <img 
                     src={
-                      loan?.guarantorFormPic?.startsWith("http")
-                        ? loan?.guarantorFormPic // Cloudinary URL
-                        : loan?.guarantorFormPic
-                        ? `https://api.jksolutn.com${loan?.guarantorFormPic}` // Local image
+                      loan?.pictures?.signature?.startsWith("http")
+                        ? loan?.pictures?.signature // Cloudinary URL
+                        : loan?.pictures?.signature
+                        ? `https://api.jksolutn.com${loan?.pictures?.signature}` // Local image
                         : "fallback.jpg" // Optional fallback image
                     }
-                    alt="business"
+                    alt="customer"
                     style={{ objectFit: "contain" }}
-                  />
-                </div>
+                  />  
               </div>
-              <button
-                onClick={() => {
-                  generatePDF(picRef, {
-                    filename: `Guarantor form `,
-                  });
-                }}
-              >
-                Download{" "}
-              </button>
-            </>
-          ) : (
-            ""
-          )}
+              <div className="signature">
+                <h5>Cso Signature:</h5>
+               <img 
+                    src={
+                      loan?.csoSignature?.startsWith("http")
+                        ? loan?.csoSignature // Cloudinary URL
+                        : loan?.csoSignature
+                        ? `https://api.jksolutn.com${loan?.csoSignature}` // Local image
+                        : "fallback.jpg" // Optional fallback image
+                    }
+                    alt="customer"
+                    style={{ objectFit: "contain" }}
+                  />  
+              </div>
+              <div className="signature">
+                <h5>Guarantor Signature:</h5>
+               <img 
+                    src={
+                      loan?.guarantorDetails?.signature?.startsWith("http")
+                        ? loan?.guarantorDetails?.signature // Cloudinary URL
+                        : loan?.guarantorDetails?.signature
+                        ? `https://api.jksolutn.com${loan?.guarantorDetails?.signature}` // Local image
+                        : "fallback.jpg" // Optional fallback image
+                    }
+                    alt="customer"
+                    style={{ objectFit: "contain" }}
+                  />  
+              </div>
+            </div>
+          </div>
         </div>
-      )}
+        {/* Download Button */}
+      <button style={{
+        marginBottom: "100px"
+      }} onClick={handleDownload}>Download</button>{" "}
       </div>
+      
+          <div styled={{
+           marginTop: "70px"
+          }} className="personal-Details">
+              <h3  styled={{
+            marginTop: "70px"
+          }}>Loan Disclosure Document</h3>
+                <img  
+                    src={
+                      loan?.pictures?.disclosure?.startsWith("http")
+                        ? loan?.pictures?.disclosure // Cloudinary URL
+                        : loan?.pictures?.disclosure
+                        ? `https://api.jksolutn.com${loan?.pictures?.disclosure}` // Local image
+                        : "fallback.jpg" // Optional fallback image
+                    }
+                    alt="customer"
+                    style={{ objectFit: "cover", width: "100%", height: "500px" }}
+                  /> 
+            </div>
     </DownloadRap>
   );
 };

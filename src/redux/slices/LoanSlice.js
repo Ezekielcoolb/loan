@@ -4,8 +4,8 @@ import axios from "axios";
 
 // Async Thunks for API Calls
 
-// const API_URL = "https://api.jksolutn.com/api/loan";
-const API_URL = "http://localhost:5000/api/loan";
+const API_URL = "https://api.jksolutn.com/api/loan";
+// const API_URL = "http://localhost:5000/api/loan";
 
 export const submitLoanApplication = createAsyncThunk(
   "loans/submitApplication",
@@ -254,6 +254,39 @@ export const rejectLoan = createAsyncThunk(
       return response.json();
     } catch (err) {
       console.log(err);
+    }
+  }
+);
+
+
+// Async thunk for updating loan
+export const updateLoan = createAsyncThunk(
+  "loans/updateLoan",
+  async ({ id, updateData }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(
+        `${API_URL}/editting-for-a-user/loans/${id}`,
+        updateData
+      );
+      return response.data; // contains { message, loan }
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+
+// Async thunk for editing a loan (sets status = "edited")
+export const editLoanStatus = createAsyncThunk(
+  "loans/editLoanStatus",
+  async (loanId, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${API_URL}/editing-loan/loans/${loanId}`);
+      return response.data; // returns updated loan
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || { message: "Error editing loan" }
+      );
     }
   }
 );
@@ -724,6 +757,7 @@ csoWeeklyReport: null,
     successMessage: "",
     callCso: false,
     apploading: false,
+    editLoading: false,
     callGuarantor: false,
     callGroupLeader: false,
     callCustomer: false,
@@ -732,6 +766,8 @@ csoWeeklyReport: null,
     dailyDisbursedTotalPages: 1,
     dailyDisbursedCurrentPage: 1,
     csoHomeloans: [],
+    udateLoanmessage: null,
+    updatedLoan: null,
     csoHomepage: 1,
     csoHometotalPages: 0,
     summaryloading: "idle"
@@ -740,6 +776,14 @@ csoWeeklyReport: null,
      setDisbursedSelectedDate: (state, action) => {
       state.selectedDisburseDate = action.payload;
     },
+
+     clearUpdateLoanMessage: (state) => {
+      state.udateLoanmessage = null;
+      state.updatedLoan = null;
+    },
+  
+
+
     setSummaryPage: (state, action) => {
       state.summarypage = action.payload;
     },
@@ -929,6 +973,29 @@ csoWeeklyReport: null,
 
 
 
+          builder
+      .addCase(updateLoan.pending, (state) => {
+        state.updatingLoanLoading = true;
+        state.error = null;
+      })
+      .addCase(updateLoan.fulfilled, (state, action) => {
+        state.updatingLoanLoading = false;
+        state.udateLoanmessage = action.payload.message;
+
+        // Update loan in state
+        const updatedLoan = action.payload.loan;
+        const index = state.loans.findIndex((loan) => loan._id === updatedLoan._id);
+        if (index !== -1) {
+          state.loans[index] = updatedLoan;
+        } else {
+          state.loans.push(updatedLoan);
+        }
+      })
+      .addCase(updateLoan.rejected, (state, action) => {
+        state.updatingLoanLoading = false;
+        state.error = action.payload;
+      });
+
   builder
       .addCase(updateDisbursementPicture.pending, (state) => {
         state.disbursePictureloading = true;
@@ -945,6 +1012,28 @@ csoWeeklyReport: null,
         state.success = false;
         state.error = action.payload;
       });
+
+    builder
+      // Edit Loan Status
+      .addCase(editLoanStatus.pending, (state) => {
+        state.editLoading = true;
+        state.error = null;
+      })
+      .addCase(editLoanStatus.fulfilled, (state, action) => {
+        state.editLoading = false;
+        state.updatedLoan = action.payload;
+        const updatedLoan = action.payload;
+
+        // update the loan in the loans array
+        state.loans = state.loans.map((loan) =>
+          loan._id === updatedLoan._id ? updatedLoan : loan
+        );
+      })
+      .addCase(editLoanStatus.rejected, (state, action) => {
+        state.editLoading = false;
+        state.error = action.payload?.message || "Failed to edit loan";
+      });
+
 
 
        builder
@@ -1530,6 +1619,7 @@ export const {
   fetchFullyPaidLoansSuccess,
   fetchFullyPaidLoansFailure,
   setCsoHomePage,
+  clearUpdateLoanMessage,
   setLoan,
 } = loanSlice.actions;
 export default loanSlice.reducer;

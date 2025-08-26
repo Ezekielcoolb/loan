@@ -364,7 +364,10 @@ const CustomerDetailsInfo = () => {
           <div className="all-dropdown-div">
             <div className="payment-content">
               <div className="payment-header">
-                <h3>Payment Breakdown for {filteredLoan?.customerDetails?.lastName} {filteredLoan?.customerDetails?.firstName} (cso: {filteredLoan?.csoName})</h3>
+                <h3>Payment Breakdown for {filteredLoan?.customerDetails?.lastName} {filteredLoan?.customerDetails?.firstName} (cso: {filteredLoan?.csoName})
+
+                 ( {filteredLoan?.loanDetails?.amountPaidSoFar} paid from {filteredLoan?.loanDetails?.amountToBePaid} )
+                </h3>
                 <Icon
                   icon="mdi:close"
                   width="30"

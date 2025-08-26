@@ -227,7 +227,7 @@ const ReportPage = () => {
       totalProfit: 0,
     };
 
-    filteredEntries.forEach(({ dayData }) => {
+    filteredEntries?.forEach(({ dayData }) => {
       csos.forEach((cso) => {
         const value = dayData.csoLoans?.[cso] ?? 0;
         totals.csos[cso] = (totals.csos[cso] || 0) + value;

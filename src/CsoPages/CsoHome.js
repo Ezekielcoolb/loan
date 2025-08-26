@@ -299,6 +299,7 @@ const CsoHome = () => {
   const itemsPerPage = 20;
   const [currentPage, setCurrentPage] = useState(1);
   const [popupMessage, setPopupMessage] = useState(null);
+   const [popupStatus, setPopupStatus] = useState(null);
   const [popupColor, setPopupColor] = useState("#005e78");
   const [successGuarantorForm, setSuccessGuarantorForm] = useState(false);
   const [remittanceAvailableShow, setRemittanceAvailableShow] =
@@ -411,23 +412,37 @@ const CsoHome = () => {
     navigate(`/cso/previousLoans/${customerId}`);
     dispatch(fetchFullyPaidLoansStart());
   };
+
+
+  const handleGoToEditLoan = () => {
+    navigate(`/cso/editApplication/${customerId}`);
+  };
+
+  
   const handleCustomerClick = (loan) => {
     let message = "";
     let color = "";
+    let status = ""
     if (loan?.status === "waiting for approval") {
       message = "Waiting for approval";
       color = "#005e78"; // Color for waiting for approval
-
+      status = "waiting for approval"
       setCustomerId(loan?._id);
       setOpenGuarantorForm(true);
     } else if (loan?.status === "waiting for disbursement") {
       message = "Waiting for disbursement";
       setCustomerId(loan?._id);
       color = "green"; // Color for waiting disbursement
-    } else if (loan?.status === "rejected") {
+      status = "waiting for disbursement"
+    }  else if (loan?.status === "edited") {
+      message = "You asked to edit this application. Please ask the admin or the update and make the correctionn";
+      setCustomerId(loan?._id);
+    status = "edited"
+    }else if (loan?.status === "rejected") {
       message = `Loan was rejected: ${loan?.rejectionReason}`;
       setCustomerId(loan?._id);
       color = "red"; // Color for rejected loan
+      status = "rejected"
     } else if (
       loan?.status === "active loan" ||
       loan?.status === "fully paid"
@@ -435,7 +450,7 @@ const CsoHome = () => {
       // Redirect to the customer details page if status is "active loan"
       navigate(`/cso/customer-details/${loan?._id}`);
     }
-
+setPopupStatus(status)
     setPopupMessage(message);
     setPopupColor(color); // Store the color based on status
   };
@@ -595,6 +610,8 @@ console.log(filteredRemittanceIssue);
                               ? "orange"
                               : loan?.status === "rejected"
                               ? "red"
+                               : loan?.status === "edited"
+                              ? "orange"
                               : loan?.status === "fully paid"
                               ? "purple"
                               : "blue",
@@ -706,6 +723,10 @@ console.log(filteredRemittanceIssue);
             >
               {popupMessage}
             </p>
+
+            {popupStatus === "edited"  ||  popupStatus === "rejected" ? "" ||  popupStatus === "waiting for disbursement" : (
+
+            <>
             {openGuarantorForm ? (
               <div>
                 <div className="file-upload">
@@ -737,6 +758,8 @@ console.log(filteredRemittanceIssue);
             ) : (
               ""
             )}
+</>
+            )}
 
             <div className="previous-loans-div">
               <button
@@ -745,12 +768,22 @@ console.log(filteredRemittanceIssue);
               >
                 Close
               </button>
-              <button
+              {popupStatus === "edited" ? (
+                <button
+                onClick={handleGoToEditLoan}
+                className="previous-loans"
+              >
+                Edit Loan
+              </button>
+              ) : popupStatus === "rejected" ? "" : (
+                 <button
                 onClick={handleGoToPreviousLoans}
                 className="previous-loans"
               >
                 Previous Loans
               </button>
+              )}
+             
             </div>
           </div>
         </div>

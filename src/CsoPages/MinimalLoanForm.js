@@ -161,13 +161,15 @@ const MinimalApplicationForm = () => {
   const dispatch = useDispatch();
    const sigCanvas = useRef();
   const { id } = useParams();
-
+   const guaCanvas = useRef();
   const [ownerImage, setOwnerIamge] = useState("");
   const [loanerImage, setLoanerIamge] = useState("");
   const [otherImages, setOtherIamges] = useState("");
   const [guarantorChange, setGuarantorChange] = useState(false);
   const [personalAddress, setPersonalAddress] = useState(false);
   const [businessInfo, setBusinessInfo] = useState(false);
+  const [groupLeaderChange, setGroupLeaderChange] = useState(false)
+ 
   const [signImage, setSignImage] = useState("");
   const [loading, setLoading] = useState(false);
   const user = JSON.parse(localStorage.getItem("csoUser"));
@@ -229,6 +231,7 @@ const MinimalApplicationForm = () => {
       email: loan?.guarantorDetails?.email,
       relationship: loan?.guarantorDetails?.relationship,
       yearsKnown: loan?.guarantorDetails?.yearsKnown,
+      signature: "",
     },
     groupDetails: {
       groupName: loan?.groupDetails?.groupName,
@@ -240,6 +243,7 @@ const MinimalApplicationForm = () => {
       business: "",
       others: [], // Ensure it's initialized as an empty array
       signature: "",
+      disclosure:""
     },
   });
 
@@ -284,12 +288,14 @@ const MinimalApplicationForm = () => {
     formData.guarantorDetails.address !== "" &&
     formData.guarantorDetails.phone !== "" &&
     formData.guarantorDetails.relationship !== "" &&
+     formData.guarantorDetails.signature !== "" &&
     formData.guarantorDetails.yearsKnown !== "" &&
     formData.groupDetails.groupName !== "" &&
     formData.groupDetails.leaderName !== "" &&
     formData.groupDetails.mobileNo !== "" &&
     formData.pictures.business !== "" &&
     formData.pictures.customer !== "" &&
+    formData.pictures.disclosure !== "" &&
     formData.pictures.signature !== "";
 
   const { dropdowVisible } = useSelector((state) => state.app);
@@ -433,48 +439,41 @@ const MinimalApplicationForm = () => {
   const handleBusinessChange = () => {
     setBusinessInfo(!businessInfo);
   };
+   const handleGroupLeaderChange = () => {
+    setGroupLeaderChange(!groupLeaderChange)
+  }
 
-  const handleFileChange = async (fileList) => {
-    setUploadTarget("others");
-
-    let files = Array.from(fileList);
-
-    files = await Promise.all(
-      files.map(async (file, index) => {
-        // Fix blob to file if needed
-        if (!file.name || !file.lastModified) {
-          file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
-            type: file.type || "image/jpeg",
-            lastModified: Date.now(),
-          });
-        }
-
-        // Compress the image
-        const options = {
-          maxSizeMB: 0.5, // target size
-          maxWidthOrHeight: 800, // scale down resolution
-          useWebWorker: true,
-        };
-
-        try {
-          const compressedFile = await imageCompression(file, options);
-          return compressedFile;
-        } catch (err) {
-          console.error("Image compression failed", err);
-          return file; // fallback to original if compression fails
-        }
-      })
-    );
-
-    files = files.filter((f) => f.size > 0 && f.type.startsWith("image/"));
-
-    if (files.length === 0) {
-      alert("Captured file is invalid or empty. Please try again.");
-      return;
-    }
-
-    dispatch(uploadImages({ files, folderName: "products" }));
-  };
+ const handleFileChange = async (fileList) => {
+     const target = "disclosure"; // 👈 local value, not setState
+     let files = Array.from(fileList);
+ 
+     files = await Promise.all(
+       files.map(async (file, index) => {
+         if (!file.name || !file.lastModified) {
+           file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+             type: file.type || "image/jpeg",
+             lastModified: Date.now(),
+           });
+         }
+ 
+         const options = {
+           maxSizeMB: 0.5,
+           maxWidthOrHeight: 800,
+           useWebWorker: true,
+         };
+         try {
+           return await imageCompression(file, options);
+         } catch {
+           return file;
+         }
+       })
+     );
+ 
+     files = files.filter((f) => f.size > 0 && f.type.startsWith("image/"));
+     if (files.length === 0) return alert("Captured file is invalid or empty.");
+ 
+     dispatch(uploadImages({ files, folderName: "products", target })); // 👈 pass target
+   };
 
   useEffect(() => {
     if (!loading && urls.length > 0 && target) {
@@ -483,7 +482,7 @@ const MinimalApplicationForm = () => {
         pictures: {
           ...prev.pictures,
           [target]:
-            target === "others" ? [...prev.pictures.others, ...urls] : urls[0],
+             urls[0],
         },
       }));
       dispatch(resetUpload()); // 👈 Clear upload state after use
@@ -568,6 +567,57 @@ const clearSignature = () => {
       alert("Failed to upload signature.");
     }
   };
+
+ const clearSignatureTwo = () => {
+    guaCanvas.current.clear();
+  };
+
+  const handleSaveSignatureTwo = async () => {
+    if (guaCanvas.current.isEmpty()) {
+      alert("Please provide a signature.");
+      return;
+    }
+
+    // Convert signature to base64
+    const dataUrl = guaCanvas.current.toDataURL("image/png");
+
+    // Convert base64 to file
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const file = new File([blob], `signature_${Date.now()}.png`, {
+      type: "image/png",
+    });
+
+    // Optional: Compress the file
+    const compressedFile = await imageCompression(file, {
+      maxSizeMB: 0.5,
+      maxWidthOrHeight: 800,
+      useWebWorker: true,
+    });
+
+    // Upload the file
+    const result = await dispatch(
+      uploadImages({ files: [compressedFile], folderName: "products" })
+    );
+
+    if (result.payload?.urls?.length) {
+      const signatureUrl = result.payload.urls[0];
+
+      // Update formData
+      setFormData((prev) => ({
+        ...prev,
+        guarantorDetails: {
+          ...prev.guarantorDetails,
+          signature: signatureUrl,
+        },
+      }));
+
+      alert("Signature uploaded successfully!");
+    } else {
+      alert("Failed to upload signature.");
+    }
+  };
+  
 
   const handleVisisble = () => {
     navigate("/cso");
@@ -844,6 +894,45 @@ const clearSignature = () => {
                 ""
               )}
 
+               <Link
+                className="change-guarantor"
+                onClick={handleGroupLeaderChange}
+              >
+                Will you like to change Group Leader?
+              </Link>
+              {groupLeaderChange ? (
+                <div className="detailssss">
+                  {/* Guarantor Details */}
+                  <h3>Group Details</h3>
+                  <input
+                    type="text"
+                    name="groupDetails.groupName"
+                    value={formData.groupDetails.groupName}
+                    onChange={handleInputChange}
+                    placeholder=" Name in Full"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="groupDetails.leaderName"
+                    value={formData.groupDetails.leaderName}
+                    onChange={handleInputChange}
+                    placeholder="Group leader name"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="groupDetails.mobileNo"
+                    value={formData.groupDetails.mobileNo}
+                    onChange={handleInputChange}
+                    placeholder="Enter phone number in form of +234XXXXXXXXXX"
+                    required
+                  />
+                </div>
+              ) : (
+                ""
+              )}
+
               <div className="detailssss">
                 {/* Pictures */}
                 <h3>Upload Pictures</h3>
@@ -861,16 +950,50 @@ const clearSignature = () => {
                   onChange={(e) => handleSecondImage(e.target.files)}
                   required
                 />
-                {/* <label className="upload-label">
-                {" "}
-                Upload another business picture
+              <label className="upload-label">
+                Upload Loan Disclosure Document
               </label>
               <input
                 type="file"
                 multiple
                 onChange={(e) => handleFileChange(Array.from(e.target.files))}
-              /> */}
+              />
               </div>
+
+               <div className="detailssss">
+                            <h3>Guarantor Signature</h3>
+              
+                            <SignatureCanvas
+                              ref={guaCanvas}
+                              penColor="black"
+                              canvasProps={{
+                                width: 300,
+                                height: 200,
+                                className: "sigCanvas",
+                                style: { border: "1px solid #ccc", borderRadius: "8px" },
+                              }}
+                            />
+                            <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+                              <button onClick={clearSignatureTwo}>Clear</button>
+                              <button
+                                onClick={handleSaveSignatureTwo}
+                                disabled={!!formData.guarantorDetails.signature}
+                                style={{
+                                  filter: formData.guarantorDetails.signature ? "blur(2px)" : "none",
+                                  cursor: formData.guarantorDetails.signature
+                                    ? "not-allowed"
+                                    : "pointer",
+                                  opacity: formData.guarantorDetails.signature ? 0.6 : 1,
+                                }}
+                              >
+                                {imageUploadloading ? (
+                                  <PulseLoader color="white" size={10} />
+                                ) : (
+                                  "Save Signature"
+                                )}
+                              </button>{" "}
+                            </div>
+                            </div>
 
 
                       <div className="detailssss">
@@ -891,7 +1014,7 @@ const clearSignature = () => {
                      <button onClick={clearSignature}>Clear</button>
 <button
   onClick={handleSaveSignature}
-  disabled={!!formData.signature}
+  disabled={!!formData.pictures.signature}
   style={{
     filter: formData.pictures.signature ? "blur(2px)" : "none",
     cursor: formData.pictures.signature ? "not-allowed" : "pointer",

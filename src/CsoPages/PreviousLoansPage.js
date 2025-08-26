@@ -294,12 +294,21 @@ console.log(fullyPaidLoans);
             <div className="first-custom-div">
               <div className="customer-details-div">
                 <div>
-                  <img
-                    src={loan?.pictures?.customer}
-                    alt="Customer"
-                    width={79}
-                    height={100}
-                  />
+                       <img
+                        src={
+                          loan?.pictures?.customer?.startsWith("http")
+                            ? loan?.pictures?.customer // Cloudinary URL
+                            : loan?.pictures?.customer
+                            ? `https://api.jksolutn.com${loan?.pictures?.customer}` // Local image
+                            : "fallback.jpg" // Optional fallback image
+                        }
+                        alt="customer"
+                        style={{
+                          width: "100px",
+                          height: "100px",
+                          objectFit: "contain",
+                        }}
+                      />
                 </div>
                 <div className="customer-details">
                   <h4>
