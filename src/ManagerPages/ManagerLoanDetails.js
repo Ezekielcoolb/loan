@@ -4,7 +4,8 @@ import { useSelector, useDispatch } from "react-redux";
 
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { approveLoan, fetchCustomerDetails, fetchWaitingLoans, rejectLoan, updateCallStatus } from "../redux/slices/LoanSlice";
+import { approveLoan, clearUpdateLoanMessage, editLoanStatus, fetchCustomerDetails, fetchWaitingLoans, rejectLoan, updateCallStatus } from "../redux/slices/LoanSlice";
+import { PulseLoader } from "react-spinners";
 
 const LoanDetailRap = styled.div`
   width: 100%;
@@ -283,6 +284,15 @@ const LoanDetailRap = styled.div`
     display: flex;
     gap: 15px;
   }
+    @media (max-width: 600px) {
+.loan-details {
+  flex-direction: column;
+}
+.left-loan-detail, .right-loan-detail {
+  border: none;
+  width: 100%;
+}
+  }
 `;
 
 const Button = styled.button`
@@ -356,7 +366,7 @@ const ManagerLoanDetails = () => {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [isCalled, setIsCalled] = useState(false);
-  const { callCso, callGuarantor, callCustomer, verifyCustomer } = useSelector(
+  const { callCso, callGuarantor, editLoading, updatedLoan,  callCustomer, verifyCustomer } = useSelector(
     (state) => state.loan
   );
   const [popup, setPopup] = useState(null); // Track which popup is open
@@ -364,6 +374,7 @@ const ManagerLoanDetails = () => {
   const [rejectLoading, setRejectLoading] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
   const [isRejected, setIsRejected] = useState(false);
+     const [isEdited, setIsEdited] = useState(false);
   const { details } = useSelector((state) => state.loan);
 
   console.log(details);
@@ -389,11 +400,11 @@ const ManagerLoanDetails = () => {
 
   const handleApprovedPop = () => {
     setApprovedLoading(false);
-    navigate("/admin/newloan");
+    navigate("/manager/newloan");
   };
   const handleRejectPop = () => {
     setRejectLoading(false);
-    navigate("/admin/newloan");
+    navigate("/manager/newloan");
   };
 
   const handlePopupResponse = (response) => {
@@ -442,6 +453,22 @@ const ManagerLoanDetails = () => {
     setRejectLoading(true);
   };
 
+   const handleOpenEdit = () => {
+      setIsEdited(!isEdited);
+      setApproveOpen(false);
+      setRejectOpen(false);
+  }
+  
+    const handleEdit = () => {
+      dispatch(editLoanStatus(id));
+       
+    };
+
+     const handleCloseEditPop = () =>{
+      dispatch(clearUpdateLoanMessage());
+      navigate("/manager/newloan");
+    }
+
   const handleMoveToCustomerInfo = () => {
     navigate(`/manager/new-customer/${loan?.customerDetails?.bvn}`);
   };
@@ -454,8 +481,8 @@ const ManagerLoanDetails = () => {
   const date = new Date(loan?.createdAt);
 
   const options = {
-    day: "2-digit",
-    month: "2-digit",
+    day: "2-digit", 
+    month: "2-digit",  
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
@@ -710,7 +737,7 @@ const ManagerLoanDetails = () => {
               )}
             </div>
             <p>
-              Click <Link to={`/admin/guarantorDetails/${id}`}>here</Link> to
+              Click <Link to={`/manager/guarantorDetails/${id}`}>here</Link> to
               confirm if guarantor fill the guarantor form
             </p>
           </div>
@@ -722,6 +749,11 @@ const ManagerLoanDetails = () => {
               </button>
               <button className="reject" onClick={handleOpenReject}>
                 Reject
+              </button>
+               <button style={{
+                backgroundColor: "blue"
+              }} className="reject" onClick={handleOpenEdit}>
+                Ask to Edit
               </button>
             </div>
             {approveOpen ? (
@@ -811,6 +843,57 @@ const ManagerLoanDetails = () => {
             ) : (
               ""
             )}
+
+   {isEdited ? (
+              <div className="dropdown-container">
+                <div className="all-dropdown-div">
+                  <h5 className="">
+                    You are about to ask CSO to edit this loan. <br />
+                    Note that you are not rejecting the loan, therefore the loan can be resubmitted.{" "}
+                  </h5>
+                  <div className="btn-div">
+                    <button style={{
+                      backgroundColor: "blue"
+                    }} className="reject" onClick={handleEdit}>
+                     {editLoading ? (
+                     <PulseLoader color="white" size={10} />
+                      ) : "Ask to Edit"}
+                    </button>
+                    <button
+                      onClick={() => setIsEdited(false)}
+                      className="approve"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
+
+               {updatedLoan ? (
+              <div className="dropdown-container">
+                <div className="all-dropdown-div">
+                  <h5 className="">
+                   Action performed successfully. <br />
+                    The Cso will be notified to edit the loan.{" "}
+                  </h5>
+                  <div className="btn-div">
+                    
+                    <button
+                      onClick={handleCloseEditPop}
+                      className="approve"
+                    >
+                      close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
+
             {approveLoading ? (
               <div className="dropdown-container ">
                 <div className="approved-div">

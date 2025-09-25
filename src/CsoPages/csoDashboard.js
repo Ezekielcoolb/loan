@@ -21,7 +21,6 @@ import CsoOutstandingDoughnutChart from "./csoDefaultingTargetChart";
 
 const DashboardRap = styled.div`
   background: #d9d9d9;
-  padding: 20px;
   padding-bottom: 40px;
   .overrall-perform-outerbar {
     background: #ffffff;

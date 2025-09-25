@@ -309,7 +309,7 @@ table {
   align-items: center;
   background: rgba(0, 0, 0, 0.3); /* Semi-transparent dark background */
   backdrop-filter: blur(1px); /* Adds a blur effect */
-  z-index: 9999;
+  z-index: 10000;
   top: 0;
   left: 0;
 }

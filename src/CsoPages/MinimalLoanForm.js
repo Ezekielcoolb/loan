@@ -262,22 +262,19 @@ const MinimalApplicationForm = () => {
   console.log(formData);
 
   const isValid =
-  formData.csoSignature !== "" &&
-   formData.csoSignature !== undefined &&
+    formData.csoSignature !== "" &&
+    formData.csoSignature !== undefined &&
     formData.customerDetails.firstName !== "" &&
     formData.customerDetails.lastName !== "" &&
     formData.customerDetails.phoneOne !== "" &&
     formData.customerDetails.address !== "" &&
     formData.customerDetails.bvn !== "" &&
-    formData.customerDetails.dateOfBirth !== "" &&
     formData.customerDetails.NextOfKin !== "" &&
     formData.customerDetails.NextOfKinNumber !== "" &&
     formData.businessDetails.natureOfBusiness !== "" &&
-    formData.businessDetails.estimatedValue !== "" &&
     formData.businessDetails.operationalStatus !== "" &&
     formData.businessDetails.businessName !== "" &&
     formData.businessDetails.address !== "" &&
-    formData.businessDetails.yearsHere !== "" &&
     formData.businessDetails.nameKnown !== "" &&
     formData.bankDetails.accountName !== "" &&
     formData.bankDetails.accountNo !== "" &&
@@ -286,16 +283,16 @@ const MinimalApplicationForm = () => {
     formData.loanDetails.loanType !== "" &&
     formData.guarantorDetails.name !== "" &&
     formData.guarantorDetails.address !== "" &&
+    formData.guarantorDetails.signature !== "" &&
     formData.guarantorDetails.phone !== "" &&
     formData.guarantorDetails.relationship !== "" &&
-     formData.guarantorDetails.signature !== "" &&
     formData.guarantorDetails.yearsKnown !== "" &&
     formData.groupDetails.groupName !== "" &&
     formData.groupDetails.leaderName !== "" &&
     formData.groupDetails.mobileNo !== "" &&
     formData.pictures.business !== "" &&
     formData.pictures.customer !== "" &&
-    formData.pictures.disclosure !== "" &&
+      formData.pictures.disclosure !== "" &&
     formData.pictures.signature !== "";
 
   const { dropdowVisible } = useSelector((state) => state.app);

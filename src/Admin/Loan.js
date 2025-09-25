@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import CsoLoan from "./LoanPages/CsoLoan";
 import CustomerLoan from "./LoanPages/CustomerLoan";
+import OverdueLoansTable from "./LoanPages/OverDueLoans";
 
 const LoanRap = styled.div`
  .client-1 {
@@ -62,11 +63,18 @@ const Loan = () => {
             >
                 Customer Loan Overview
             </Link>
+              <Link
+                className={`client-link ${activeLink === "overdue" ? "active" : ""}`}
+                onClick={() => handleLinkClick("overdue")}
+            >
+                Overdue Loans Overview
+            </Link>
             </div>
         </div>
         <div >
             {activeLink === "csoloan" && <CsoLoan />}
             {activeLink=== "customerLoan" && <CustomerLoan />}
+                        {activeLink=== "overdue" && <OverdueLoansTable />}
         </div>
         </div>
     </LoanRap>

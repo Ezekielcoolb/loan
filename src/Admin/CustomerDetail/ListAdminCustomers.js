@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteLoan, fetchAdminLoans, fetchAdminLoansSearch } from '../../redux/slices/LoanSlice';
+import { deleteLoan, fetchAdminLoans, fetchAdminLoansNewOne, fetchAdminLoansSearch } from '../../redux/slices/LoanSlice';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { Icon } from '@iconify/react/dist/iconify.js';
@@ -46,11 +46,12 @@ const TableRap = styled.div`
 
 const AdminCustomerTable = () => {
   const dispatch = useDispatch();
-  const { loans, loading, error } = useSelector((state) => state.loan);
+  const { loans, pagination, loading, error } = useSelector((state) => state.loan);
   const itemsPerPage = 15;
  const [search, setSearch] = useState('');
   
 
+  console.log(loans);
   
 
 
@@ -65,9 +66,13 @@ const AdminCustomerTable = () => {
   );
 
 
-  useEffect(() => {
-    dispatch(fetchAdminLoans());
-  }, [dispatch]);
+ useEffect(() => {
+     dispatch(fetchAdminLoansNewOne({ page: 1, limit: 20 }));
+   }, [dispatch]);
+ 
+   const handlePageChange = (newPage) => {
+     dispatch(fetchAdminLoansNewOne({ page: newPage, limit: pagination.limit }));
+   };
 
 
   useEffect(() => {
@@ -79,12 +84,12 @@ const AdminCustomerTable = () => {
   }, [search, dispatch]);
 
   // Handle pagination click
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
+  // const handlePageChange = (newPage) => {
+  //   if (newPage >= 1 && newPage <= totalPages) {
+  //     setCurrentPage(newPage);
+  //   }
     
-  }
+  // }
   
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this loan?')) {
@@ -136,7 +141,7 @@ const AdminCustomerTable = () => {
           </tr>
         </thead>
         <tbody>
-          {currentLoans?.slice().reverse().map((loan) => (
+          {loans?.slice().reverse().map((loan) => (
             <tr key={loan._id} >
               <td>
                 {loan.customerDetails.firstName} {loan.customerDetails.lastName}
@@ -154,18 +159,20 @@ const AdminCustomerTable = () => {
       </div>
       </div>
       <div className="page-div">
-        <button  className="page-btn"
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
+         <button
+          disabled={pagination.page === 1}
+          onClick={() => handlePageChange(pagination.page - 1)}
+          className="page-btn"
         >
           Prev
         </button>
         <span>
-          Page {currentPage} of {totalPages}
+          Page {pagination.page} of {pagination.totalPages}
         </span>
-        <button className="page-btn"
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
+        <button
+          disabled={pagination.page === pagination.totalPages}
+          onClick={() => handlePageChange(pagination.page + 1)}
+          className=""
         >
           Next
         </button>

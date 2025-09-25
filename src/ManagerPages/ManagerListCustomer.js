@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { fetchAdminLoans } from '../redux/slices/LoanSlice';
+import { fetchAdminLoans, fetchAdminLoansNewOne, fetchAdminLoansSearch } from '../redux/slices/LoanSlice';
+import { Icon } from '@iconify/react/dist/iconify.js';
 
 const TableRap = styled.div`
  .page-div {
@@ -22,12 +23,23 @@ const TableRap = styled.div`
 
 const ManagerListCustomer = () => {
   const dispatch = useDispatch();
-  const { loans, loading, error } = useSelector((state) => state.loan);
+  const { loans, loading, pagination, error } = useSelector((state) => state.loan);
   const itemsPerPage = 15;
+   const [search, setSearch] = useState('');
+  
 
-  useEffect(() => {
-    dispatch(fetchAdminLoans());
+  // useEffect(() => {
+  //   dispatch(fetchAdminLoans());
+  // }, [dispatch]);
+
+
+   useEffect(() => {
+    dispatch(fetchAdminLoansNewOne({ page: 1, limit: 20 }));
   }, [dispatch]);
+
+  const handlePageChange = (newPage) => {
+    dispatch(fetchAdminLoansNewOne({ page: newPage, limit: pagination.limit }));
+  };
   // Calculate total pages
   const totalPages = Math.ceil(loans?.length / itemsPerPage);
   const [currentPage, setCurrentPage] = useState(1);
@@ -38,15 +50,45 @@ const ManagerListCustomer = () => {
     currentPage * itemsPerPage
   );
 
+    useEffect(() => {
+      const debounce = setTimeout(() => {
+        dispatch(fetchAdminLoansSearch(search));
+      }, 400); // debounce delay
+  
+      return () => clearTimeout(debounce);
+    }, [search, dispatch]);
+  
+
   // Handle pagination click
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
-  };
+  // const handlePageChange = (newPage) => {
+  //   if (newPage >= 1 && newPage <= totalPages) {
+  //     setCurrentPage(newPage);
+  //   }
+  // };
   return (
     <div>
-      <h2 >Customers</h2>
+      <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              
+            }}>
+            <h2 >Customers</h2>
+      
+             <div className='search-div' style={{ position: "relative" }}>
+                            <input  value={search}
+                             onChange={e => setSearch(e.target.value)}
+                             type="text" placeholder="search" />
+                            <Icon
+                              className="search-position"
+                              icon="material-symbols-light:search"
+                              width="18"
+                              height="18"
+                              style={{ color: "#9499AC" }}
+                            />
+                          </div>
+             
+            </div>
       {loading && <p>Loading...</p>}
       {error && <p >Error: {error}</p>}
       <div className="table-container">
@@ -65,7 +107,7 @@ const ManagerListCustomer = () => {
           </tr>
         </thead>
         <tbody>
-          {currentLoans?.reverse().map((loan) => (
+          {currentLoans?.slice().reverse().map((loan) => (
             <tr key={loan._id} >
               <td>
                 {loan.customerDetails.firstName} {loan.customerDetails.lastName}
@@ -83,7 +125,25 @@ const ManagerListCustomer = () => {
       </table>
       </div>
       </div>
-      <div className="page-div">
+
+       <div className="page-div">
+        <button className="page-btn"
+          onClick={() => handlePageChange(pagination.page - 1)}
+          disabled={pagination.page <= 1}
+        >
+          Prev
+        </button>
+        <span style={{ margin: "0 10px" }}>
+          Page {pagination.page} of {pagination.totalPages}
+        </span>
+        <button className="page-btn"
+          onClick={() => handlePageChange(pagination.page + 1)}
+          disabled={pagination.page >= pagination.totalPages}
+        >
+          Next
+        </button>
+      </div>
+      {/* <div className="page-div">
         <button  className="page-btn"
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
@@ -99,7 +159,7 @@ const ManagerListCustomer = () => {
         >
           Next
         </button>
-      </div>
+      </div> */}
     </div>
     </div>
   );

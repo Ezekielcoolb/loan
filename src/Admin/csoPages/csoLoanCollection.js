@@ -801,7 +801,7 @@ const loadData = () => {
       {
         label: "Monthly Loan count",
         data: monthlyLoanCounts,
-        backgroundColor: monthlyLoanCounts.map((count, index) =>
+        backgroundColor: monthlyLoanCounts?.map((count, index) =>
           index === 3 ? "#10B981" : "rgba(16, 185, 129, 0.3)"
         ), // Highlight April
         borderRadius: 10, // Rounded corners for bars

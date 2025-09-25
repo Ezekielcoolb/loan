@@ -268,7 +268,7 @@ const CustomersDetails = () => {
   const [query, setQuery] = useState("");
 
   const dispatch = useDispatch();
-  const { rejectedCustomers, pendingLoans, summaries, summarypage, summarytotalPages, summarytotalRecords, loans, summaryloading, error } =
+  const { rejectedCustomers, pendingLoans, summaries, summarypage, pagination, summarytotalPages, summarytotalRecords, loans, summaryloading, error } =
     useSelector((state) => state.loan);
 
 console.log(summaries);
@@ -288,7 +288,7 @@ console.log(summaries);
 
 
   useEffect(() => {
-    dispatch(fetchCustomerActiveLoans());
+    dispatch(fetchCustomerActiveLoans({ page: 1, limit: 20 }));
   }, [dispatch]);
 
   useEffect(() => {

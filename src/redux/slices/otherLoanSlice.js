@@ -90,6 +90,49 @@ export const fetchDebugLoanBalance = createAsyncThunk(
   }
 );
 
+export const fetchCsoOverdueLoans = createAsyncThunk(
+  'csoLoans/fetchOverdue',
+  async ({ csoId, min = 23 }, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(
+        `${API_URL}/cso-loans-overdue/${csoId}/?min=${min}`
+      );
+
+      return res.data.data; // as returned by backend above
+    } catch (err) {
+      console.error(err);
+      return rejectWithValue(err.response?.data || { message: 'Failed to fetch' });
+    }
+  }
+);
+export const fetchOverdueLoans = createAsyncThunk(
+  "overdueLoans/fetchOverdueLoans",
+  async ({ page = 1, limit = 20, search = "" }, { rejectWithValue }) => {
+    try {
+      const { data } = await axios.get(`${API_URL}/loans-overdue-for-admin`, {
+        params: { page, limit, search }
+      });
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const payOverDuePenalty = createAsyncThunk(
+  "penalty/payOverDuePenalty",
+  async ({ loanId, amount }, { rejectWithValue }) => {
+    try {
+      const res = await axios.post(`${API_URL}/pay-customer-penalty/${loanId}`, { amount });
+      return res.data.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Error paying penalty");
+    }
+  }
+);
+
+
+
 const OtherLoanslice = createSlice({
   name: 'dailyPayments',
   initialState: {
@@ -98,12 +141,17 @@ const OtherLoanslice = createSlice({
     defaultingTargetChart: 0,
     percentageChart: 0,
     dashPayLoan: null,
+    payOverloading: false,
+    items: null,
     debugdashPayLoan: null,
     outstandingLoans: [],
     totalOutstandingLoans: 0,
+     pagination: { total: 0, page: 1, limit: 20 },
     status: 'idle',
     error: null,
     currentMonth,
+    paidOverdueLoan: null,
+    overDueItems: null,
     currentYear,
     currentWeek,
   },
@@ -111,6 +159,12 @@ const OtherLoanslice = createSlice({
     nextWeek(state) {
       state.currentWeek += 1;
     },
+
+     clearOverDuePay: (state) => {
+          state.paidOverdueLoan = null;
+      
+        },
+      
     prevWeek(state) {
       if (state.currentWeek > 0) state.currentWeek -= 1;
     },
@@ -206,6 +260,52 @@ builder
         state.loading = false;
         state.error = action.error.message;
       });
+
+       builder
+      .addCase(fetchCsoOverdueLoans.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCsoOverdueLoans.fulfilled, (state, action) => {
+        state.items = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchCsoOverdueLoans.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || 'Failed to load';
+      });
+
+        builder
+      .addCase(fetchOverdueLoans.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOverdueLoans.fulfilled, (state, action) => {
+        state.loading = false;
+        state.overDueItems = action.payload.data;
+        state.pagination = action.payload.pagination;
+      })
+      .addCase(fetchOverdueLoans.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch overdue loans";
+      });
+
+
+       builder
+      .addCase(payOverDuePenalty.pending, (state) => {
+        state.payOverloading = true;
+       
+        state.error = null;
+      })
+      .addCase(payOverDuePenalty.fulfilled, (state, action) => {
+        state.payOverloading = false;
+       
+        state.paidOverdueLoan = action.payload;
+      })
+      .addCase(payOverDuePenalty.rejected, (state, action) => {
+        state.payOverloading = false;
+        state.error = action.payload;
+      });
   },
 });
 
@@ -214,6 +314,7 @@ export const {
   prevWeek,
   nextMonth,
   prevMonth,
+  clearOverDuePay,
 } = OtherLoanslice.actions;
 
 export default OtherLoanslice.reducer;

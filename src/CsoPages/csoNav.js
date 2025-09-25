@@ -31,8 +31,9 @@ const CsoNavRap = styled.div`
     justify-content: space-between;
     width: 100%;
     padding: 20px 30px;
-    padding-top: 50px;
+   
     position: fixed;
+    height: 70px;
     top: 0px;
     z-index: 9999;
   }

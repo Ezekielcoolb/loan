@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { fetchLoanById } from "../redux/slices/LoanSlice";
+import { fetchAllLoansByCsoId, fetchLoanById } from "../redux/slices/LoanSlice";
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
 
@@ -108,13 +108,22 @@ const CalendarPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const loan = useSelector((state) => state?.loan?.selectedLoan);
+    const user = JSON.parse(localStorage.getItem("csoUser"));
+  
+    const loans = useSelector((state) => state.loan.loans);
+   const csoId = user?.workId;
+ const loan = loans?.find(loan => loan._id === id);
   const [popupInfo, setPopupInfo] = useState(null);
 console.log(loan);
 
   useEffect(() => {
     dispatch(fetchLoanById(id));
   }, [dispatch, id]);
+
+
+    useEffect(() => {
+      dispatch(fetchAllLoansByCsoId({ csoId }));
+    }, [dispatch]);
 
   if (!loan) return <p>Loading...</p>;
 

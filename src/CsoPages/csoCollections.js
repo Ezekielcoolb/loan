@@ -15,6 +15,7 @@ import { fetchCsoByWorkId, setRemittanceUploadReset, submitDailyRemittanceReport
 import { MoonLoader, PulseLoader } from "react-spinners";
 import { Link, useNavigate } from "react-router-dom";
 import { uploadImages } from "../redux/slices/uploadSlice";
+import TopLoader from "../Preload/TopLoader";
 
 const CollectionRap = styled.div`
   min-height: 100vh;
@@ -239,7 +240,7 @@ const CollectionRap = styled.div`
 const ActiveLoansTable = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { customers, loanAppForm, loading, error } = useSelector(
+  const { customers, loanAppForm, loading, error, collectionloading } = useSelector(
     (state) => state.loan
   );
 
@@ -534,7 +535,9 @@ console.log(filteredRemittanceIssue);
                       <tr key={index}>
                         <td>{index + 1}</td>{" "}
                         {/* Serial number, starting from 1 */}
-                        <td>{customer.customerName}</td>
+                        <td style={{
+                          textAlign: "left"
+                        }}>{customer.customerName}</td>
                         <td>{customer.amountDue}</td>
                         <td>{customer.amountPaidOnSelectedDate}</td>
                         {/*   <td>

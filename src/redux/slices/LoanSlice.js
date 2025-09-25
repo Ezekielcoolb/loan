@@ -77,6 +77,21 @@ export const fetchAdminLoans = createAsyncThunk(
   }
 );
 
+
+export const fetchAdminLoansNewOne = createAsyncThunk(
+  "adminLoans/fetchAdminLoansNewOne",
+  async ({ page = 1, limit = 20 }, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(
+        `${API_URL}/all-loans-for-admin-newone?page=${page}&limit=${limit}`
+      );
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || { message: "Failed to fetch loans" });
+    }
+  }
+);
+
 export const fetchAdminLoansSearch = createAsyncThunk(
   'loan/fetchAdminLoansSearch',
   async (search = '', { rejectWithValue }) => {
@@ -292,16 +307,28 @@ export const editLoanStatus = createAsyncThunk(
 );
 
 // Fetch active loans from backend
+// export const fetchCustomerActiveLoans = createAsyncThunk(
+//   "loans/fetchCustomersActiveLoans",
+//   async () => {
+//     try {
+//       const response = await axios.get(
+//         `${API_URL}/allcustomers/loans/active-loans`
+//       );
+//       return response.data;
+//     } catch (err) {
+//       console.log(err);
+//     }
+//   }
+// );
+
 export const fetchCustomerActiveLoans = createAsyncThunk(
-  "loans/fetchCustomersActiveLoans",
-  async () => {
+  "loans/fetchCustomerActiveLoans",
+  async ({ page = 1, limit = 20 }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        `${API_URL}/allcustomers/loans/active-loans`
-      );
-      return response.data;
+      const res = await axios.get(`${API_URL}/allcustomers/loans/active-loans?page=${page}&limit=${limit}`);
+      return res.data;
     } catch (err) {
-      console.log(err);
+      return rejectWithValue(err.response?.data?.error || err.message);
     }
   }
 );
@@ -682,6 +709,21 @@ export const updateDisbursementPicture = createAsyncThunk(
 
 
 
+export const fetchDashboardLoanCso = createAsyncThunk(
+  "loan/fetchDashboardLoanCso",
+  async (csoId, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(`${API_URL}/loan-dashboard-cso-loans/${csoId}`);
+      return res.data;
+      console.log(res.data);
+      
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Failed to fetch loans");
+    }
+  });
+
+
+
 // Slice
 const loanSlice = createSlice({
   name: "loans",
@@ -768,8 +810,12 @@ csoWeeklyReport: null,
     csoHomeloans: [],
     udateLoanmessage: null,
     updatedLoan: null,
+    allDashBoard: null,
+    dashingloading: false,
+    collectionloading: false,
     csoHomepage: 1,
     csoHometotalPages: 0,
+    pagination: { page: 1, totalPages: 1, limit: 20, total: 0 },
     summaryloading: "idle"
   },
   reducers: {
@@ -1013,6 +1059,26 @@ csoWeeklyReport: null,
         state.error = action.payload;
       });
 
+
+
+      
+  builder
+   
+     .addCase(fetchDashboardLoanCso.pending, (state) => {
+        state.dashingloading = true;
+        state.error = null;
+      })
+      .addCase(fetchDashboardLoanCso.fulfilled, (state, action) => {
+        state.dashingloading = false;
+        state.error = null;
+      
+        state.allDashBoard = action.payload;
+      })
+      .addCase(fetchDashboardLoanCso.rejected, (state, action) => {
+        state.dashingloading = false;
+        state.error = action.payload;
+      });
+
     builder
       // Edit Loan Status
       .addCase(editLoanStatus.pending, (state) => {
@@ -1197,6 +1263,22 @@ csoWeeklyReport: null,
         state.error = action.error.message;
       });
 
+
+        builder
+      .addCase(fetchAdminLoansNewOne.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAdminLoansNewOne.fulfilled, (state, action) => {
+        state.loading = false;
+        state.loans = action.payload.data;
+        state.pagination = action.payload.pagination;
+      })
+      .addCase(fetchAdminLoansNewOne.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Something went wrong";
+      });
+
         builder
       .addCase(fetchAdminLoansSearch.pending, state => {
         state.loading = true;
@@ -1304,15 +1386,15 @@ csoWeeklyReport: null,
 
     builder
       .addCase(fetchCsoActiveLoans.pending, (state) => {
-        state.loading = true;
+        state.collectionloading = true;
         state.error = null;
       })
       .addCase(fetchCsoActiveLoans.fulfilled, (state, action) => {
-        state.loading = false;
+        state.collectionloading = false;
         state.customers = action.payload;
       })
       .addCase(fetchCsoActiveLoans.rejected, (state, action) => {
-        state.loading = false;
+        state.collectionloading = false;
         state.error = action.payload;
       });
 
@@ -1547,7 +1629,8 @@ csoWeeklyReport: null,
       })
       .addCase(fetchCustomerActiveLoans.fulfilled, (state, action) => {
         state.loading = false;
-        state.loans = action.payload;
+        state.loans = action.payload?.data;
+         state.pagination = action.payload.pagination;
       })
       .addCase(fetchCustomerActiveLoans.rejected, (state, action) => {
         state.loading = false;

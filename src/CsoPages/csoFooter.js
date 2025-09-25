@@ -10,7 +10,7 @@ const CsoFooterRap = styled.div`
   right: 0px;
   width: 100%;
   background: #daf7ff;
-  height: 80px;
+  height: 70px;
   display: flex;
   align-items: center;
   justify-content: space-between;

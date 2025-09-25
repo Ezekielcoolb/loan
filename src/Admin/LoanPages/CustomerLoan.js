@@ -21,6 +21,18 @@ const CustLoanRap = styled.div`
  margin-left: 20px;
  margin-bottom: 20px;
 }
+.btns {
+  display: flex;
+  justify-content: space-between;
+}
+.btns button {
+    color: #007bff;
+    border-radius: 6px;
+    border: 1px solid #007bff;
+    background: transparent;
+    width: 120px;
+    height: 40px;
+}
 .cust-loan-1  {
   padding-top: 20px;
   margin: 20px;
@@ -89,19 +101,19 @@ const CustLoanRap = styled.div`
 
 const CustomerLoan = () => {
   const dispatch = useDispatch();
-  const { loans, loading, error, currentWeekStart } = useSelector(
+  const { loans, pagination, loading, error, currentWeekStart } = useSelector(
     (state) => state.loan
   );
   const { list: csos } = useSelector((state) => state.cso);
 
-  console.log(csos);
+  console.log(loans);
   
 
 const [csoName, setCsoName] = useState('');
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    dispatch(fetchCustomerActiveLoans());
+    dispatch(fetchCustomerActiveLoans({ page: 1, limit: 20 }));
   }, [dispatch]);
 
    useEffect(() => {
@@ -137,6 +149,10 @@ const [csoName, setCsoName] = useState('');
     const format = (date) =>
       date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     return `${format(start)} - ${format(end)}`;
+  };
+
+   const handlePageChange = (newPage) => {
+    dispatch(fetchCustomerActiveLoans({ page: newPage, limit: pagination.limit }));
   };
 
   return (
@@ -244,7 +260,6 @@ const [csoName, setCsoName] = useState('');
                         {loan.loanDetails.amountToBePaid -
                           loan.loanDetails.amountPaidSoFar}
                       </td>
-                      {/* Payment for each day of the week */}
                       {getWeekDates().map((date, index) => {
                         const payment = loan.repaymentSchedule?.find(
                           (p) =>
@@ -261,6 +276,25 @@ const [csoName, setCsoName] = useState('');
                   ))}
                 </tbody>
               </table>
+               <div className="btns">
+        <button
+          disabled={pagination.page === 1}
+          onClick={() => handlePageChange(pagination.page - 1)}
+          className=""
+        >
+          Prev
+        </button>
+        <span>
+          Page {pagination.page} of {pagination.totalPages}
+        </span>
+        <button
+          disabled={pagination.page === pagination.totalPages}
+          onClick={() => handlePageChange(pagination.page + 1)}
+          className=""
+        >
+          Next
+        </button>
+      </div>
             </div>
           </div>
         </div>

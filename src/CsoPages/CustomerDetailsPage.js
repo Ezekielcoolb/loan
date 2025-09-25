@@ -288,7 +288,7 @@ const CustomerDetailsPage = () => {
   );
 
     const { remittancestatus, hoursLeft, minutesLeft } = useSelector((state) => state.cso);
-  const loan = loans.find((loan) => loan._id === id);
+ const loan = loans?.find(loan => loan._id === id);
   const navigate = useNavigate();
   console.log(loan);
   console.log(remittancestatus, hoursLeft, minutesLeft);
@@ -314,7 +314,9 @@ setDisbursementDrop(true)
     dispatch(fetchAllLoansByCsoId({ csoId }));
   }, [dispatch]);
 
-
+useEffect(() => {
+    dispatch(fetchLoanById(id));
+  }, [dispatch, id]);
 
    useEffect(() => {
     if (csoId) {
@@ -359,7 +361,7 @@ console.log(loans);
   
   const formattedDate = adjustedDate.toISOString().split("T")[0]; // Format as YYYY-MM-DD
   
-  const todayRepayment = loan?.repaymentSchedule.find(
+  const todayRepayment = loan?.repaymentSchedule?.find(
     (schedule) => schedule.date.split("T")[0] === formattedDate
   );
   

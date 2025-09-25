@@ -10,9 +10,9 @@ const ProtectedRoute = () => {
 
  return (
     token ?
-    <div style={{background: "#D9D9D9 " , height: "auto"  }}> 
+    <div style={{background: "#fbf6f6ff " , height: "auto"  }}> 
       <CsoNav />
-      <div style={{marginBottom: "70px", height: "fit-content", paddingTop: "110px" }}>
+      <div style={{marginBottom: "70px", height: "fit-content", paddingTop: "80px" }}>
 
         <Outlet /> 
       </div>

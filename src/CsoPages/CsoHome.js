@@ -29,7 +29,6 @@ import {
 
 const HomeCsoRap = styled.div`
   color: #005e78;
-  background: #d9d9d9;
   min-height: 100vh;
   .success-visible {
     background: #ffffff;
@@ -100,10 +99,28 @@ const HomeCsoRap = styled.div`
     list-style-type: none; /* Removes bullets from li elements */
   }
   .images-mapped {
-    display: inline-block; /* Ensures each item is treated as an inline block for spacing */
-    text-align: center;
-    position: relative;
-  }
+  display: flex; /* Ensures each item is treated as an inline block for spacing */
+  text-align: center;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  background: #ffffff;
+  width: fit-content;
+  border-radius: 12px;
+  padding: 10px;
+  height: 170px;
+  width: 120px;
+
+  /* ✅ shadow added */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+/* Optional: lift effect on hover */
+.images-mapped:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+}
+
   .circle-div {
     width: 12px;
     border-radius: 50%;
@@ -113,7 +130,7 @@ const HomeCsoRap = styled.div`
     top: 0px;
   }
   .images-mapped img {
-    width: 95px;
+    width: 100%;
     height: 117px;
   }
   .custom-name {
@@ -435,7 +452,7 @@ const CsoHome = () => {
       color = "green"; // Color for waiting disbursement
       status = "waiting for disbursement"
     }  else if (loan?.status === "edited") {
-      message = "You asked to edit this application. Please ask the admin or the update and make the correctionn";
+      message = "You asked to edit this application. Please ask the admin/manager for the update and make the correction";
       setCustomerId(loan?._id);
     status = "edited"
     }else if (loan?.status === "rejected") {
@@ -579,7 +596,7 @@ console.log(filteredRemittanceIssue);
                       key={loan._id}
                       onClick={() => handleCustomerClick(loan)}
                     >
-                      <img
+                      <img loading="lazy"
                         src={
                           loan?.pictures?.customer?.startsWith("http")
                             ? loan?.pictures?.customer // Cloudinary URL
@@ -591,7 +608,6 @@ console.log(filteredRemittanceIssue);
                         style={{
                           width: "100px",
                           height: "100px",
-                          objectFit: "contain",
                         }}
                       />
                       <h4 className="custom-name">

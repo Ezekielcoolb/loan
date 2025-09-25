@@ -248,6 +248,7 @@ const EditApplicationForm = () => {
       disclosure: loan?.pictures?.disclosure ,
     },
   });
+console.log(loan);
 
   const { outstandingLoans, totalOutstandingLoans } = useSelector(
     (state) => state.otherLoan
@@ -262,7 +263,7 @@ const EditApplicationForm = () => {
 
   console.log(formData);
 
-  const isValid =
+    const isValid =
     formData.csoSignature !== "" &&
     formData.csoSignature !== undefined &&
     formData.customerDetails.firstName !== "" &&
@@ -270,15 +271,12 @@ const EditApplicationForm = () => {
     formData.customerDetails.phoneOne !== "" &&
     formData.customerDetails.address !== "" &&
     formData.customerDetails.bvn !== "" &&
-    formData.customerDetails.dateOfBirth !== "" &&
     formData.customerDetails.NextOfKin !== "" &&
     formData.customerDetails.NextOfKinNumber !== "" &&
     formData.businessDetails.natureOfBusiness !== "" &&
-    formData.businessDetails.estimatedValue !== "" &&
     formData.businessDetails.operationalStatus !== "" &&
     formData.businessDetails.businessName !== "" &&
     formData.businessDetails.address !== "" &&
-    formData.businessDetails.yearsHere !== "" &&
     formData.businessDetails.nameKnown !== "" &&
     formData.bankDetails.accountName !== "" &&
     formData.bankDetails.accountNo !== "" &&
@@ -287,16 +285,16 @@ const EditApplicationForm = () => {
     formData.loanDetails.loanType !== "" &&
     formData.guarantorDetails.name !== "" &&
     formData.guarantorDetails.address !== "" &&
+    formData.guarantorDetails.signature !== "" &&
     formData.guarantorDetails.phone !== "" &&
     formData.guarantorDetails.relationship !== "" &&
-    formData.guarantorDetails.signature !== "" &&
     formData.guarantorDetails.yearsKnown !== "" &&
     formData.groupDetails.groupName !== "" &&
     formData.groupDetails.leaderName !== "" &&
     formData.groupDetails.mobileNo !== "" &&
     formData.pictures.business !== "" &&
     formData.pictures.customer !== "" &&
-    formData.pictures.disclosure !== "" &&
+      formData.pictures.disclosure !== "" &&
     formData.pictures.signature !== "";
 
   const { dropdowVisible } = useSelector((state) => state.app);
@@ -310,6 +308,31 @@ const EditApplicationForm = () => {
   useEffect(() => {
     if (csoId) dispatch(fetchOutstandingLoans(csoId));
   }, [csoId, dispatch]);
+
+ useEffect(() => {
+  if (loan && user) {
+    setFormData({
+      csoId: loan?.csoId,
+      branch: loan?.branch,
+      csoSignature: loan?.csoSignature,
+      csoName: loan?.csoName,
+      customerDetails: { ...loan?.customerDetails },
+      businessDetails: { ...loan?.businessDetails },
+      bankDetails: { ...loan?.bankDetails },
+      loanDetails: { ...loan?.loanDetails },
+      guarantorDetails: { ...loan?.guarantorDetails },
+      groupDetails: { ...loan?.groupDetails },
+      pictures: {
+        customer: loan?.pictures?.customer,
+        business: loan?.pictures?.business,
+        others: loan?.pictures?.others || [],
+        signature: loan?.pictures?.signature,
+        disclosure: loan?.pictures?.disclosure,
+      },
+    });
+  }
+  // ⛔️ don't add `formData` in deps, otherwise it resets every change
+}, [loan?._id, user?._id]); 
 
   useEffect(() => {
     if (workId) dispatch(fetchCsoByWorkId(workId));
@@ -653,15 +676,14 @@ const EditApplicationForm = () => {
             <div className="upper-mininal">
               <h1> EDIT APPLICATION FORM</h1>
 
-              <div className="cancel-btn">
+              <Link to="/cso"  className="cancel-btn">
                 <Icon
-                  onClick={handleVisisbleNow}
                   icon="stash:times-circle"
                   width="24"
                   height="24"
                   style={{ color: "#005e78", cursor: "pointer" }}
                 />
-              </div>
+              </Link>
             </div>
             <div className="loan-customers">
                         <div className="detailssss">

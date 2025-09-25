@@ -7,6 +7,7 @@ import {
   clearDisbursementPicture,
   deleteLoan,
   disburseLoan,
+  editLoanStatus,
   fetchDisbursedLoansByDate,
   fetchWaitingDisbursementLoans,
   setDisbursedSelectedDate,
@@ -203,6 +204,8 @@ const Disbursment = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [pictureDropdown, setPictureDropdown] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
+     const [isEdited, setIsEdited] = useState(false);
+  
   const [loanIdReal, setLoanIdReal] = useState("");
   const [filterCSO, setFilterCSO] = useState("");
   const handleLinkClick = (link) => {
@@ -212,6 +215,7 @@ const Disbursment = () => {
 
   const {
     dibursedSuccessMessage,
+    editLoading,
     loans,
     disbursePictureloading,
     selectedDisburseDate,
@@ -355,6 +359,15 @@ const Disbursment = () => {
     }
   };
 
+   const handleEdit = (id) => {
+
+     if (window.confirm("You are about to ask cso to edit this loan. Are you sure?")) {
+      dispatch(editLoanStatus(id));
+    }
+      
+       
+    };
+
   useEffect(() => {
     dispatch(fetchDisbursedLoansByDate(selectedDisburseDate));
   }, [selectedDisburseDate, dispatch]);
@@ -400,6 +413,11 @@ const Disbursment = () => {
       })
     );
   };
+
+    const handleOpenEdit = () => {
+    setIsEdited(!isEdited);
+   
+}
 
   const handleFileChange = (files) => {
     if (!files.length) return;
@@ -479,6 +497,7 @@ const Disbursment = () => {
                       <thead>
                         <tr>
                           <th>Name</th>
+                          <th>Cso's Name</th>
                           <th>Amount Approved</th>
                           <th>Account Name</th>
                           <th>Account Number</th>
@@ -493,6 +512,7 @@ const Disbursment = () => {
                         {loans?.map((loan) => (
                           <tr key={loan?._id}>
                             <td>{`${loan?.customerDetails?.firstName} ${loan?.customerDetails?.lastName}`}</td>
+                            <td>{loan?.csoName}</td>
                             <td className="amount-approved">
                               {loan?.loanDetails?.amountApproved}
                             </td>
@@ -582,6 +602,9 @@ const Disbursment = () => {
                                     borderRadius: "5px",
                                     padding: "5px",
                                     zIndex: 10,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "15px"
                                   }}
                                 >
                                   <button
@@ -597,6 +620,16 @@ const Disbursment = () => {
                                   >
                                     Delete
                                   </button>
+                                   <button style={{
+                background: "blue",
+                 color: "white",
+                                      padding: "10px",
+                                      border: "none",
+                                      width: "100%",
+                                      cursor: "pointer"
+              }}  onClick={() => handleEdit(loan._id)}>
+                Ask to Edit
+              </button>
                                 </div>
                               )}
                             </td>
@@ -827,6 +860,9 @@ const Disbursment = () => {
           ) : (
             ""
           )}
+          
+
+            
         </div>
       )}
     </NewLoanRap>
