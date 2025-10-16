@@ -25,6 +25,8 @@ import SolutionOperations from "../Solutions/SolutionOperation";
 import ManagerNewCustomerDetailsInfo from "../ManagerPages/ManagerNewCustomerInfo";
 import ManagerNewLoanCard from "../ManagerPages/ManagerNewLoanCard";
 import EditApplicationForm from "../CsoPages/EditLoanForm";
+import CsoReportSummaryTable from "../Admin/CsoReports/CsoReportList";
+import CsoReportWallet from "../Admin/CsoReports/CsoReportWallet";
 
 const AdminDashboardLayout = lazy(() => import("../Controller/adminController"));
 const AdminDashboard = lazy(() => import("../Admin/AdminDashboard"));
@@ -142,6 +144,8 @@ export default function Routess() {
                         { path: "/admin/admin-members", element: <AdminForm /> },
                          { path: "/admin/operations", element: <Operations /> },
                          { path: "/admin/reports", element: <AdminReport /> },
+                          { path: "/admin/cso/reports", element: <CsoReportSummaryTable /> },
+                          { path: "/admin/cso/reports/:csoId", element: <CsoReportWallet /> },
                     ],
                 },
                 {

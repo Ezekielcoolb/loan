@@ -22,6 +22,8 @@ import HolidayForm from "../Holidays/AddHoliday";
 import { setSuccessHolidayMessage } from "../../redux/slices/holidaySlice";
 import { resetUpload, uploadImages } from "../../redux/slices/uploadSlice";
 import imageCompression from "browser-image-compression";
+import { clearMessages, fetchAllTheCsos, submitCsoExpense } from "../../redux/slices/csoSlice";
+import { fetchAdmins } from "../../redux/slices/adminSlice";
 
 const UploadContainer = styled.div`
   width: 380px;
@@ -105,8 +107,10 @@ const OperationRap = styled.div`
   }
   .all-dropdown-div {
     width: fit-content !important;
+    overflow-y: auto ;
+    max-height: 500px;
   }
-  .all-dropdown-div input {
+  .all-dropdown-div input, .all-dropdown-div select {
     border: 1px solid #d0d5dd;
     width: 380px;
     border-radius: 100px;
@@ -213,6 +217,9 @@ const OperationRap = styled.div`
     font-size: 30px;
     font-weight: 600;
 }
+.custom-table {
+  max-width: 500px;
+}
 `;
 
 const Operations = () => {
@@ -244,6 +251,10 @@ const Operations = () => {
       id: 6,
       name: "Check Holidays",
     },
+    // {
+    //   id: 7,
+    //   name: "Add Cso Expenses",
+    // },
   ];
   const monthNames = [
     "January",
@@ -277,84 +288,226 @@ const Operations = () => {
     year,
   } = useSelector((state) => state.report);
 
-  console.log(cashAtHand);
+  console.log(expenses)
 
   const [amount, setAmount] = useState("");
   const [activeLink, setActiveLink] = useState("operations");
 
   const [cashAtHandShow, setCashAtHandShow] = useState(false);
   const [expenseShow, setExpenseShow] = useState(false);
+   const [csoExpenseShow, setCsoExpenseShow] = useState(false);
   const [holidayShow, setHolidayShow] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+  const [selectSpender, setSelectSpender] = useState(null)
+  const [selectSpenderMange, setSelectSpenderManage] = useState(null)
+console.log(
+  selectSpender
+);
+console.log(
+  selectSpenderMange
+);
+
+ 
+const handleSelectSpender = (id) => {
+  const spenderObj = csos?.find((cso) => cso._id === id);
+   setSelectSpenderManage(null);
+  setSelectSpender(spenderObj);
+  
+};
+const handleSelectSpenderManage = (id) => {
+  const spenderObj = admins?.find((cso) => cso._id === id);
+  setSelectSpenderManage(spenderObj);
+    setSelectSpender(null);
+};
+
   const [uploadedImage, setUploadedImage] = useState(null);
   const { holidays, successHolidayMessage, holidayloading } = useSelector(
     (state) => state.holiday
   );
+   const { admins } = useSelector((state) => state.admin);
+   const {  list: csos, expenseUploadLoading, expenseUploded } = useSelector(
+      (state) => state.cso
+    );
   const { urls, target } = useSelector((state) => state.upload);
 
   const triggerFileInput = () => {
     inputRef.current.click();
   };
 
-  console.log(selectedImage);
+
+
 
   const [formData, setFormData] = useState({
     amount: "",
     purpose: "",
     receiptImg: "",
+    spenderId: "",
+    spenderName: "",
+    date: ""
   });
+
+
+  const [dataForm, setDataForm] = useState({
+    amount: "",
+    purpose: "",
+    receiptImg: "",
+  });
+
   console.log(formData);
+
+  
+  useEffect(() => {
+    dispatch(fetchAllTheCsos());
+  }, [dispatch]);
+
+    useEffect(() => {
+      dispatch(fetchAdmins());
+    }, [dispatch]);
+
+
+    useEffect(() => {
+  const spender = selectSpender || selectSpenderMange;
+
+  setFormData((prev) => ({
+    ...prev,
+    spenderId: spender ? spender._id : "",
+    spenderName: spender ? `${spender.firstName} ${spender.lastName}` : "Admin"
+  }));
+}, [selectSpender, selectSpenderMange]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSecondImage = async (fileList) => {
-    let files = Array.from(fileList);
-
-    files = await Promise.all(
-      files.map(async (file, index) => {
-        if (!file.name || !file.lastModified) {
-          file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
-            type: file.type || "image/jpeg",
-            lastModified: Date.now(),
-          });
-        }
-
-        const options = {
-          maxSizeMB: 0.5,
-          maxWidthOrHeight: 800,
-          useWebWorker: true,
-        };
-        try {
-          return await imageCompression(file, options);
-        } catch {
-          return file;
-        }
-      })
-    );
-
-    files = files.filter((f) => f.size > 0 && f.type.startsWith("image/"));
-    if (files.length === 0) return alert("Captured file is invalid or empty.");
-
-    dispatch(uploadImages({ files, folderName: "cashAtHand", target })); // 👈 pass target
+   const handleChangeCso = (e) => {
+    setDataForm({ ...dataForm, [e.target.name]: e.target.value });
   };
 
-  useEffect(() => {
-    if (!loading && urls.length > 0) {
+  const handleSecondImage = async (fileList) => {
+  let files = Array.from(fileList);
+
+  files = await Promise.all(
+    files.map(async (file, index) => {
+      if (!file.name || !file.lastModified) {
+        file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+          type: file.type || "image/jpeg",
+          lastModified: Date.now(),
+        });
+      }
+
+      const options = {
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+      };
+      try {
+        return await imageCompression(file, options);
+      } catch {
+        return file;
+      }
+    })
+  );
+
+  files = files.filter((f) => f.size > 0 && f.type.startsWith("image/"));
+  if (files.length === 0) return alert("Captured file is invalid or empty.");
+
+  try {
+    // 👇 Upload image(s) via thunk
+    const result = await dispatch(
+      uploadImages({ files, folderName: "cashAtHand", target })
+    ).unwrap();
+
+    // 👇 Assuming backend returns { urls: ["url1", "url2", ...] }
+    if (result?.urls && result.urls.length > 0) {
       setFormData((prev) => ({
         ...prev,
-        receiptImg: urls[0], // 👈 Set the first uploaded URL to receiptImg
+        receiptImg: result.urls[0], // save first uploaded image URL
       }));
-      dispatch(resetUpload()); // 👈 Clear upload state after setting
     }
-  }, [urls, loading, dispatch]);
+  } catch (error) {
+    console.error("Image upload failed:", error);
+    alert("Failed to upload image. Please try again.");
+  }
+};
+
+
+  const handleCsoExpenseImage = async (fileList) => {
+  let files = Array.from(fileList);
+
+  files = await Promise.all(
+    files.map(async (file, index) => {
+      if (!file.name || !file.lastModified) {
+        file = new File([file], `photo_${Date.now()}_${index}.jpg`, {
+          type: file.type || "image/jpeg",
+          lastModified: Date.now(),
+        });
+      }
+
+      const options = {
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+      };
+
+      try {
+        return await imageCompression(file, options);
+      } catch {
+        return file;
+      }
+    })
+  );
+
+  files = files.filter((f) => f.size > 0 && f.type.startsWith("image/"));
+  if (files.length === 0) return alert("Captured file is invalid or empty.");
+
+  // 👇 upload the images
+  const result = await dispatch(
+    uploadImages({ files, folderName: "cashAtHand", target })
+  ).unwrap(); // .unwrap() lets you get the actual payload instead of action object
+
+  // Assuming your backend returns an array of uploaded file URLs
+  if (result?.urls && result.urls.length > 0) {
+    setDataForm((prev) => ({
+      ...prev,
+      receiptImg: result.urls[0], // take the first uploaded image URL
+    }));
+  }
+};
+
+
+  // useEffect(() => {
+  //   if (!loading && urls.length > 0) {
+  //     setFormData((prev) => ({
+  //       ...prev,
+  //       receiptImg: urls[0], // 👈 Set the first uploaded URL to receiptImg
+  //     }));
+  //     dispatch(resetUpload()); // 👈 Clear upload state after setting
+  //   }
+  // }, [urls, loading, dispatch]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     dispatch(submitExpense(formData));
     setFormData({ amount: "", purpose: "", receiptImg: "" });
   };
+
+  
+ const handleSubmitCsoExpense = (e) => {
+  e.preventDefault();
+
+
+  dispatch(
+    submitCsoExpense({
+      csoId: selectedId,
+      expenseData: dataForm,
+    })
+  );
+
+  // reset form
+  setDataForm({ amount: "", purpose: "", receiptImg: "" });
+};
+
 
   const handleSubmitCash = (e) => {
     e.preventDefault();
@@ -375,6 +528,9 @@ const Operations = () => {
       setHolidayShow(!holidayShow);
     } else if (id === 6) {
       navigate("/admin/holidays");
+    } 
+     else if (id === 7) {
+      setCsoExpenseShow(!csoExpenseShow);
     }
   };
 
@@ -649,6 +805,42 @@ console.log(totalAmount.toLocaleString());
                     type="text"
                     required
                   />
+                          <label>If for Cso Select CSO:</label>
+        <select
+    value={selectSpender?._id || ""}
+    onChange={(e) => handleSelectSpender(e.target.value)}
+    className="border p-2 w-full"
+  >
+    <option value="">-- Choose a CSO --</option>
+    {csos?.map((cso) => (
+      <option key={cso._id} value={cso._id}>
+        {cso.firstName} {cso.lastName} ({cso.branch})
+      </option>
+    ))}
+  </select>
+
+
+                            <label>If for Manager Select Manager:</label>
+          <select
+            value={selectSpenderMange?._id || ""}
+            onChange={(e) => handleSelectSpenderManage(e.target.value)}
+            className="border p-2 w-full"
+          >
+            <option value="">-- Choose a Manager --</option>
+            {admins?.map((cso) => (
+              <option key={cso._id} value={cso._id}>
+                {cso.firstName} {cso.lastName} 
+              </option>
+            ))}
+          </select>
+
+          <label>Expenses for a specific date</label>
+          <input 
+          name="date"
+                    value={formData.date}
+                    onChange={handleChange}
+           type="Date" />
+
                   <UploadContainer onClick={triggerFileInput}>
                     <UploadIconWrapper>
                       <CloudUpload size={18} color="#667085" />
@@ -670,6 +862,87 @@ console.log(totalAmount.toLocaleString());
                     disabled={loading}
                   >
                     {loading ? (
+                      <PulseLoader color="white" size={10} />
+                    ) : (
+                      "Submit Expense"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        ) : (
+          ""
+        )}
+
+          {csoExpenseShow ? (
+          <div className="dropdown-container">
+            <div className="all-dropdown-div">
+              <form onSubmit={handleSubmitCsoExpense}>
+                <div className="dropdown-header">
+                  <h3>Add Cso Expense</h3>
+                  <Icon
+                    onClick={() => setCsoExpenseShow(false)}
+                    icon="stash:times-circle"
+                    width="24"
+                    height="24"
+                    style={{ color: "#005e78", cursor: "pointer" }}
+                  />
+                </div>
+
+
+                <div className="dropdown-content">
+                 <label>Select CSO:</label>
+          <select
+            value={selectedId}
+            onChange={(e) => setSelectedId(e.target.value)}
+            className="border p-2 w-full"
+          >
+            <option value="">-- Choose a CSO --</option>
+            {csos.map((cso) => (
+              <option key={cso._id} value={cso._id}>
+                {cso.firstName} {cso.lastName} ({cso.branch})
+              </option>
+            ))}
+          </select>
+
+                  <input
+                    name="amount"
+                    value={dataForm.amount}
+                    onChange={handleChangeCso}
+                    placeholder="Enter Amount Spent"
+                    type="number"
+                    required
+                  />
+                  <input
+                    name="purpose"
+                    value={dataForm.purpose}
+                    onChange={handleChangeCso}
+                    placeholder="Enter the pupose of the expense"
+                    type="text"
+                    required
+                  />
+                  <UploadContainer onClick={triggerFileInput}>
+                    <UploadIconWrapper>
+                      <CloudUpload size={18} color="#667085" />
+                    </UploadIconWrapper>
+                    <UploadText>Click to upload</UploadText>
+                    <HiddenInput
+                      type="file"
+                      accept="image/*"
+                      ref={inputRef}
+                      onChange={(e) => handleCsoExpenseImage(e.target.files)}
+                    />
+                  </UploadContainer>
+                  {uploadedImage && (
+                    <PreviewImage src={uploadedImage} alt="Uploaded preview" />
+                  )}
+                  <button
+                    className="submit-btn"
+                    type="submit"
+                    disabled={loading}
+                  >
+                    {expenseUploadLoading ? (
                       <PulseLoader color="white" size={10} />
                     ) : (
                       "Submit Expense"
@@ -755,6 +1028,21 @@ console.log(totalAmount.toLocaleString());
             <div className="dropdown-content">
               <p>{expenseMessage}</p>
               <button className="submit-btn-2" onClick={handleExpenseClose}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
+
+          {expenseUploded ? (
+        <div className="dropdown-container">
+          <div className="all-dropdown-div">
+            <div className="dropdown-content">
+              <p>{expenseUploded?.message}</p>
+              <button className="submit-btn-2" onClick={() => dispatch(clearMessages())}>
                 Close
               </button>
             </div>

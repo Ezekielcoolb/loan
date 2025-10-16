@@ -25,6 +25,10 @@ import { fetchOutstandingLoans } from "../redux/slices/otherLoanSlice";
 import {
   fetchCsoByWorkId,
   fetchRemittanceStatus,
+  updateCsoOverdueOnePerDay,
+  updateCsoOverSHootLoansOnePerDay,
+  updateCsoRecoveryOnePerDay,
+
 } from "../redux/slices/csoSlice";
 
 const HomeCsoRap = styled.div`
@@ -330,21 +334,29 @@ const CsoHome = () => {
   const { outstandingLoans, totalOutstandingLoans } = useSelector(
     (state) => state.otherLoan
   );
-  const { specificCso, remittancestatus, hoursLeft, minutesLeft } = useSelector(
+
+
+  const { specificCso,
+    overdueUpdateData,
+    overdueUpdateSkipped,
+    overShootLoanUpdateSkipped,
+    overShootLoanUpdateData,
+    recoveryUpdateData,
+    recoveryUpdateSkipped,
+    remittancestatus, hoursLeft, minutesLeft } = useSelector(
     (state) => state.cso
   );
+console.log(specificCso);
+// console.log(overdueUpdateData);
+console.log(overShootLoanUpdateData);
 
-  console.log(specificCso);
-  
 
-  console.log(totalOutstandingLoans);
   const [query, setQuery] = useState("");
 
   const csoId = user.workId;
   const workId = user.workId;
   const defaultingTarget = specificCso?.defaultingTarget;
 
-  console.log(specificCso);
 
   const handleChange = (e) => {
     const value = e.target.value;
@@ -364,6 +376,29 @@ const CsoHome = () => {
   const handleSuccessVisible = () => {
     dispatch(setDropSuccessVisible());
   };
+
+
+    useEffect(() => {
+    if (specificCso) {
+      dispatch(updateCsoOverdueOnePerDay(specificCso._id));
+    }
+  }, [specificCso, dispatch]);
+
+   useEffect(() => {
+    if (specificCso) {
+      dispatch(updateCsoOverSHootLoansOnePerDay(specificCso._id));
+    }
+  }, [specificCso, dispatch]);
+
+
+      useEffect(() => {
+    if (specificCso) {
+      dispatch(updateCsoRecoveryOnePerDay(specificCso._id));
+    }
+  }, [specificCso, dispatch]);
+
+
+
   useEffect(() => {
     if (csoId) {
       dispatch(fetchRemittanceStatus(csoId));
@@ -474,7 +509,6 @@ setPopupStatus(status)
 
   // Calculate total pages
   const totalPages = Math.ceil(csoHomeloans?.length / itemsPerPage);
-  console.log(csoHomeloans);
 
   // Get current items to display
   const currentLoans = csoHomeloans?.slice(
@@ -535,7 +569,6 @@ if (effectiveDate.getDay() === 0) {
 
 // 3️⃣ Format effective date as YYYY-MM-DD (to match item.date)
 const effectiveDateString = effectiveDate.toISOString().slice(0, 10);
-console.log(effectiveDateString); // e.g., "2023-10-01"
 
 // 4️⃣ Filter remittance items where date matches
 const filteredRemittance = specificCso?.remittance?.filter(item => {
@@ -548,8 +581,7 @@ const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
   return itemDateString === effectiveDateString;
 });
 
-console.log("Filtered Remittance:", filteredRemittance);
-console.log(filteredRemittanceIssue);
+
 
 
   return (

@@ -288,7 +288,7 @@ console.log(summaries);
 
 
   useEffect(() => {
-    dispatch(fetchCustomerActiveLoans());
+    dispatch(fetchCustomerActiveLoans({ page: 1, limit: 20 }));
   }, [dispatch]);
 
   useEffect(() => {

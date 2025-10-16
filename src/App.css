@@ -343,15 +343,11 @@ table {
   font-weight: 600;
   border-radius: 10px;
 }
+
 .all-dropdown-div {
   width: 556px;
-
-
- 
-
   border: 1px solid #d0d5dd;
   border-radius: 10px;
-
   background: #ffffff;
   padding-bottom: 15px;
   display: flex;

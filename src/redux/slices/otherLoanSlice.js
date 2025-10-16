@@ -105,6 +105,22 @@ export const fetchCsoOverdueLoans = createAsyncThunk(
     }
   }
 );
+
+export const fetchCsoRecoveryLoaner = createAsyncThunk(
+  'fetchCsoRecoveryLoanser/fetchCsoRecoveryLoans',
+  async ({ csoId, min = 23 }, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(
+        `${API_URL}/cso-loans-recovery-loans/${csoId}/?min=${min}`
+      );
+
+      return res.data.data; // as returned by backend above
+    } catch (err) {
+      console.error(err);
+      return rejectWithValue(err.response?.data || { message: 'Failed to fetch' });
+    }
+  }
+);
 export const fetchOverdueLoans = createAsyncThunk(
   "overdueLoans/fetchOverdueLoans",
   async ({ page = 1, limit = 20, search = "" }, { rejectWithValue }) => {
@@ -132,18 +148,43 @@ export const payOverDuePenalty = createAsyncThunk(
 );
 
 
+export const fetchCsoReportsSummary = createAsyncThunk(
+  'csoSummary/fetchCsoReportsSummary',
+  async ({ month, year }) => {
+    const params = {};
+    if (month) params.month = month;
+    if (year) params.year = year;
+    const response = await axios.get(`${API_URL}/cso-reports/cso-summary`, { params });
+    return response.data.csos;
+  }
+);
+
+export const fetchCsoReportsSummarySingle = createAsyncThunk(
+  'csoSummary/fetchCsoReportsSummarySingle',
+  async ({ month, year, csoId }) => {
+    const params = {};
+    if (month) params.month = month;
+    if (year) params.year = year;
+    const response = await axios.get(`${API_URL}/cso-reports/cso-summary-single/${csoId}`, { params });
+    return response.data;
+  }
+);
+
 
 const OtherLoanslice = createSlice({
   name: 'dailyPayments',
   initialState: {
     data: [],
+    csosReport: [],
     totalOutstandingChart: 0,
     defaultingTargetChart: 0,
     percentageChart: 0,
     dashPayLoan: null,
     payOverloading: false,
     items: null,
+    recoveryLoans: null,
     debugdashPayLoan: null,
+    csosSingleReport: null,
     outstandingLoans: [],
     totalOutstandingLoans: 0,
      pagination: { total: 0, page: 1, limit: 20 },
@@ -201,6 +242,35 @@ const OtherLoanslice = createSlice({
         state.error = action.error.message;
       });
 
+
+      builder
+      .addCase(fetchCsoReportsSummary.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCsoReportsSummary.fulfilled, (state, action) => {
+        state.loading = false;
+        state.csosReport = action.payload;
+      })
+      .addCase(fetchCsoReportsSummary.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
+
+
+      builder
+      .addCase(fetchCsoReportsSummarySingle.pending, state => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCsoReportsSummarySingle.fulfilled, (state, action) => {
+        state.loading = false;
+        state.csosSingleReport = action.payload;
+      })
+      .addCase(fetchCsoReportsSummarySingle.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
 
       builder
       .addCase(fetchOutstandingProgressChart.pending, (state) => {
@@ -271,6 +341,20 @@ builder
         state.loading = false;
       })
       .addCase(fetchCsoOverdueLoans.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || 'Failed to load';
+      });
+
+            builder
+      .addCase(fetchCsoRecoveryLoaner.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCsoRecoveryLoaner.fulfilled, (state, action) => {
+        state.recoveryLoans = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchCsoRecoveryLoaner.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || 'Failed to load';
       });

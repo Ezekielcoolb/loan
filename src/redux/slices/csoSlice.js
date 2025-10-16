@@ -308,12 +308,142 @@ export const updateCsoSignature = createAsyncThunk(
   }
 );
 
+export const submitCsoExpense = createAsyncThunk(
+  "cso/submitCsoExpense",
+  async ({ csoId, expenseData }, thunkAPI) => {
+    try {
+      const res = await axios.post(
+        `${API_URL}/expenses/submitted/cso/${csoId}`,
+        expenseData
+      );
+
+      console.log(res.data);
+      return res.data;
+    } catch (error) {
+      console.error("Error submitting expense:", error);
+
+      return thunkAPI.rejectWithValue(
+        error.response?.data || { message: "Something went wrong" }
+      );
+    }
+  }
+);
+
+// Async thunk: update overdue only once per day
+export const updateCsoOverdueOnePerDay = createAsyncThunk(
+  "csoOverdue/updateCsoOverdueOnePerDay",
+  async (csoId, { rejectWithValue }) => {
+    try {
+      const lastRunKey = `cso-overdue-last-over-${csoId}`;
+      const lastRun = localStorage.getItem(lastRunKey);
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+      if (lastRun === today) {
+        return { skipped: true }; // Already ran today
+      }
+      console.log(lastRun);
+      
+
+      const res = await axios.post(`${API_URL}/update-cso-overdue-everyday-once/${csoId}`);
+
+      // Save today's date in localStorage
+      localStorage.setItem(lastRunKey, today);
+
+      return { skipped: false, data: res.data };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const updateCsoRecoveryOnePerDay = createAsyncThunk(
+  "csoOverdue/updateCsoRecoveryOnePerDay",
+  async (csoId, { rejectWithValue }) => {
+    try {
+      const lastRunKey = `cso-recovery-lastRun-recovery-${csoId}`;
+      const lastRun = localStorage.getItem(lastRunKey);
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+      if (lastRun === today) {
+        return { skipped: true }; // Already ran today
+      }
+      console.log(lastRun);
+      
+
+      const res = await axios.post(`${API_URL}/update-cso-recovery-everyday-once/${csoId}`);
+
+      // Save today's date in localStorage
+      localStorage.setItem(lastRunKey, today);
+
+      return { skipped: false, data: res.data };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+
+export const updateCsoOverSHootLoansOnePerDay = createAsyncThunk(
+  "csoOverdue/updateCsoOverSHootLoansOnePerDay",
+  async (csoId, { rejectWithValue }) => {
+    try {
+      const lastRunKey = `cso-overshoot-lastRun-${csoId}`;
+      const lastRun = localStorage.getItem(lastRunKey);
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+      if (lastRun === today) {
+        return { skipped: true }; // Already ran today
+      }
+      console.log(lastRun);
+      
+
+      const res = await axios.post(`${API_URL}/update-cso-overshoot-loans/${csoId}`);
+
+      // Save today's date in localStorage
+      localStorage.setItem(lastRunKey, today);
+
+      return { skipped: false, data: res.data };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const updateCsoOverShootPayment = createAsyncThunk(
+  "csoOverdue/updateCsoOverShootPayment",
+  async ({ csoId, amount }, { rejectWithValue }) => {
+    try {
+      const res = await axios.post(
+        `${API_URL}/update-cso-overshoot-paid/${csoId}`,
+        { amount } // send the payment amount
+      );
+
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+
+
 const csoSlice = createSlice({
   name: "cso",
   initialState: {
     totalcso: 0,
     totalPages: 1,
     isLoading: false,
+overShootPaidLoading: false,
+overdueUpdateLoading: false,
+    overdueUpdateData: null,
+    overShootPaidData: null,
+    overdueUpdateSkipped: null,
+   recoveryUpdateLoading: false,
+   recoveryUpdateSkipped: null,
+   overShootLoanUpdateSkipped: null,
+   overShootLoanUpdateLoading: false,
+   overShootLoanUpdateData: null,
+   recoveryUpdateData: null,
     loading: false,
     updatingCsoloading: false,
     currentPage: 1,
@@ -322,6 +452,8 @@ const csoSlice = createSlice({
     signatureloading: false,
     successSignatureMessage: null,
     cso: [],
+    expenseUploded: null,
+    expenseUploadLoading: false,
     specifiedCso: null,
     specificCso: null,
     specifiedCsoTwo: null,
@@ -342,6 +474,7 @@ const csoSlice = createSlice({
     remmitdata: [],
     targetMessage: null,
     successMessage: null,
+    overdueUpdateLoading: false,
     updateCsoSuccessMessage: "",
     selectedCSO: null,
     remmitCsoData: [],
@@ -382,6 +515,7 @@ const csoSlice = createSlice({
     clearMessages: (state) => {
       state.error = null;
       state.successMessage = null;
+      state.expenseUploded = null;
     },
     clearTargetMessageMessages: (state) => {
       state.targetMessage = null;
@@ -413,6 +547,71 @@ const csoSlice = createSlice({
       });
 
 
+
+        builder
+    .addCase(updateCsoOverdueOnePerDay.pending, (state) => {
+  state.overdueUpdateLoading = true;
+  state.error = null;
+})
+.addCase(updateCsoOverdueOnePerDay.fulfilled, (state, action) => {
+  state.overdueUpdateLoading = false;
+  state.overdueUpdateSkipped = action.payload.skipped;
+  state.overdueUpdateData = action.payload.data || null;
+})
+.addCase(updateCsoOverdueOnePerDay.rejected, (state, action) => {
+  state.overdueUpdateLoading = false;
+  state.error = action.payload || "Something went wrong";
+});
+
+
+        builder
+    .addCase(updateCsoOverSHootLoansOnePerDay.pending, (state) => {
+  state.overShootLoanUpdateLoading = true;
+  state.error = null;
+})
+.addCase(updateCsoOverSHootLoansOnePerDay.fulfilled, (state, action) => {
+  state.overShootLoanUpdateLoading = false;
+  state.overShootLoanUpdateSkipped = action.payload.skipped;
+  state.overShootLoanUpdateData = action.payload.data || null;
+})
+.addCase(updateCsoOverSHootLoansOnePerDay.rejected, (state, action) => {
+  state.overShootLoanUpdateLoading = false;
+  state.error = action.payload || "Something went wrong";
+});
+
+
+
+        builder
+    .addCase(updateCsoOverShootPayment.pending, (state) => {
+  state.overShootPaidLoading = true;
+  state.error = null;
+})
+.addCase(updateCsoOverShootPayment.fulfilled, (state, action) => {
+  state.overShootPaidLoading = false;
+  state.overShootPaidData = action.payload
+})
+.addCase(updateCsoOverShootPayment.rejected, (state, action) => {
+  state.overShootPaidLoading = false;
+  state.error = action.payload || "Something went wrong";
+});
+
+
+
+
+        builder
+    .addCase(updateCsoRecoveryOnePerDay.pending, (state) => {
+  state.recoveryUpdateLoading = true;
+  state.error = null;
+})
+.addCase(updateCsoRecoveryOnePerDay.fulfilled, (state, action) => {
+  state.recoveryUpdateLoading = false;
+  state.recoveryUpdateSkipped = action.payload.skipped;
+  state.recoveryUpdateData = action.payload.data || null;
+})
+.addCase(updateCsoRecoveryOnePerDay.rejected, (state, action) => {
+  state.recoveryUpdateLoading = false;
+  state.error = action.payload || "Something went wrong";
+});
 
         builder
       .addCase(updateCsoSignature.pending, (state) => {
@@ -672,6 +871,20 @@ const csoSlice = createSlice({
       .addCase(uploadRemittance.rejected, (state, action) => {
         state.isUploading = false;
         state.error = action.payload;
+      });
+
+
+        builder
+      .addCase(submitCsoExpense.pending, (state) => {
+        state.expenseUploadLoading = true;
+      })
+      .addCase(submitCsoExpense.fulfilled, (state, action) => {
+        state.expenseUploadLoading = false;
+        state.expenseUploded = action.payload;
+      })
+      .addCase(submitCsoExpense.rejected, (state, action) => {
+        state.expenseUploadLoading = false;
+        state.expenseUploded = action.payload;
       });
 
     builder

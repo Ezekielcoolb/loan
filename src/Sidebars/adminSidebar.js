@@ -69,30 +69,37 @@ const sidebarConfig = [
     link: "/admin/reports",
     title: "Reports",
   },
-  {
+{
     id: 11,
+    icon: "iconoir:reports-solid",
+    link: "/admin/cso/reports",
+    title: "Cso Reports",
+  },
+  
+  {
+    id: 12,
     icon: "mdi:comment-account-outline",
     link: "/admin/admin-members",
     title: "Admin Panel",
   },
   {
-    id: 12,
+    id: 13,
     icon: "ri:home-office-line",
     link: "/admin/branches",
     title: "Branch",
   },
   {
-    id: 13,
+    id: 14,
     icon: "lets-icons:setting-line",
     link: "/admin/settings",
     title: "Setting",
   },
-  {
-    id: 14,
-    icon: "lets-icons:setting-line",
-    link: "/admin/test",
-    title: "Test",
-  },
+  // {
+  //   id: 14,
+  //   icon: "lets-icons:setting-line",
+  //   link: "/admin/test",
+  //   title: "Test",
+  // },
 ];
 
 export default function AdminSidebar() {

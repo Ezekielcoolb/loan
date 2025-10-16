@@ -45,6 +45,7 @@ input {
     background: #005E78;
     width: 334px;
     height: 55px;
+    border: none;
     border-radius: 15px;
     color: #97B434;
     font-size: 16px;
@@ -103,7 +104,7 @@ console.log(message);
           localStorage.setItem("csoToken", token);
           localStorage.setItem("csoUser", JSON.stringify(user));
         }
-      }, [token, navigate]);
+      }, [token, user, navigate]);
 
       
   return (
@@ -120,13 +121,13 @@ console.log(message);
         onChange={(e) => setEmail(e.target.value)}/>
           <input type="password" placeholder="Enter your password"  value={password}
         onChange={(e) => setPassword(e.target.value)}/>
-          <Link onClick={handleLogin} className="login-btn">
+          <button onClick={handleLogin} className="login-btn">
           {isLoading ? 
       
       <ClipLoader color="white" size={10} />
         : "Login"
   }
-          </Link>
+          </button>
         </div>
 
 

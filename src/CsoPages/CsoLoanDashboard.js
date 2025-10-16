@@ -13,7 +13,7 @@ import {
 } from "../redux/slices/LoanSlice";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import styled from "styled-components";
-import { fetchCsoOverdueLoans, fetchOutstandingLoans } from "../redux/slices/otherLoanSlice";
+import { fetchCsoOverdueLoans, fetchCsoRecoveryLoaner, fetchOutstandingLoans } from "../redux/slices/otherLoanSlice";
 import CsoCollectionReportCollection from "./CsoCollectionReport";
 
 import html2canvas from "html2canvas";
@@ -25,7 +25,7 @@ import { fetchCsoByWorkId } from "../redux/slices/csoSlice";
 
 
 const LoanCsoRap = styled.div`
-  height: 100vh;
+  height: auto;
 
   color: #005e78;
   th,
@@ -57,7 +57,7 @@ const LoanCsoRap = styled.div`
   }
   .all-loan {
     padding: 20px;
-    padding-top: 120px;
+    padding-top: 10px;
     margin: auto;
     color: #005e78;
   }
@@ -285,10 +285,10 @@ const LoanCsoDashboard = () => {
       (state) => state.cso
     );
 
-      const { outstandingLoans, totalOutstandingLoans, loading, items } = useSelector(state => state.otherLoan);
+      const { outstandingLoans, totalOutstandingLoans, loading, items, recoveryLoans } = useSelector(state => state.otherLoan);
 
   // console.log(csoLoanDashdordLoans);
-  // console.log(totalLoans);
+  console.log(recoveryLoans);
   
   // console.log(csoDashboardTotalLoans);
     const reportRef = useRef();
@@ -304,13 +304,14 @@ const LoanCsoDashboard = () => {
   const [rejected, setRejected] = useState(false);
   const [fully, setFully] = useState(false);
    const [overdue, setOverdue] = useState(false);
+    const [recovery, setRecovery] = useState(false);
   const [defaultLoans, setDefaultLoans] = useState(false);
 const [allActive, setAllActive] = useState(false)
 
 
 const allActiveLoans = loans?.filter(loan => loan.status === "active loan");
 
-console.log(items);
+// console.log(items);
 
 function formatDate(dateStr) {
   if (!dateStr) return '-';
@@ -327,7 +328,9 @@ const totalLoanBalanceForActiveLoans = allActiveLoans?.reduce((total, customer) 
 }, 0);
 
  const workId = user.workId;
-
+const handleRecovery = () => {
+  setRecovery(true)
+}
 const handleOpenActiveLoans = () => {
   setAllActive(!allActive)
 }
@@ -376,7 +379,13 @@ const handleOpenActiveLoans = () => {
     if (csoId) {
       dispatch(fetchCsoOverdueLoans({ csoId, min }));
     }
-  }, [csoId, min, dispatch]);  
+  }, [csoId, min, dispatch]); 
+   
+   useEffect(() => {
+    if (csoId) {
+      dispatch(fetchCsoRecoveryLoaner({ csoId, min }));
+    }
+  }, [csoId, min, dispatch]); 
 
   useEffect(() => {
     dispatch(fetchDashboardLoanCso( csoId ));
@@ -528,7 +537,7 @@ console.log(filteredRemittanceIssue);
               Submitted Loan Applications
               <span>{allDashBoard?.total}</span>
             </p>
-            <p onClick={handleApproved} className="p-2">
+            <p onClick={handleOpenActiveLoans} className="p-2">
               Active loans
               <span> {allDashBoard?.counts?.active}</span>
             </p>
@@ -550,7 +559,18 @@ console.log(filteredRemittanceIssue);
             </p>
           </div>
           <div className="btns">
-            <button onClick={handleOpenActiveLoans}>Active Loans</button>
+            <button style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "5px"
+            }} onClick={handleRecovery} >Recovery Loans
+
+              <span style={{
+                fontWeight: "900",
+                fontSize: "25px",
+                color:"red"
+              }}> {recoveryLoans?.length} </span>
+            </button>
             <button onClick={handleDefaultLoansShow}>Defaults</button>
             <div>
       <button onClick={handleDownload}> Download Report</button>
@@ -904,6 +924,136 @@ console.log(filteredRemittanceIssue);
   ""
 )}
 
+
+           {recovery ? (
+  <div className="dropdown-container">
+    <div className="all-dropdown-div">
+      <div className="default-head">
+        <h3>Recovery Loans</h3>
+        <div className="cancel-btn">
+          <Icon
+            onClick={() => setRecovery(false)}
+            icon="stash:times-circle"
+            width="24"
+            height="24"
+            style={{ color: "#005e78", cursor: "pointer" }}
+          />
+        </div>
+      </div>
+      <div className="new-table-scroll">
+        {(() => {
+          // 🔹 Compute totals
+          let totalLoanBalance = 0;
+          let totalBalancePenalty = 0;
+
+          recoveryLoans?.forEach((loan) => {
+            const amountToBePaid =
+               loan.loanDetails?.amountToBePaid ?? 0;
+            const amountPaid =
+             loan.loanDetails?.amountPaidSoFar ?? 0;
+
+            const loanBalance =
+              typeof amountToBePaid === "number" &&
+              typeof amountPaid === "number"
+                ? amountToBePaid - amountPaid
+                : 0;
+
+            const penalty =
+              typeof loan.penalty === "number" ? loan.penalty : 0;
+
+            totalLoanBalance += loanBalance;
+            totalBalancePenalty += loanBalance + penalty;
+          });
+
+          return (
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>S/N</th>
+                  <th>Customer</th>
+                  <th style={{whiteSpace: "nowrap"}}>Loan Amount </th>
+                  <th style={{whiteSpace: "nowrap"}}>Amount Paid</th>
+                  <th style={{whiteSpace: "nowrap"}}>Loan Balance</th>
+                  <th style={{whiteSpace: "nowrap"}}>Start Date</th>
+                  {/* <th style={{whiteSpace: "nowrap"}}>End Date </th>
+                  <th style={{whiteSpace: "nowrap"}}>No. of Days  Overdue</th>
+                  <th style={{whiteSpace: "nowrap"}}>Penalty</th>
+                  <th style={{whiteSpace: "nowrap"}}>Balance + Penalty</th> */}
+                </tr>
+              </thead>
+              <tbody>
+                {recoveryLoans?.map((loan, idx) => {
+                  const fullName = `${loan.customerDetails?.firstName || ""} ${
+                    loan.customerDetails?.lastName || ""
+                  }`.trim();
+                  const amountToBePaid =
+                    loan.loanDetails?.amountToBePaid ?? "-";
+                  const amountPaid =
+                    loan.loanDetails?.amountPaidSoFar ?? 0;
+                  const loanBalance =
+                    typeof amountToBePaid === "number" &&
+                    typeof amountPaid === "number"
+                      ? amountToBePaid - amountPaid
+                      : "-";
+
+                  return (
+                    <tr key={loan._id}>
+                      <td>{idx + 1}</td>
+                      <td>{fullName || "-"}</td>
+                      <td>
+                        {typeof amountToBePaid === "number"
+                          ? amountToBePaid.toLocaleString()
+                          : "-"}
+                      </td>
+                      <td>
+                        {typeof amountPaid === "number"
+                          ? amountPaid.toLocaleString()
+                          : "-"}
+                      </td>
+                      <td>
+                        {typeof loanBalance === "number"
+                          ? loanBalance.toLocaleString()
+                          : "-"}
+                      </td>
+                      <td>{formatDate(loan.disbursedAt)}</td>
+                      
+                     
+                      
+                      
+                    </tr>
+                  );
+                })}
+              </tbody>
+
+              {/* 🔹 Totals Row */}
+              <tfoot>
+                <tr>
+                  <td style={{
+                    fontSize: "20px"
+                  }}>Total</td>
+                  <td colSpan="3">
+
+                  </td>
+                  <td style={{
+                    fontSize: "20px"
+                  }}>
+                    <strong >
+                      {totalLoanBalance.toLocaleString()}
+                    </strong>
+                  </td>
+                  <td colSpan="3"></td>
+                  
+                </tr>
+              </tfoot>
+            </table>
+          );
+        })()}
+      </div>
+    </div>
+  </div>
+) : (
+  ""
+)}
               {defaultLoans ? (
               <div className="dropdown-container">
                 <div className="all-dropdown-div">
@@ -1164,7 +1314,7 @@ console.log(filteredRemittanceIssue);
         ) : (
           ""
         )}
-        {approved ? (
+        {/* {approved ? (
           <>
                   <div className="dropdown-container">
       <div className="all-dropdown-div">
@@ -1184,7 +1334,7 @@ console.log(filteredRemittanceIssue);
             <table border="1">
               <thead>
                   <tr>
-                          <th>S/N</th> {/* Serial number column header */}
+                          <th>S/N</th> 
                           <th>Customer Name</th>
                           <th style={{
                             whiteSpace: "nowrap",
@@ -1242,7 +1392,7 @@ console.log(filteredRemittanceIssue);
           </>
         ) : (
           ""
-        )}
+        )} */}
         {pending ? (
           <>
                         <div className="dropdown-container">

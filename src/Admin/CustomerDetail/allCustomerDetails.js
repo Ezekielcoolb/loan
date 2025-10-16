@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { fetchCustomerDetails } from "../../redux/slices/LoanSlice";
+import { deleteLoan, fetchCustomerDetails } from "../../redux/slices/LoanSlice";
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
 
@@ -118,6 +118,12 @@ const CustomerDetailsInfo = () => {
     navigate(`/admin/customerdetails`);
   };
 
+    const handleDelete = (id) => {
+      if (window.confirm("Are you sure you want to delete this loan?")) {
+        dispatch(deleteLoan(id));
+      }
+    };
+
   return (
     <CustomerDetailRap>
       <div className="client-1">
@@ -178,6 +184,7 @@ const CustomerDetailsInfo = () => {
                         <th>Loan Performance</th>
                         <th>Payment Breakdown</th>
                         <th>Action</th>
+                        <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -231,6 +238,21 @@ const CustomerDetailsInfo = () => {
                               ) : (
                                 <p>No Loan Card</p>
                               )}
+                            </td>
+                            <td>
+                                <button
+                                    style={{
+                                      background: "red",
+                                      color: "white",
+                                      padding: "10px",
+                                      border: "none",
+                                      width: "100%",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={() => handleDelete(loan._id)}
+                                  >
+                                    Delete
+                                  </button>
                             </td>
                           </tr>
                         );
