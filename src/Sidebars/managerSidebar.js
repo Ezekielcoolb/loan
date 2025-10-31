@@ -57,26 +57,26 @@ const sidebarConfig = [
 //     link: "/admin-members",
 //     title: "Admin Panel",
 //   },
-  // {
-  //   id: 7,
-  //   icon: "ri:home-office-line",
-  //   link: "/manager/branches",
-  //   title: "Branch",
-  // },
-    {
+  {
     id: 7,
+    icon: "iconoir:reports-solid",
+    link: "/manager/group-leaders",
+    title: "Group Leaders",
+  },
+    {
+    id: 8,
     icon: "healthicons:emergency-operations-center-outline",
     link: "/manager/operations",
     title: "Operations",
   },
     {
-    id: 8,
+    id: 9,
     icon: "iconoir:reports-solid",
     link: "/manager/reports",
     title: "Reports",
   },
   {
-    id: 9,
+    id: 10,
     icon: "lets-icons:setting-line",
     link: "/manager/settings",
     title: "Setting",

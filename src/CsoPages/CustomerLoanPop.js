@@ -12,6 +12,7 @@ import { PulseLoader } from "react-spinners";
 import imageCompression from "browser-image-compression";
 import { resetUpload, uploadImages } from "../redux/slices/uploadSlice";
 import SignatureCanvas from "react-signature-canvas";
+import { fetchGroupLeadersByCso } from "../redux/slices/groupLeaderSlice";
 
 const LoanApplicationRap = styled.div`
   margin-bottom: 100px;
@@ -96,6 +97,13 @@ const LoanApplicationForm = () => {
   const { urls, target, imageUploadloading } = useSelector(
     (state) => state.upload
   );
+  const {
+    options: groupLeaderOptions,
+    optionsLoading: groupLeaderOptionsLoading,
+    optionsError: groupLeaderOptionsError,
+  } = useSelector((state) => state.groupLeader);
+
+  const [selectedGroupLeaderId, setSelectedGroupLeaderId] = useState("");
 
   const [formData, setFormData] = useState({
     csoId: user.workId,
@@ -147,6 +155,8 @@ const LoanApplicationForm = () => {
     groupDetails: {
       groupName: "",
       leaderName: "",
+      address: "",
+      groupId: "",
       mobileNo: "",
     },
     pictures: {
@@ -193,6 +203,8 @@ const LoanApplicationForm = () => {
     formData.guarantorDetails.yearsKnown !== "" &&
     formData.groupDetails.groupName !== "" &&
     formData.groupDetails.leaderName !== "" &&
+    formData.groupDetails.address !== "" &&
+    formData.groupDetails.groupId !== "" &&
     formData.groupDetails.mobileNo !== "" &&
     formData.pictures.business !== "" &&
     formData.pictures.customer !== "" &&
@@ -205,6 +217,48 @@ const LoanApplicationForm = () => {
 
   const handleVisisble = () => {
     dispatch(setDropdownVisible());
+  };
+
+  useEffect(() => {
+    if (user?.workId) {
+      dispatch(fetchGroupLeadersByCso(user.workId));
+    }
+  }, [dispatch, user?.workId]);
+
+  useEffect(() => {
+    if (formData.groupDetails.groupId) {
+      setSelectedGroupLeaderId(formData.groupDetails.groupId);
+    }
+  }, [formData.groupDetails.groupId]);
+
+  const handleGroupLeaderSelect = (e) => {
+    const selectedId = e.target.value;
+    setSelectedGroupLeaderId(selectedId);
+    const selectedLeader = groupLeaderOptions.find((leader) => leader._id === selectedId);
+
+    if (selectedLeader) {
+      setFormData((prev) => ({
+        ...prev,
+        groupDetails: {
+          groupName: selectedLeader.groupName || "",
+          leaderName: `${selectedLeader.firstName || ""} ${selectedLeader.lastName || ""}`.trim(),
+          address: selectedLeader.address || "",
+          groupId: selectedLeader._id || "",
+          mobileNo: selectedLeader.phone || "",
+        },
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        groupDetails: {
+          groupName: "",
+          leaderName: "",
+          address: "",
+          groupId: "",
+          mobileNo: "",
+        },
+      }));
+    }
   };
 
   const handleInputChange = (e) => {
@@ -941,32 +995,50 @@ const LoanApplicationForm = () => {
             <div className="detailssss">
               {/* Loan Details */}
               <h3>Group Details</h3>
+              <select
+                value={selectedGroupLeaderId}
+                onChange={handleGroupLeaderSelect}
+                required
+              >
+                <option value="">
+                  {groupLeaderOptionsLoading
+                    ? "Loading group leaders..."
+                    : "Select Group Leader"}
+                </option>
+                {groupLeaderOptions.map((leader) => (
+                  <option key={leader._id} value={leader._id}>
+                    {leader.groupName} - {leader.firstName} {leader.lastName}
+                  </option>
+                ))}
+              </select>
               <input
                 type="text"
-                name="groupDetails.groupName"
                 value={formData.groupDetails.groupName}
-                onChange={handleInputChange}
                 placeholder="Group Name"
-                required
+                disabled
               />
               <input
                 type="text"
-                name="groupDetails.leaderName"
                 value={formData.groupDetails.leaderName}
-                onChange={handleInputChange}
                 placeholder="Group Leader's Name"
-                required
+                disabled
               />
               <input
                 type="text"
-                name="groupDetails.mobileNo"
+                value={formData.groupDetails.address}
+                placeholder="Group Leader's Address"
+                disabled
+              />
+              <input
+                type="text"
                 value={formData.groupDetails.mobileNo}
-                onChange={handleInputChange}
                 placeholder="Group Leader's Number"
-                required
+                disabled
               />
             </div>
+
             <div className="detailssss">
+              {/* Loan Details */}
               <h3>Upload Pictures</h3>
 
               <label className="upload-label">Upload customer picture</label>

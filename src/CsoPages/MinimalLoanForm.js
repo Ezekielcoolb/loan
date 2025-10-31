@@ -19,6 +19,7 @@ import imageCompression from "browser-image-compression";
 import { fetchOutstandingLoans } from "../redux/slices/otherLoanSlice";
 import { fetchCsoByWorkId } from "../redux/slices/csoSlice";
 import SignatureCanvas from "react-signature-canvas";
+import { fetchGroupLeadersByCso } from "../redux/slices/groupLeaderSlice";
 
 
 
@@ -179,8 +180,14 @@ const MinimalApplicationForm = () => {
     (state) => state.loan
   );
   const loans = useSelector((state) => state.loan.loans);
+  const {
+    options: groupLeaderOptions,
+    optionsLoading: groupLeaderOptionsLoading,
+    optionsError: groupLeaderOptionsError,
+  } = useSelector((state) => state.groupLeader);
   const successMessage = useSelector((state) => state.loan.successMessage);
   const loan = loans.find((loan) => loan._id === id);
+  const [selectedGroupLeaderId, setSelectedGroupLeaderId] = useState("");
   const [formData, setFormData] = useState({
     csoId: user?.workId,
     branch: user?.branch,
@@ -234,9 +241,11 @@ const MinimalApplicationForm = () => {
       signature: "",
     },
     groupDetails: {
-      groupName: loan?.groupDetails?.groupName,
-      leaderName: loan?.groupDetails?.leaderName,
-      mobileNo: loan?.groupDetails?.mobileNo,
+      groupName: loan?.groupDetails?.groupName || "",
+      leaderName: loan?.groupDetails?.leaderName || "",
+      address: loan?.groupDetails?.address || "",
+      groupId: loan?.groupDetails?.groupId || "",
+      mobileNo: loan?.groupDetails?.mobileNo || "",
     },
     pictures: {
       customer: "",
@@ -289,6 +298,8 @@ const MinimalApplicationForm = () => {
     formData.guarantorDetails.yearsKnown !== "" &&
     formData.groupDetails.groupName !== "" &&
     formData.groupDetails.leaderName !== "" &&
+    formData.groupDetails.address !== "" &&
+    formData.groupDetails.groupId !== "" &&
     formData.groupDetails.mobileNo !== "" &&
     formData.pictures.business !== "" &&
     formData.pictures.customer !== "" &&
@@ -310,6 +321,52 @@ const MinimalApplicationForm = () => {
   useEffect(() => {
     if (workId) dispatch(fetchCsoByWorkId(workId));
   }, [workId, dispatch]);
+
+  useEffect(() => {
+    if (user?.workId) {
+      dispatch(fetchGroupLeadersByCso(user.workId));
+    }
+  }, [dispatch, user?.workId]);
+
+  useEffect(() => {
+    if (formData.groupDetails.groupId) {
+      setSelectedGroupLeaderId(formData.groupDetails.groupId);
+    }
+  }, [formData.groupDetails.groupId]);
+
+  useEffect(() => {
+    if (
+      !groupLeaderOptionsLoading &&
+      groupLeaderOptions.length > 0 &&
+      !formData.groupDetails.groupId
+    ) {
+      const matchedLeader = groupLeaderOptions.find(
+        (leader) =>
+          leader.phone === formData.groupDetails.mobileNo ||
+          leader.groupName === formData.groupDetails.groupName
+      );
+
+      if (matchedLeader) {
+        setSelectedGroupLeaderId(matchedLeader._id);
+        setFormData((prev) => ({
+          ...prev,
+          groupDetails: {
+            groupName: matchedLeader.groupName || "",
+            leaderName: `${matchedLeader.firstName || ""} ${matchedLeader.lastName || ""}`.trim(),
+            address: matchedLeader.address || "",
+            groupId: matchedLeader._id || "",
+            mobileNo: matchedLeader.phone || "",
+          },
+        }));
+      }
+    }
+  }, [
+    groupLeaderOptions,
+    groupLeaderOptionsLoading,
+    formData.groupDetails.groupId,
+    formData.groupDetails.mobileNo,
+    formData.groupDetails.groupName,
+  ]);
 
   const handleVisisbleNow = () => {
     navigate(`/cso/customer-details/${loan?._id}`);
@@ -439,6 +496,36 @@ const MinimalApplicationForm = () => {
    const handleGroupLeaderChange = () => {
     setGroupLeaderChange(!groupLeaderChange)
   }
+
+  const handleGroupLeaderSelect = (e) => {
+    const selectedId = e.target.value;
+    setSelectedGroupLeaderId(selectedId);
+    const selectedLeader = groupLeaderOptions.find((leader) => leader._id === selectedId);
+
+    if (selectedLeader) {
+      setFormData((prev) => ({
+        ...prev,
+        groupDetails: {
+          groupName: selectedLeader.groupName || "",
+          leaderName: `${selectedLeader.firstName || ""} ${selectedLeader.lastName || ""}`.trim(),
+          address: selectedLeader.address || "",
+          groupId: selectedLeader._id || "",
+          mobileNo: selectedLeader.phone || "",
+        },
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        groupDetails: {
+          groupName: "",
+          leaderName: "",
+          address: "",
+          groupId: "",
+          mobileNo: "",
+        },
+      }));
+    }
+  };
 
  const handleFileChange = async (fileList) => {
      const target = "disclosure"; // 👈 local value, not setState
@@ -901,29 +988,45 @@ const clearSignature = () => {
                 <div className="detailssss">
                   {/* Guarantor Details */}
                   <h3>Group Details</h3>
+                  <select
+                    value={selectedGroupLeaderId}
+                    onChange={handleGroupLeaderSelect}
+                    required
+                  >
+                    <option value="">
+                      {groupLeaderOptionsLoading
+                        ? "Loading group leaders..."
+                        : "Select Group Leader"}
+                    </option>
+                    {groupLeaderOptions.map((leader) => (
+                      <option key={leader._id} value={leader._id}>
+                        {leader.groupName} - {leader.firstName} {leader.lastName}
+                      </option>
+                    ))}
+                  </select>
                   <input
                     type="text"
-                    name="groupDetails.groupName"
                     value={formData.groupDetails.groupName}
-                    onChange={handleInputChange}
-                    placeholder=" Name in Full"
-                    required
+                    placeholder="Group Name"
+                    disabled
                   />
                   <input
                     type="text"
-                    name="groupDetails.leaderName"
                     value={formData.groupDetails.leaderName}
-                    onChange={handleInputChange}
-                    placeholder="Group leader name"
-                    required
+                    placeholder="Group Leader's Name"
+                    disabled
                   />
                   <input
                     type="text"
-                    name="groupDetails.mobileNo"
+                    value={formData.groupDetails.address}
+                    placeholder="Group Leader's Address"
+                    disabled
+                  />
+                  <input
+                    type="text"
                     value={formData.groupDetails.mobileNo}
-                    onChange={handleInputChange}
-                    placeholder="Enter phone number in form of +234XXXXXXXXXX"
-                    required
+                    placeholder="Group Leader's Number"
+                    disabled
                   />
                 </div>
               ) : (

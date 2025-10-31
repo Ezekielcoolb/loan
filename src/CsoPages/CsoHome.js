@@ -30,6 +30,7 @@ import {
   updateCsoRecoveryOnePerDay,
 
 } from "../redux/slices/csoSlice";
+import { addGroupLeader, clearGroupLeaderMessages } from "../redux/slices/groupLeaderSlice";
 
 const HomeCsoRap = styled.div`
   color: #005e78;
@@ -60,6 +61,12 @@ const HomeCsoRap = styled.div`
     height: 45px !important;
     border-style: none;
     border-radius: 20px;
+  }
+  .side-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
   }
   .input-div {
     position: relative;
@@ -306,6 +313,94 @@ const HomeCsoRap = styled.div`
   }
 `;
 
+const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 24px;
+`;
+
+const ModalContent = styled.div`
+  width: min(640px, 100%);
+
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e4e7ec;
+  padding: 24px;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+  overflow-y: auto;
+  @media (max-width: 400px) { 
+  max-height: 450px;
+  }
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  button {
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    color: #344054;
+  }
+`;
+
+const ModalForm = styled.form`
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+
+  button {
+    grid-column: 1 / -1;
+    height: 44px;
+    border-radius: 10px;
+    border: none;
+    background: #0c1d55;
+    color: #ffffff;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+input {
+  width: 100% !important;
+}
+  button:disabled {
+    background: #98a2b3;
+    cursor: not-allowed;
+  }
+  
+`;
+const initialState = {
+  groupName: '',
+  firstName: '',
+  lastName: '',
+  address: '',
+  phone: '',
+  csoId: '',
+  csoName: '',
+};
+
+
 const CsoHome = () => {
   // const { user } = useSelector((state) => state.auth);
   const user = JSON.parse(localStorage.getItem("csoUser"));
@@ -321,6 +416,8 @@ const CsoHome = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [popupMessage, setPopupMessage] = useState(null);
    const [popupStatus, setPopupStatus] = useState(null);
+   const [isModalOpen, setIsModalOpen] = useState(false);
+   const [formData, setFormData] = useState(initialState);
   const [popupColor, setPopupColor] = useState("#005e78");
   const [successGuarantorForm, setSuccessGuarantorForm] = useState(false);
   const [remittanceAvailableShow, setRemittanceAvailableShow] =
@@ -335,6 +432,12 @@ const CsoHome = () => {
     (state) => state.otherLoan
   );
 
+   const { leaders, submitting, errorMessage, successMessage } = useSelector(
+      (state) => state.groupLeader
+    );
+
+    console.log(formData);
+    
 
   const { specificCso,
     overdueUpdateData,
@@ -347,8 +450,8 @@ const CsoHome = () => {
     (state) => state.cso
   );
 console.log(specificCso);
-// console.log(overdueUpdateData);
-console.log(overShootLoanUpdateData);
+console.log(recoveryUpdateSkipped);
+console.log(recoveryUpdateData);
 
 
   const [query, setQuery] = useState("");
@@ -357,6 +460,15 @@ console.log(overShootLoanUpdateData);
   const workId = user.workId;
   const defaultingTarget = specificCso?.defaultingTarget;
 
+  const isValid = useMemo(
+    () =>
+      formData.groupName.trim() !== '' &&
+      formData.firstName.trim() !== '' &&
+      formData.lastName.trim() !== '' &&
+      formData.address.trim() !== '' &&
+      formData.phone.trim() !== '',
+    [formData]
+  );
 
   const handleChange = (e) => {
     const value = e.target.value;
@@ -377,12 +489,43 @@ console.log(overShootLoanUpdateData);
     dispatch(setDropSuccessVisible());
   };
 
+ const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+  useEffect(() => {
+    if (isModalOpen && specificCso) {
+      const csoFullName = [specificCso.firstName, specificCso.lastName]
+        .filter(Boolean)
+        .join(" ");
 
+      setFormData((prev) => ({
+        ...prev,
+        csoId: specificCso.workId || "",
+        csoName: csoFullName,
+      }));
+    }
+  }, [isModalOpen, specificCso]);
     useEffect(() => {
     if (specificCso) {
       dispatch(updateCsoOverdueOnePerDay(specificCso._id));
     }
   }, [specificCso, dispatch]);
+
+ useEffect(() => {
+    if (successMessage) {
+      setFormData(initialState);
+      setIsModalOpen(false);
+    }
+  }, [successMessage]);
+   useEffect(() => {
+      if (errorMessage || successMessage) {
+        const timeout = setTimeout(() => {
+          dispatch(clearGroupLeaderMessages());
+        }, 4000);
+        return () => clearTimeout(timeout);
+      }
+      return undefined;
+    }, [dispatch, errorMessage, successMessage]);
 
    useEffect(() => {
     if (specificCso) {
@@ -581,9 +724,23 @@ const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
   return itemDateString === effectiveDateString;
 });
 
+ const handleFormChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+ const handleSubmit = (event) => {
+    event.preventDefault();
+    dispatch(addGroupLeader(formData));
+  };
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setFormData(initialState);
+    dispatch(clearGroupLeaderMessages());
+  };
 
 
-
+  
   return (
     <HomeCsoRap>
       {specificCso && csoHomeloans ? (<>
@@ -593,14 +750,24 @@ const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
           <div className="home-first-div">
             <div className="home-customers">
               <h2>Customers</h2>
-              <Icon
-                onClick={handleVisisble}
-                className=""
-                icon="simple-line-icons:plus"
-                width="24"
-                height="24"
-                style={{ color: "#005e78" }}
-              />
+              <div className="side-button">
+                <Icon
+                  onClick={handleVisisble}
+                  className=""
+                  icon="simple-line-icons:plus"
+                  width="24"
+                  height="24"
+                  style={{ color: "#005e78" }}
+                />
+                <Icon
+                  onClick={handleOpenModal}
+                  className=""
+                  icon="radix-icons:file-plus"
+                  width="24"
+                  height="24"
+                  style={{ color: "#005e78" }}
+                />
+              </div>
             </div>
             <div className="input-div">
               <input
@@ -883,6 +1050,107 @@ const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
       ) : (
         ""
       )}
+
+       {isModalOpen && (
+              <ModalOverlay>
+                <ModalContent>
+                  <ModalHeader>
+                    <h3>Add Group</h3>
+                    <button type="button" onClick={handleCloseModal} aria-label="Close">
+                      ×
+                    </button>
+                  </ModalHeader>
+                  <ModalForm onSubmit={handleSubmit}>
+                    <label>
+                      Group Name
+                      <input
+                        name="groupName"
+                        value={formData.groupName}
+                        onChange={handleFormChange}
+                        required
+                      />
+                    </label>
+                    <label>
+                      Group Leader First Name
+                      <input
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleFormChange}
+                        required
+                      />
+                    </label>
+                    <label>
+                      Last Name
+                      <input
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleFormChange}
+                        required
+                      />
+                    </label>
+                    <label>
+                      Address
+                      <input
+                        name="address"
+                        value={formData.address}
+                        onChange={handleFormChange}
+                        required
+                      />
+                    </label>
+                    <label>
+                      Phone
+                      <input
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleFormChange}
+                        required
+                      />
+                    </label>
+                    {/* <label>
+                      Customer Service Officer
+                      <select
+                        name="csoId"
+                        value={formData.csoId}
+                        onChange={handleCsoChange}
+                        required
+                      >
+                        <option value="">Select CSO</option>
+                        {csos.map((cso) => (
+                          <option key={cso._id} value={cso.workId}>
+                            {`${cso.firstName} ${cso.lastName}`} ({cso.workId})
+                          </option>
+                        ))}
+                      </select>
+                    </label> */}
+      
+                    {(errorMessage || successMessage) && (
+                      <p className={`status-message ${errorMessage ? 'error' : 'success'}`}>
+                        {errorMessage || successMessage}
+                      </p>
+                    )}
+      
+                    <button type="submit" disabled={!isValid || submitting}>
+                      {submitting ? <PulseLoader color="#ffffff" size={8} /> : 'Submit'}
+                    </button>
+                  </ModalForm>
+                </ModalContent>
+              </ModalOverlay>
+            )}
+            {successMessage && (
+              <ModalOverlay>
+                <ModalContent>
+                  <p>{successMessage}</p>
+                  <button style={{
+                    backgroundColor: "#000000",
+                    color: "white",
+                    border: "none",
+                    padding: "10px 20px",
+                    cursor: "pointer",
+                    borderRadius: "5px",
+                  }} onClick={() => dispatch(clearGroupLeaderMessages())}>Close</button>
+                </ModalContent>
+              </ModalOverlay>
+            )}
     </HomeCsoRap>
   );
 };

@@ -334,7 +334,7 @@ export const updateCsoOverdueOnePerDay = createAsyncThunk(
   "csoOverdue/updateCsoOverdueOnePerDay",
   async (csoId, { rejectWithValue }) => {
     try {
-      const lastRunKey = `cso-overdue-last-over-${csoId}`;
+      const lastRunKey = `cso-overdue-lastly-${csoId}`;
       const lastRun = localStorage.getItem(lastRunKey);
       const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
@@ -360,7 +360,7 @@ export const updateCsoRecoveryOnePerDay = createAsyncThunk(
   "csoOverdue/updateCsoRecoveryOnePerDay",
   async (csoId, { rejectWithValue }) => {
     try {
-      const lastRunKey = `cso-recovery-lastRun-recovery-${csoId}`;
+      const lastRunKey = `cso-recovery-lastRun-recovery-last-${csoId}`;
       const lastRun = localStorage.getItem(lastRunKey);
       const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 

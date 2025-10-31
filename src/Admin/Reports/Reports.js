@@ -7,6 +7,7 @@ import {
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import SecondReportPage from "./SecondOperation";
+import MonthlyReport from "./MonthlyReport";
 
 const ReportRap = styled.div`
   width: 100%;
@@ -340,15 +341,25 @@ const ReportPage = () => {
           >
             Business Reports
           </Link>
+          <Link
+            className={`client-link ${
+              activeLink === "monthly" ? "active" : ""
+            }`}
+            onClick={() => handleLinkClick("monthly")}
+          >
+            Monthly Reports
+          </Link>
         </div>
       </div>
 
       <div className="find-lawyer-header">
-        <div className="find-lawyer-header-upper">
-          <h2> Report</h2>
-          <div
-            style={{
-              margin: "10px 0",
+        {activeLink === "monthly" ? "" : (
+          <>
+          <div className="find-lawyer-header-upper">
+            <h2> Report</h2>
+            <div
+              style={{
+                margin: "10px 0",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
@@ -368,10 +379,12 @@ const ReportPage = () => {
             <button onClick={handleNextMonth}>Next Month</button>
           </div>
         </div>
+      
 
         {status === "loading" && <p>Loading...</p>}
         {status === "failed" && <p>Error: {error}</p>}
-
+        </>
+  )}
         {activeLink === "new" && (
           <>
             <div className="weeks-days">
@@ -703,6 +716,7 @@ const ReportPage = () => {
         )}
 
         {activeLink === "previous" && <SecondReportPage />}
+        {activeLink === "monthly" && <MonthlyReport />}
       </div>
 
       {/* Additional Monthly Totals */}

@@ -63,33 +63,39 @@ const sidebarConfig = [
     link: "/admin/holidays",
     title: "Holidays",
   },
-   {
+  {
     id: 10,
+    icon: "mdi:account-group-outline",
+    link: "/admin/group-leaders",
+    title: "Group Leaders",
+  },
+   {
+    id: 11,
     icon: "iconoir:reports-solid",
     link: "/admin/reports",
     title: "Reports",
   },
 {
-    id: 11,
+    id: 12,
     icon: "iconoir:reports-solid",
     link: "/admin/cso/reports",
     title: "Cso Reports",
   },
   
   {
-    id: 12,
+    id: 13,
     icon: "mdi:comment-account-outline",
     link: "/admin/admin-members",
     title: "Admin Panel",
   },
   {
-    id: 13,
+    id: 14,
     icon: "ri:home-office-line",
     link: "/admin/branches",
     title: "Branch",
   },
   {
-    id: 14,
+    id: 15,
     icon: "lets-icons:setting-line",
     link: "/admin/settings",
     title: "Setting",
@@ -97,7 +103,7 @@ const sidebarConfig = [
   // {
   //   id: 14,
   //   icon: "lets-icons:setting-line",
-  //   link: "/admin/test",
+  //   link: "/admin/reports/monthly",
   //   title: "Test",
   // },
 ];

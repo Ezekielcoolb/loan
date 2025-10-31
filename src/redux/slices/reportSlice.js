@@ -141,6 +141,7 @@ const reportSlice = createSlice({
     setMonthYear(state, action) {
       state.currentMonth = action.payload.month;
       state.currentYear = action.payload.year;
+      state.status = "idle";
     },
 
      setMonth: (state, action) => {

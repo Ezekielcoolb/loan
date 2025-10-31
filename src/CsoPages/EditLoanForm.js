@@ -21,6 +21,7 @@ import imageCompression from "browser-image-compression";
 import { fetchOutstandingLoans } from "../redux/slices/otherLoanSlice";
 import { fetchCsoByWorkId } from "../redux/slices/csoSlice";
 import SignatureCanvas from "react-signature-canvas";
+import { fetchGroupLeadersByCso } from "../redux/slices/groupLeaderSlice";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -168,7 +169,7 @@ const EditApplicationForm = () => {
   const [guarantorChange, setGuarantorChange] = useState(false);
   const [personalAddress, setPersonalAddress] = useState(false);
   const [businessInfo, setBusinessInfo] = useState(false);
-  const [groupLeaderChange, setGroupLeaderChange] = useState(false);
+  const [groupLeaderChange, setGroupLeaderChange] = useState(true);
 
   const [signImage, setSignImage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -181,8 +182,14 @@ const EditApplicationForm = () => {
     (state) => state.loan
   );
   const loans = useSelector((state) => state.loan.loans);
+  const {
+    options: groupLeaderOptions,
+    optionsLoading: groupLeaderOptionsLoading,
+    optionsError: groupLeaderOptionsError,
+  } = useSelector((state) => state.groupLeader);
   const successMessage = useSelector((state) => state.loan.successMessage);
   const loan = loans.find((loan) => loan._id === id);
+  const [selectedGroupLeaderId, setSelectedGroupLeaderId] = useState("");
   const [formData, setFormData] = useState({
     csoId: user?.workId,
     branch: user?.branch,
@@ -238,6 +245,8 @@ const EditApplicationForm = () => {
     groupDetails: {
       groupName: loan?.groupDetails?.groupName,
       leaderName: loan?.groupDetails?.leaderName,
+      address: loan?.groupDetails?.address,
+      groupId: loan?.groupDetails?.groupId,
       mobileNo: loan?.groupDetails?.mobileNo,
     },
     pictures: {
@@ -291,6 +300,8 @@ console.log(loan);
     formData.guarantorDetails.yearsKnown !== "" &&
     formData.groupDetails.groupName !== "" &&
     formData.groupDetails.leaderName !== "" &&
+    formData.groupDetails.address !== "" &&
+    formData.groupDetails.groupId !== "" &&
     formData.groupDetails.mobileNo !== "" &&
     formData.pictures.business !== "" &&
     formData.pictures.customer !== "" &&
@@ -321,7 +332,13 @@ console.log(loan);
       bankDetails: { ...loan?.bankDetails },
       loanDetails: { ...loan?.loanDetails },
       guarantorDetails: { ...loan?.guarantorDetails },
-      groupDetails: { ...loan?.groupDetails },
+      groupDetails: {
+        groupName: loan?.groupDetails?.groupName || "",
+        leaderName: loan?.groupDetails?.leaderName || "",
+        address: loan?.groupDetails?.address || "",
+        groupId: loan?.groupDetails?.groupId || "",
+        mobileNo: loan?.groupDetails?.mobileNo || "",
+      },
       pictures: {
         customer: loan?.pictures?.customer,
         business: loan?.pictures?.business,
@@ -337,6 +354,52 @@ console.log(loan);
   useEffect(() => {
     if (workId) dispatch(fetchCsoByWorkId(workId));
   }, [workId, dispatch]);
+
+  useEffect(() => {
+    if (user?.workId) {
+      dispatch(fetchGroupLeadersByCso(user.workId));
+    }
+  }, [dispatch, user?.workId]);
+
+  useEffect(() => {
+    if (formData.groupDetails.groupId) {
+      setSelectedGroupLeaderId(formData.groupDetails.groupId);
+    }
+  }, [formData.groupDetails.groupId]);
+
+  useEffect(() => {
+    if (
+      !groupLeaderOptionsLoading &&
+      groupLeaderOptions.length > 0 &&
+      !formData.groupDetails.groupId
+    ) {
+      const matchedLeader = groupLeaderOptions.find(
+        (leader) =>
+          leader.phone === formData.groupDetails.mobileNo ||
+          leader.groupName === formData.groupDetails.groupName
+      );
+
+      if (matchedLeader) {
+        setSelectedGroupLeaderId(matchedLeader._id);
+        setFormData((prev) => ({
+          ...prev,
+          groupDetails: {
+            groupName: matchedLeader.groupName || "",
+            leaderName: `${matchedLeader.firstName || ""} ${matchedLeader.lastName || ""}`.trim(),
+            address: matchedLeader.address || "",
+            groupId: matchedLeader._id || "",
+            mobileNo: matchedLeader.phone || "",
+          },
+        }));
+      }
+    }
+  }, [
+    groupLeaderOptions,
+    groupLeaderOptionsLoading,
+    formData.groupDetails.groupId,
+    formData.groupDetails.mobileNo,
+    formData.groupDetails.groupName,
+  ]);
 
   const handleVisisbleNow = () => {
     navigate(`/cso/customer-details/${loan?._id}`);
@@ -465,6 +528,36 @@ console.log(loan);
   };
   const handleGroupLeaderChange = () => {
     setGroupLeaderChange(!groupLeaderChange);
+  };
+
+  const handleGroupLeaderSelect = (e) => {
+    const selectedId = e.target.value;
+    setSelectedGroupLeaderId(selectedId);
+    const selectedLeader = groupLeaderOptions.find((leader) => leader._id === selectedId);
+
+    if (selectedLeader) {
+      setFormData((prev) => ({
+        ...prev,
+        groupDetails: {
+          groupName: selectedLeader.groupName || "",
+          leaderName: `${selectedLeader.firstName || ""} ${selectedLeader.lastName || ""}`.trim(),
+          address: selectedLeader.address || "",
+          groupId: selectedLeader._id || "",
+          mobileNo: selectedLeader.phone || "",
+        },
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        groupDetails: {
+          groupName: "",
+          leaderName: "",
+          address: "",
+          groupId: "",
+          mobileNo: "",
+        },
+      }));
+    }
   };
 
   const handleFileChange = async (fileList) => {
@@ -1014,8 +1107,56 @@ console.log(loan);
                           </div> */}
                         </div>
             
-                        <div className="detailssss">
-                          {/* Loan Details */}
+                        {groupLeaderChange ? (
+                <div className="detailssss">
+                  {/* Guarantor Details */}
+                  <h3>Group Details</h3>
+                  <select
+                    value={selectedGroupLeaderId}
+                    onChange={handleGroupLeaderSelect}
+                    required
+                  >
+                    <option value="">
+                      {groupLeaderOptionsLoading
+                        ? "Loading group leaders..."
+                        : "Select Group Leader"}
+                    </option>
+                    {groupLeaderOptions.map((leader) => (
+                      <option key={leader._id} value={leader._id}>
+                        {leader.groupName} - {leader.firstName} {leader.lastName}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    value={formData.groupDetails.groupName}
+                    placeholder="Group Name"
+                    disabled
+                  />
+                  <input
+                    type="text"
+                    value={formData.groupDetails.leaderName}
+                    placeholder="Group Leader's Name"
+                    disabled
+                  />
+                  <input
+                    type="text"
+                    value={formData.groupDetails.address}
+                    placeholder="Group Leader's Address"
+                    disabled
+                  />
+                  <input
+                    type="text"
+                    value={formData.groupDetails.mobileNo}
+                    placeholder="Group Leader's Number"
+                    disabled
+                  />
+                </div>
+              ) : (
+                ""
+              )}
+                        {/* <div className="detailssss">
+                         
                           <h3>Group Details</h3>
                           <input
                             type="text"
@@ -1041,7 +1182,10 @@ console.log(loan);
                             placeholder="Group Leader's Number"
                             required
                           />
-                        </div>
+                        </div> */}
+
+
+
                         <div className="detailssss">
                           <h3>Upload Pictures</h3>
             

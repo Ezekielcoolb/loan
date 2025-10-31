@@ -288,7 +288,7 @@ const LoanCsoDashboard = () => {
       const { outstandingLoans, totalOutstandingLoans, loading, items, recoveryLoans } = useSelector(state => state.otherLoan);
 
   // console.log(csoLoanDashdordLoans);
-  console.log(recoveryLoans);
+  console.log(items);
   
   // console.log(csoDashboardTotalLoans);
     const reportRef = useRef();

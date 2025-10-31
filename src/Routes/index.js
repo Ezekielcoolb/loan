@@ -27,6 +27,9 @@ import ManagerNewLoanCard from "../ManagerPages/ManagerNewLoanCard";
 import EditApplicationForm from "../CsoPages/EditLoanForm";
 import CsoReportSummaryTable from "../Admin/CsoReports/CsoReportList";
 import CsoReportWallet from "../Admin/CsoReports/CsoReportWallet";
+import ManagerGroupLeader from "../ManagerPages/ManagerGroupLeader";
+import MonthlyReport from "../Admin/Reports/MonthlyReport";
+const GroupLeader = lazy(() => import("../Admin/GroupLeader"));
 
 const AdminDashboardLayout = lazy(() => import("../Controller/adminController"));
 const AdminDashboard = lazy(() => import("../Admin/AdminDashboard"));
@@ -130,6 +133,7 @@ export default function Routess() {
                         { path: "/admin/disbursement", element: <Disbursment /> },
                         { path: "/admin/test", element: <MonthRemittanceTable /> },
                         { path: "/admin/holidays", element: <HolidayList /> },
+                        { path: "/admin/group-leaders", element: <GroupLeader /> },
                         { path: "/admin/customer/:bvn", element: <CustomerDetailsInfo /> },
                           { path: "/admin/new-customer/:bvn", element: <NewCustomerDetailsInfo /> },
                         { path: "/admin/customer/calender/:id", element: <AdminCalendarPage /> },
@@ -144,6 +148,7 @@ export default function Routess() {
                         { path: "/admin/admin-members", element: <AdminForm /> },
                          { path: "/admin/operations", element: <Operations /> },
                          { path: "/admin/reports", element: <AdminReport /> },
+                          { path: "/admin/reports/monthly", element: <MonthlyReport /> },
                           { path: "/admin/cso/reports", element: <CsoReportSummaryTable /> },
                           { path: "/admin/cso/reports/:csoId", element: <CsoReportWallet /> },
                     ],
@@ -199,11 +204,13 @@ export default function Routess() {
                         { path: "/manager/allcustomers", element: <AllCustomerDetail /> },
                         { path: "/manager/newloan", element: <ManagerNewLoan /> },
                         { path: "/manager/test", element: <GuarantorDetailsTest /> },
+                        { path: "/manager/group-leader", element: <ManagerGroupLeader /> },
                         { path: "/manager/customer/:bvn", element: <ManagerCustomerDetails /> },
                         { path: "/manager/new-customer/:bvn", element: <ManagerNewCustomerDetailsInfo /> },
                         { path: "/manager/new-loan-customer/calender/:id", element: <ManagerNewLoanCard /> },
                         { path: "/manager/disbursement", element: <Disbursment /> },
-
+                        { path: "/manager/group-leaders", element: <ManagerGroupLeader /> },
+                        
                         { path: "/manager/customer/calender/:id", element: <ManagerCustomerCard /> },
                         { path: "/manager/calendar/:id", element: <CalendarPage /> },
                         { path: "/manager/csoDetails/:id", element: <ManagerCsoDetails /> },

@@ -389,6 +389,21 @@ export const fetchDisbursementDataChart = createAsyncThunk(
   }
 );
 
+export const fetchLoanMonthlySummary = createAsyncThunk(
+  "loans/fetchLoanMonthlySummary",
+  async (year, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/loans-chart/monthly-summary`, {
+        params: { year },
+      });
+      return response.data;
+    } catch (error) {
+      const message = error?.response?.data?.error || error?.message || "Failed to load monthly summary";
+      return rejectWithValue(message);
+    }
+  }
+);
+
 export const fetchAllLoansByCsoId = createAsyncThunk(
   "loans/fetchAllLoansByCsoId",
   async ({ csoId }) => {
@@ -768,6 +783,10 @@ csoWeeklyReport: null,
     totalPaid: 0,
     allLoans: [],
     monthlyData: [],
+    monthlySummary: [],
+    monthlySummaryStatus: false,
+    monthlySummaryError: null,
+    monthlySummaryYear: new Date().getFullYear(),
     totalLoans: 0,
     activeLoans: 0,
     pendingLoans: 0,
@@ -1043,6 +1062,22 @@ csoWeeklyReport: null,
       });
 
   builder
+      .addCase(fetchLoanMonthlySummary.pending, (state) => {
+        state.monthlySummaryStatus = true;
+        state.monthlySummaryError = null;
+      })
+      .addCase(fetchLoanMonthlySummary.fulfilled, (state, action) => {
+        state.monthlySummaryStatus = false;
+        state.monthlySummary = Array.isArray(action.payload?.data)
+          ? action.payload.data
+          : [];
+        state.monthlySummaryYear = action.payload?.year ?? action.meta?.arg ?? new Date().getFullYear();
+      })
+      .addCase(fetchLoanMonthlySummary.rejected, (state, action) => {
+        state.monthlySummaryStatus = false;
+        state.monthlySummaryError = action.payload || action.error.message;
+        state.monthlySummary = [];
+      })
       .addCase(updateDisbursementPicture.pending, (state) => {
         state.disbursePictureloading = true;
         state.success = false;

@@ -130,10 +130,12 @@ const SecondReportPage = () => {
     setOpenweek(link);
   };
   useEffect(() => {
-    dispatch(
-      fetchReportMonthlySummary({ month: currentMonth, year: currentYear })
-    );
-  }, [dispatch, currentMonth, currentYear]);
+    if (status === "idle") {
+      dispatch(
+        fetchReportMonthlySummary({ month: currentMonth, year: currentYear })
+      );
+    }
+  }, [dispatch, status, currentMonth, currentYear]);
 
   const handlePrevMonth = () => {
     let month = currentMonth - 1;

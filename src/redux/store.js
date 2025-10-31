@@ -17,6 +17,7 @@ import otherLoanReducer from "./slices/otherLoanSlice"
 import reportReducer from './slices/reportSlice'
 import uploadReducer from './slices/uploadSlice'
 import holidayReducer from './slices/holidaySlice'
+import groupLeaderReducer from './slices/groupLeaderSlice'
 
 const store = configureStore({
     reducer: {
@@ -38,6 +39,7 @@ const store = configureStore({
         upload: uploadReducer,
         holiday: holidayReducer,
         search: searchReducer,
+        groupLeader: groupLeaderReducer,
         
         
     },
