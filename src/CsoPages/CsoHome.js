@@ -30,7 +30,7 @@ import {
   updateCsoRecoveryOnePerDay,
 
 } from "../redux/slices/csoSlice";
-import { addGroupLeader, clearGroupLeaderMessages } from "../redux/slices/groupLeaderSlice";
+import { addGroupLeader, clearGroupLeaderMessages, fetchGroupLeadersByCso } from "../redux/slices/groupLeaderSlice";
 
 const HomeCsoRap = styled.div`
   color: #005e78;
@@ -400,6 +400,8 @@ const initialState = {
   csoName: '',
 };
 
+const MAX_GROUPS_ALLOWED = 10;
+
 
 const CsoHome = () => {
   // const { user } = useSelector((state) => state.auth);
@@ -432,11 +434,16 @@ const CsoHome = () => {
     (state) => state.otherLoan
   );
 
-   const { leaders, submitting, errorMessage, successMessage } = useSelector(
-      (state) => state.groupLeader
-    );
+  const {
+    leaders,
+    submitting,
+    errorMessage,
+    successMessage,
+    options: groupLeaderOptions = [],
+    optionsLoading: groupLeaderOptionsLoading,
+  } = useSelector((state) => state.groupLeader);
 
-    console.log(formData);
+    console.log(csoHomeloans);
     
 
   const { specificCso,
@@ -455,6 +462,7 @@ console.log(recoveryUpdateData);
 
 
   const [query, setQuery] = useState("");
+  const [selectedGroupLeaderId, setSelectedGroupLeaderId] = useState("");
 
   const csoId = user.workId;
   const workId = user.workId;
@@ -475,6 +483,12 @@ console.log(recoveryUpdateData);
     setQuery(value);
     if (value.trim() !== "") {
       dispatch(searchCustomerCsoHome({ query: value, csoId }));
+    } else {
+      dispatch(fetchLoansByCsoForHome({
+        csoId,
+        page: csoHomepage,
+        groupLeaderId: selectedGroupLeaderId || undefined,
+      }));
     }
   };
   const handleVisisble = () => {
@@ -490,6 +504,15 @@ console.log(recoveryUpdateData);
   };
 
  const handleOpenModal = () => {
+    const existingGroupCount = Array.isArray(groupLeaderOptions)
+      ? groupLeaderOptions.length
+      : 0;
+
+    if (existingGroupCount >= MAX_GROUPS_ALLOWED) {
+      alert("Your group leader exceeded 10 groups, contact the admin.");
+      return;
+    }
+
     setIsModalOpen(true);
   };
   useEffect(() => {
@@ -558,8 +581,18 @@ console.log(recoveryUpdateData);
   }, [csoId]);
 
   useEffect(() => {
-    dispatch(fetchLoansByCsoForHome({ csoId, page: csoHomepage }));
-  }, [dispatch, csoId, csoHomepage]);
+    dispatch(fetchLoansByCsoForHome({
+      csoId,
+      page: csoHomepage,
+      groupLeaderId: selectedGroupLeaderId || undefined,
+    }));
+  }, [dispatch, csoId, csoHomepage, selectedGroupLeaderId]);
+
+  useEffect(() => {
+    if (csoId) {
+      dispatch(fetchGroupLeadersByCso(csoId));
+    }
+  }, [dispatch, csoId]);
 
   useEffect(() => {
     if (csoId) dispatch(fetchOutstandingLoans(csoId));
@@ -769,20 +802,45 @@ const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
                 />
               </div>
             </div>
-            <div className="input-div">
-              <input
-                value={query}
-                onChange={handleChange}
-                type="text"
-                placeholder="Search"
-              />
-              <Icon
-                className="search-input-icon"
-                icon="ic:baseline-search"
-                width="24"
-                height="24"
-                style={{ color: " #005E7880" }}
-              />
+            <div className="input-div" style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center", justifyContent: "center", marginLeft:"20px" }}>
+              <select
+                value={selectedGroupLeaderId}
+                onChange={(e) => setSelectedGroupLeaderId(e.target.value)}
+                style={{
+                  background: "#daf7ff",
+                  padding: "12px 16px",
+                  minWidth: "333px",
+                  height: "45px",
+                  border: "none",
+                  borderRadius: "20px",
+                }}
+              >
+                <option value="">All Groups</option>
+                {groupLeaderOptions.map((leader) => (
+                  <option key={leader._id} value={leader._id}>
+                    {leader.groupName || `${leader.firstName || ""} ${leader.lastName || ""}`.trim()}
+                  </option>
+                ))}
+              </select>
+              <div style={{ position: "relative" }}>
+                <input
+                  value={query}
+                  onChange={handleChange}
+                  type="text"
+                  placeholder="Search"
+                  style={{
+                    paddingLeft: "36px",
+                    width: "333px",
+                  }}
+                />
+                <Icon
+                  className="search-input-icon"
+                  icon="ic:baseline-search"
+                  width="24"
+                  height="24"
+                  style={{ color: " #005E7880" }}
+                />
+              </div>
             </div>
           </div>
           <ul>

@@ -1,8 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { fetchCsoReportsSummary, fetchCsoReportsSummarySingle } from "../../redux/slices/otherLoanSlice";
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
+import {
+  fetchCsoReportsSummary,
+  fetchCsoReportsSummarySingle,
+} from "../../redux/slices/otherLoanSlice";
 import { updateCsoOverShootPayment } from "../../redux/slices/csoSlice";
 
 const WalletRap = styled.div`
@@ -433,7 +441,8 @@ const ModalButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   font-size: 14px;
-  background: ${({ variant }) => (variant === "secondary" ? "#e5e7eb" : "#0c1d55")};
+  background: ${({ variant }) =>
+    variant === "secondary" ? "#e5e7eb" : "#0c1d55"};
   color: ${({ variant }) => (variant === "secondary" ? "#030b26" : "#ffffff")};
   opacity: ${({ disabled }) => (disabled ? 0.7 : 1)};
 `;
@@ -444,7 +453,8 @@ const ModalError = styled.p`
   color: #d62f2f;
 `;
 
-const makePeriodKey = (year, month) => `${year}-${String(month).padStart(2, "0")}`;
+const makePeriodKey = (year, month) =>
+  `${year}-${String(month).padStart(2, "0")}`;
 
 export default function CsoReportWallet() {
   const dispatch = useDispatch();
@@ -452,7 +462,9 @@ export default function CsoReportWallet() {
   const location = useLocation();
   const { csoId } = useParams();
   const [searchParams] = useSearchParams();
-  const { csosReport, csosSingleReport, loading } = useSelector((state) => state.otherLoan);
+  const { csosReport, csosSingleReport, loading } = useSelector(
+    (state) => state.otherLoan
+  );
   const { overShootPaidLoading } = useSelector((state) => state.cso);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
@@ -480,11 +492,11 @@ export default function CsoReportWallet() {
   const wallet = csosSingleReport || null;
   const breakdown = wallet?.breakdown || [];
   const overall = wallet?.overall || {};
-    const currentMonth = wallet?.currentMonth || {};
+  const currentMonth = wallet?.currentMonth || {};
   const bonusPayments = wallet?.bonusPayments || [];
   const csoMeta = wallet?.cso;
   const csoDetails = csoMeta || csoFromList;
-console.log(currentMonth);
+  console.log(currentMonth);
 
   useEffect(() => {
     if (!breakdown.length) {
@@ -496,7 +508,9 @@ console.log(currentMonth);
 
     if (month && year) {
       const currentKey = makePeriodKey(year, month);
-      const exists = breakdown.some((item) => makePeriodKey(item.year, item.month) === currentKey);
+      const exists = breakdown.some(
+        (item) => makePeriodKey(item.year, item.month) === currentKey
+      );
       setSelectedPeriod(exists ? currentKey : fallbackKey);
       return;
     }
@@ -508,17 +522,18 @@ console.log(currentMonth);
   const totalInterest = safeNumber(overall.totalInterest);
   const totalRepayment = safeNumber(overall.totalRepayment);
   const totalLoanBalance = safeNumber(overall.totalLoanBalance);
-  const totalLoanCount = overall.totalLoanCount ?? csoFromList?.totalLoanCount ?? 0;
+  const totalLoanCount =
+    overall.totalLoanCount ?? csoFromList?.totalLoanCount ?? 0;
   const totalOverdue = safeNumber(overall.totalOverdue);
   const totalRecovery = safeNumber(overall.totalRecovery);
 
-   const realtotalDisbursed = safeNumber(currentMonth.totalDisbursed);
+  const realtotalDisbursed = safeNumber(currentMonth.totalDisbursed);
   const realtotalInterest = safeNumber(currentMonth.totalInterest);
   const realtotalRepayment = safeNumber(currentMonth.totalRepayment);
   const realtotalLoanBalance = safeNumber(currentMonth.totalLoanBalance);
   const realtotalLoanCount = currentMonth.totalLoanCount;
   const realtotalOverdue = safeNumber(currentMonth.totalOverdue);
-  const realtotalRecovery = safeNumber(currentMonth.totalRecovery); 
+  const realtotalRecovery = safeNumber(currentMonth.totalRecovery);
 
   const portfolioWorth = realtotalDisbursed + realtotalInterest;
   const performance = portfolioWorth
@@ -528,22 +543,28 @@ console.log(currentMonth);
   const selectedRecord = useMemo(() => {
     if (!selectedPeriod) return null;
     return (
-      breakdown.find((item) => makePeriodKey(item.year, item.month) === selectedPeriod) || null
+      breakdown.find(
+        (item) => makePeriodKey(item.year, item.month) === selectedPeriod
+      ) || null
     );
   }, [breakdown, selectedPeriod]);
 
-  const totalBonusEarned = breakdown.reduce((sum, item) => sum + safeNumber(item?.bonus), 0);
-  const totalWithdrawn = bonusPayments.reduce((sum, item) => sum + safeNumber(item?.amount), 0);
+  const totalBonusEarned = breakdown.reduce(
+    (sum, item) => sum + safeNumber(item?.bonus),
+    0
+  );
+  const totalWithdrawn = bonusPayments.reduce(
+    (sum, item) => sum + safeNumber(item?.amount),
+    0
+  );
   const availableForWithdrawal = Math.max(0, totalBonusEarned - totalWithdrawn);
 
   const currentBonus = safeNumber(selectedRecord?.bonus);
 
-
- const totalIncome = selectedRecord?.totalInterest + selectedRecord?.totalLoanForm;
-const profit = totalIncome - selectedRecord?.totalExpenses;
-const profitPercent = totalIncome > 0 ? (profit / totalIncome) * 100 : 0;
-
-
+  const totalIncome =
+    selectedRecord?.totalInterest + selectedRecord?.totalLoanForm;
+  const profit = totalIncome - selectedRecord?.totalExpenses;
+  const profitPercent = totalIncome > 0 ? (profit / totalIncome) * 100 : 0;
 
   const handleOpenWithdraw = () => {
     setWithdrawAmount(currentBonus ? String(currentBonus) : "");
@@ -571,7 +592,9 @@ const profitPercent = totalIncome > 0 ? (profit / totalIncome) * 100 : 0;
     }
 
     try {
-      await dispatch(updateCsoOverShootPayment({ csoId, amount: numericAmount })).unwrap();
+      await dispatch(
+        updateCsoOverShootPayment({ csoId, amount: numericAmount })
+      ).unwrap();
       handleCloseWithdraw();
       dispatch(fetchCsoReportsSummarySingle({ month, year, csoId }));
       dispatch(fetchCsoReportsSummary({ month, year }));
@@ -593,17 +616,21 @@ const profitPercent = totalIncome > 0 ? (profit / totalIncome) * 100 : 0;
 
       <div className="hero">
         <div className="hero-left">
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-          }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
             <div className="hero-tag">CSO Wallet </div>
-            <div style={{
-              fontSize: "14px",
-              fontWeight: "700",
-              color: "#d62f2f",
-            }}>
+            <div
+              style={{
+                fontSize: "14px",
+                fontWeight: "700",
+                color: "#d62f2f",
+              }}
+            >
               {performance}%
             </div>
           </div>
@@ -677,61 +704,92 @@ const profitPercent = totalIncome > 0 ? (profit / totalIncome) * 100 : 0;
               </div>
               <div className="breakdown-pair">
                 <span className="breakdown-label">Portfolio worth</span>
-                <span className="breakdown-value">{formatCurrency(selectedRecord.totalDisbursed + selectedRecord.totalInterest )}</span>
+                <span className="breakdown-value">
+                  {formatCurrency(
+                    selectedRecord.totalDisbursed + selectedRecord.totalInterest
+                  )}
+                </span>
               </div>
               <div className="breakdown-pair">
                 <span className="breakdown-label">Balance of Debt</span>
-                <span className="breakdown-value">{formatCurrency(selectedRecord.totalOverdue)}</span>
+                <span className="breakdown-value">
+                  {formatCurrency(selectedRecord.totalOverdue)}
+                </span>
               </div>
-               <div className="breakdown-pair">
+              <div className="breakdown-pair">
                 <span className="breakdown-label">Total Loan Count</span>
-                <span className="breakdown-value">{selectedRecord.totalLoanCount}</span>
+                <span className="breakdown-value">
+                  {selectedRecord.totalLoanCount}
+                </span>
               </div>
-               <div className="breakdown-pair">
+              <div className="breakdown-pair">
                 <span className="breakdown-label">Total Repayment</span>
-                <span className="breakdown-value">{formatCurrency(selectedRecord.totalRepayment)}</span>
+                <span className="breakdown-value">
+                  {formatCurrency(selectedRecord.totalRepayment)}
+                </span>
               </div>
               <div className="breakdown-pair">
                 <span className="breakdown-label">Total Disbursed Loan</span>
-                <span className="breakdown-value">{formatCurrency(selectedRecord.totalDisbursed)}</span>
+                <span className="breakdown-value">
+                  {formatCurrency(selectedRecord.totalDisbursed)}
+                </span>
               </div>
               <div className="breakdown-pair">
                 <span className="breakdown-label">Total Interest</span>
-                <span className="breakdown-value">{formatCurrency(selectedRecord.totalInterest)}</span>
+                <span className="breakdown-value">
+                  {formatCurrency(selectedRecord.totalInterest)}
+                </span>
               </div>
               <div className="breakdown-pair">
                 <span className="breakdown-label">Cards and Others</span>
-                <span className="breakdown-value">{formatCurrency(selectedRecord.totalLoanForm)}</span>
+                <span className="breakdown-value">
+                  {formatCurrency(selectedRecord.totalLoanForm)}
+                </span>
               </div>
-             <div className="breakdown-pair">
+              <div className="breakdown-pair">
                 <span className="breakdown-label">Total Expenses</span>
-                <span className="breakdown-value">{formatCurrency(selectedRecord.totalExpenses)}</span>
+                <span className="breakdown-value">
+                  {formatCurrency(selectedRecord.totalExpenses)}
+                </span>
               </div>
 
               <div className="breakdown-pair">
                 <span className="breakdown-label">Total Profit</span>
-                <span className="breakdown-value">{formatCurrency(profit)}</span>
+                <span className="breakdown-value">
+                  {formatCurrency(profit)}
+                </span>
               </div>
-              
+
               <div className="breakdown-pair">
                 <span className="breakdown-label">Loan Balance</span>
-                <span className="breakdown-value">{formatCurrency(selectedRecord.totalLoanBalance)}</span>
+                <span className="breakdown-value">
+                  {formatCurrency(selectedRecord.totalLoanBalance)}
+                </span>
               </div>
-              
+
               <div className="breakdown-pair">
                 <span className="breakdown-label">Recovery</span>
-                <span className="breakdown-value">{formatCurrency(selectedRecord.totalRecovery)}</span>
+                <span className="breakdown-value">
+                  {formatCurrency(selectedRecord.totalRecovery)}
+                </span>
+              </div>
+              <div className="breakdown-pair">
+                <span className="breakdown-label"> Overtarget</span>
+                <span className="breakdown-value">
+                  {formatCurrency(selectedRecord.overshootValue)}
+                </span>
               </div>
               <div className="breakdown-pair">
                 <span className="breakdown-label">Bonus for Overtarget</span>
-                <span className="breakdown-value">{formatCurrency(selectedRecord.bonus)}</span>
+                <span className="breakdown-value">
+                  {formatCurrency(selectedRecord.bonus)}
+                </span>
               </div>
-                <div className="breakdown-pair">
+              <div className="breakdown-pair">
                 <span className="breakdown-label">Profitability </span>
-<span className="breakdown-value">
-  {profitPercent ? profitPercent.toFixed(2) : 0}%
-</span>
-
+                <span className="breakdown-value">
+                  {profitPercent ? profitPercent.toFixed(2) : 0}%
+                </span>
               </div>
             </div>
           ) : (
@@ -780,13 +838,17 @@ const profitPercent = totalIncome > 0 ? (profit / totalIncome) * 100 : 0;
             <span>Overdue Balance</span>
             <strong className="negative">{formatCurrency(totalOverdue)}</strong>
           </div>
-           <div className="panel-row">
+          <div className="panel-row">
             <span>Loan Balance</span>
-            <strong className="negative">{formatCurrency(totalLoanBalance)}</strong>
+            <strong className="negative">
+              {formatCurrency(totalLoanBalance)}
+            </strong>
           </div>
           <div className="panel-row">
             <span>Net Portfolio</span>
-            <strong className="positive">{formatCurrency(portfolioWorth - totalOverdue)}</strong>
+            <strong className="positive">
+              {formatCurrency(portfolioWorth - totalOverdue)}
+            </strong>
           </div>
         </div>
 
@@ -794,11 +856,15 @@ const profitPercent = totalIncome > 0 ? (profit / totalIncome) * 100 : 0;
           <div className="panel-title">Remittance Overview</div>
           <div className="panel-row">
             <span>Total Repayment</span>
-            <strong className="positive">{formatCurrency(totalRepayment)}</strong>
+            <strong className="positive">
+              {formatCurrency(totalRepayment)}
+            </strong>
           </div>
           <div className="panel-row">
             <span>Total Recovery</span>
-            <strong className="negative">{formatCurrency(totalRecovery)}</strong>
+            <strong className="negative">
+              {formatCurrency(totalRecovery)}
+            </strong>
           </div>
           <div className="panel-row">
             <span>Bonus Earned</span>
@@ -817,7 +883,9 @@ const profitPercent = totalIncome > 0 ? (profit / totalIncome) * 100 : 0;
         <div className="panel">
           <div className="panel-title">Recent Withdrawals</div>
           <div className="bonus-list">
-            {bonusPayments.length === 0 && <div className="status">No withdrawals recorded.</div>}
+            {bonusPayments.length === 0 && (
+              <div className="status">No withdrawals recorded.</div>
+            )}
             {bonusPayments.map((item, index) => (
               <div className="bonus-item" key={`${item.paidAt}-${index}`}>
                 <span>{formatDate(item.paidAt)}</span>
@@ -832,39 +900,51 @@ const profitPercent = totalIncome > 0 ? (profit / totalIncome) * 100 : 0;
         <div className="statement-header">Statement Snapshot</div>
         <div className="statement-row">
           <span>Total Disbursed</span>
-          <span className="statement-value accent">{formatCurrency(totalDisbursed)}</span>
+          <span className="statement-value accent">
+            {formatCurrency(totalDisbursed)}
+          </span>
         </div>
         <div className="statement-row">
           <span>Total Interest</span>
-          <span className="statement-value">{formatCurrency(totalInterest)}</span>
+          <span className="statement-value">
+            {formatCurrency(totalInterest)}
+          </span>
         </div>
         <div className="statement-row">
           <span>Total Repayment</span>
-          <span className="statement-value positive">{formatCurrency(totalRepayment)}</span>
+          <span className="statement-value positive">
+            {formatCurrency(totalRepayment)}
+          </span>
         </div>
         <div className="statement-row">
           <span>Loan Balance</span>
-          <span className="statement-value negative">{formatCurrency(totalLoanBalance)}</span>
+          <span className="statement-value negative">
+            {formatCurrency(totalLoanBalance)}
+          </span>
         </div>
         <div className="statement-row">
           <span>Net Position</span>
           <span
-            className={`statement-value ${portfolioWorth - totalOverdue >= 0 ? "positive" : "negative"}`}
+            className={`statement-value ${
+              portfolioWorth - totalOverdue >= 0 ? "positive" : "negative"
+            }`}
           >
             {formatCurrency(portfolioWorth - totalOverdue)}
           </span>
         </div>
         <div className="statement-row">
           <span>Total Bonus Earned</span>
-          <span className="statement-value">{formatCurrency(totalBonusEarned)}</span>
+          <span className="statement-value">
+            {formatCurrency(totalBonusEarned)}
+          </span>
         </div>
         <div className="statement-row">
           <span>Total Withdrawn</span>
-          <span className="statement-value">{formatCurrency(totalWithdrawn)}</span>
+          <span className="statement-value">
+            {formatCurrency(totalWithdrawn)}
+          </span>
         </div>
       </div>
-
-      
 
       {/* {loading && <div className="status">Refreshing data…</div>}
       {!cso && !loading && (
@@ -878,8 +958,9 @@ const profitPercent = totalIncome > 0 ? (profit / totalIncome) * 100 : 0;
           <ModalCard>
             <ModalTitle>Confirm Withdrawal</ModalTitle>
             <ModalText>
-              You can withdraw up to {formatCurrency(availableForWithdrawal)} from the available bonus
-              balance. Enter the amount you would like to withdraw now.
+              You can withdraw up to {formatCurrency(availableForWithdrawal)}{" "}
+              from the available bonus balance. Enter the amount you would like
+              to withdraw now.
             </ModalText>
             <ModalInput
               type="number"
@@ -890,10 +971,17 @@ const profitPercent = totalIncome > 0 ? (profit / totalIncome) * 100 : 0;
             />
             {withdrawError && <ModalError>{withdrawError}</ModalError>}
             <ModalActions>
-              <ModalButton variant="secondary" onClick={handleCloseWithdraw} disabled={overShootPaidLoading}>
+              <ModalButton
+                variant="secondary"
+                onClick={handleCloseWithdraw}
+                disabled={overShootPaidLoading}
+              >
                 Cancel
               </ModalButton>
-              <ModalButton onClick={handleConfirmWithdraw} disabled={overShootPaidLoading}>
+              <ModalButton
+                onClick={handleConfirmWithdraw}
+                disabled={overShootPaidLoading}
+              >
                 {overShootPaidLoading ? "Processing…" : "Confirm"}
               </ModalButton>
             </ModalActions>

@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchLoanMonthlySummary } from "../../redux/slices/LoanSlice";
+import {
+  fetchLoanMonthlyMatrics,
+  fetchLoanMonthlySummary,
+} from "../../redux/slices/LoanSlice";
 import { Link } from "react-router-dom";
 
 const Container = styled.div`
@@ -12,7 +15,7 @@ const Container = styled.div`
   gap: 20px;
   overflow-x: hidden;
 
- .client-link {
+  .client-link {
     padding: 20px 20px;
     text-decoration: none;
     color: #727789;
@@ -141,9 +144,11 @@ const DataTable = styled.table`
 const StatusMessage = styled.div`
   padding: 16px;
   border-radius: 6px;
-  background: ${({ $variant }) => ($variant === "error" ? "#fee2e2" : "#e0f2fe")};
+  background: ${({ $variant }) =>
+    $variant === "error" ? "#fee2e2" : "#e0f2fe"};
   color: ${({ $variant }) => ($variant === "error" ? "#b91c1c" : "#0369a1")};
-  border: 1px solid ${({ $variant }) => ($variant === "error" ? "#fca5a5" : "#bae6fd")};
+  border: 1px solid
+    ${({ $variant }) => ($variant === "error" ? "#fca5a5" : "#bae6fd")};
 `;
 
 const formatAmount = (value) => {
@@ -152,16 +157,20 @@ const formatAmount = (value) => {
 };
 
 const MonthlyReport = () => {
-      const [activeLink, setActiveLink] = useState("new");
+  const [activeLink, setActiveLink] = useState("new");
   const dispatch = useDispatch();
   const {
     monthlySummary,
     monthlySummaryStatus,
     monthlySummaryError,
     monthlySummaryYear,
+    monthlySummaryMatrics,
+    monthlySummaryMatricsStatus,
+    monthlySummaryMatricsError,
+    monthlySummaryMatricsYear,
   } = useSelector((state) => state.loan);
 
-console.log(monthlySummary)
+  console.log(monthlySummary);
   const [selectedYear, setSelectedYear] = useState(
     monthlySummaryYear || new Date().getFullYear()
   );
@@ -177,10 +186,38 @@ console.log(monthlySummary)
     }
 
     dispatch(fetchLoanMonthlySummary(selectedYear));
-  }, [dispatch, selectedYear, monthlySummaryStatus, monthlySummary.length, monthlySummaryYear]);
+  }, [
+    dispatch,
+    selectedYear,
+    monthlySummaryStatus,
+    monthlySummary.length,
+    monthlySummaryYear,
+  ]);
+
+  useEffect(() => {
+    if (
+      monthlySummaryMatricsStatus !== true &&
+      monthlySummaryMatrics.length > 0 &&
+      monthlySummaryMatricsYear === selectedYear
+    ) {
+      return;
+    }
+
+    dispatch(fetchLoanMonthlyMatrics(selectedYear));
+  }, [
+    dispatch,
+    selectedYear,
+    monthlySummaryMatricsStatus,
+    monthlySummaryMatrics.length,
+    monthlySummaryMatricsYear,
+  ]);
+
+  console.log(monthlySummaryMatrics);
 
   const loading = monthlySummaryStatus === true;
   const error = monthlySummaryError;
+  const metricsLoading = monthlySummaryMatricsStatus === true;
+  const metricsError = monthlySummaryMatricsError;
 
   const filteredData = useMemo(() => {
     if (!Array.isArray(monthlySummary) || monthlySummary.length === 0) {
@@ -209,11 +246,28 @@ console.log(monthlySummary)
     return monthlySummary;
   }, [monthlySummary, range, selectedYear]);
 
+  const metricsByMonth = useMemo(() => {
+    if (!Array.isArray(monthlySummaryMatrics)) {
+      return {};
+    }
+
+    return monthlySummaryMatrics.reduce((acc, item) => {
+      const key =
+        item?.monthIndex !== undefined && item?.monthIndex !== null
+          ? item.monthIndex
+          : item?.month;
+      if (key !== undefined && key !== null) {
+        acc[key.toString()] = item;
+      }
+      return acc;
+    }, {});
+  }, [monthlySummaryMatrics]);
+
   const displayYear = loading
     ? selectedYear
     : monthlySummaryYear || selectedYear;
 
-  const totals = useMemo(() => {
+  const summaryTotals = useMemo(() => {
     return filteredData.reduce(
       (acc, item) => {
         acc.amountDisbursed += Number(item.amountDisbursed) || 0;
@@ -223,13 +277,9 @@ console.log(monthlySummary)
         acc.interest += Number(item.interest) || 0;
         acc.loanCount += Number(item.loanCount) || 0;
         acc.profit += Number(item.profit) || 0;
-        acc.cashAtHand += Number(item.cashAtHand) || 0;
-        acc.growth += Number(item.growth) || 0;
         acc.overdueTotal += Number(item.overdueTotal) || 0;
         acc.recoveryTotal += Number(item.recoveryTotal) || 0;
         acc.overshootTotal += Number(item.overshootTotal) || 0;
-        const balance = Number(item.loanBalance) || 0;
-        acc.latestBalance = balance;
         return acc;
       },
       {
@@ -240,200 +290,222 @@ console.log(monthlySummary)
         interest: 0,
         loanCount: 0,
         profit: 0,
-        cashAtHand: 0,
-        growth: 0,
         overdueTotal: 0,
         recoveryTotal: 0,
         overshootTotal: 0,
-        latestBalance: 0,
       }
     );
   }, [filteredData]);
 
+  const metricsTotals = useMemo(() => {
+    return filteredData.reduce(
+      (acc, item) => {
+        const key = (item.monthIndex ?? item.month ?? "").toString();
+        const metricsEntry = metricsByMonth[key];
+        acc.cashAtHand += Number(metricsEntry?.cashAtHand) || 0;
+        acc.loanBalance += Number(metricsEntry?.loanBalance) || 0;
+        acc.growth += Number(metricsEntry?.growth) || 0;
+        return acc;
+      },
+      {
+        cashAtHand: 0,
+        loanBalance: 0,
+        growth: 0,
+      }
+    );
+  }, [filteredData, metricsByMonth]);
+
   const handlePrevYear = () => setSelectedYear((prev) => prev - 1);
   const handleNextYear = () => setSelectedYear((prev) => prev + 1);
- const handleLinkClick = (link) => {
+  const handleLinkClick = (link) => {
     setActiveLink(link);
   };
   return (
     <Container>
-        <div className="find-lawyer-header">
-      <Header>
-        <h2>Monthly Loan Summary</h2>
-      
-        <ControlGroup>
-          <button onClick={handlePrevYear} disabled={loading}>
-            Previous Year
-          </button>
-          <span>{displayYear}</span>
-          <button onClick={handleNextYear} disabled={loading}>
-            Next Year
-          </button>
-        </ControlGroup>
-      </Header>
+      <div className="find-lawyer-header">
+        <Header>
+          <h2>Monthly Loan Summary</h2>
 
-         <div className="client-link-container">
-                  <Link
-                    className={`client-link ${activeLink === "new" ? "active" : ""}`}
-                    onClick={() => handleLinkClick("new")}
-                  >
-                    Section One
-                  </Link>
-                  <Link
-                    className={`client-link ${
-                      activeLink === "previous" ? "active" : ""
-                    }`}
-                    onClick={() => handleLinkClick("previous")}
-                  >
-                    Section Two
-                  </Link>
-                </div>
-
-      {loading && <StatusMessage>Loading monthly data...</StatusMessage>}
-      {!loading && error && (
-        <StatusMessage $variant="error">{error}</StatusMessage>
-      )}
-
-      {!loading && !error && (
-        <>
           <ControlGroup>
-            <button
-              onClick={() => setRange("lastSix")}
-              className={range === "lastSix" ? "active" : ""}
-            >
-              Last 6 Months
+            <button onClick={handlePrevYear} disabled={loading}>
+              Previous Year
             </button>
-            <button
-              onClick={() => setRange("prevSix")}
-              className={range === "prevSix" ? "active" : ""}
-            >
-              Previous 6 Months
-            </button>
-            <button
-              onClick={() => setRange("fullYear")}
-              className={range === "fullYear" ? "active" : ""}
-            >
-              Full Year
+            <span>{displayYear}</span>
+            <button onClick={handleNextYear} disabled={loading}>
+              Next Year
             </button>
           </ControlGroup>
-{activeLink === "new" && (
-          <TableWrapper>
-            <DataTable>
-              <thead>
-                <tr>
-                  <th>Month</th>
-                  <th>Loan Count</th>
-                  <th>Disbursement</th>
-                  <th>Total Repayment</th>
-                  <th>Interest</th>
-                  <th>Cash &amp; Others</th>
-                  
-                  <th>Expenses</th>
-                  <th>Profit</th>
-                 
-                  
-                </tr>
-              </thead>
-              <tbody>
-                {filteredData.map((item) => (
-                  <tr key={item.monthIndex || item.month}>
-                    <td>{item.month}</td>
-                    <td>{Number(item.loanCount) || 0}</td>
-                    <td>{formatAmount(item.amountDisbursed)}</td>
-                    <td>{formatAmount(item.totalPayment)}</td>
-                    <td>{formatAmount(item.interest)}</td>
-                    <td>{formatAmount(item.loanAppForm)}</td>
-                    
-                    <td>{formatAmount(item.expenses)}</td>
-                    <td>{formatAmount(item.profit)}</td>
-                   
-                   
-                  </tr>
-                ))}
-                {filteredData.length === 0 && (
-                  <tr>
-                  <td colSpan={7}>No data available for this year.</td>
-                </tr>
-              )}
-            </tbody>
-            {filteredData.length > 0 && (
-              <tfoot>
-                <tr>
-                  <td>Total</td>
-                  <td>{totals.loanCount}</td>
-                  <td>{formatAmount(totals.amountDisbursed)}</td>
-                  <td>{formatAmount(totals.totalPayment)}</td>
-                  <td>{formatAmount(totals.interest)}</td>
-                  <td>{formatAmount(totals.loanAppForm)}</td>
-                 
-                  <td>{formatAmount(totals.expenses)}</td>
-                  <td></td>
-                  {/* <td>{formatAmount(totals.profit)}</td> */}
-                
-                </tr>
-              </tfoot>
+        </Header>
+
+        <div className="client-link-container">
+          <Link
+            className={`client-link ${activeLink === "new" ? "active" : ""}`}
+            onClick={() => handleLinkClick("new")}
+          >
+            Section One
+          </Link>
+          <Link
+            className={`client-link ${
+              activeLink === "previous" ? "active" : ""
+            }`}
+            onClick={() => handleLinkClick("previous")}
+          >
+            Section Two
+          </Link>
+        </div>
+
+        {loading && <StatusMessage>Loading monthly data...</StatusMessage>}
+        {!loading && error && (
+          <StatusMessage $variant="error">{error}</StatusMessage>
+        )}
+
+        {!loading && !error && (
+          <>
+            <ControlGroup>
+              <button
+                onClick={() => setRange("lastSix")}
+                className={range === "lastSix" ? "active" : ""}
+              >
+                Last 6 Months
+              </button>
+              <button
+                onClick={() => setRange("prevSix")}
+                className={range === "prevSix" ? "active" : ""}
+              >
+                Previous 6 Months
+              </button>
+              <button
+                onClick={() => setRange("fullYear")}
+                className={range === "fullYear" ? "active" : ""}
+              >
+                Full Year
+              </button>
+            </ControlGroup>
+            {activeLink === "new" && (
+              <TableWrapper>
+                <DataTable>
+                  <thead>
+                    <tr>
+                      <th>Month</th>
+                      <th>Loan Count</th>
+                      <th>Disbursement</th>
+                      <th>Total Repayment</th>
+                      <th>Interest</th>
+                      <th>Cash &amp; Others</th>
+
+                      <th>Expenses</th>
+                      <th>Profit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredData.map((item) => (
+                      <tr key={item.monthIndex || item.month}>
+                        <td>{item.month}</td>
+                        <td>{Number(item.loanCount) || 0}</td>
+                        <td>{formatAmount(item.amountDisbursed)}</td>
+                        <td>{formatAmount(item.totalPayment)}</td>
+                        <td>{formatAmount(item.interest)}</td>
+                        <td>{formatAmount(item.loanAppForm)}</td>
+
+                        <td>{formatAmount(item.expenses)}</td>
+                        <td>{formatAmount(item.profit)}</td>
+                      </tr>
+                    ))}
+                    {filteredData.length === 0 && (
+                      <tr>
+                        <td colSpan={7}>No data available for this year.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                  {filteredData.length > 0 && (
+                    <tfoot>
+                      <tr>
+                        <td>Total</td>
+                        <td>{summaryTotals.loanCount}</td>
+                        <td>{formatAmount(summaryTotals.amountDisbursed)}</td>
+                        <td>{formatAmount(summaryTotals.totalPayment)}</td>
+                        <td>{formatAmount(summaryTotals.interest)}</td>
+                        <td>{formatAmount(summaryTotals.loanAppForm)}</td>
+
+                        <td>{formatAmount(summaryTotals.expenses)}</td>
+                        {/* <td></td> */}
+                        <td>{formatAmount(summaryTotals.profit)}</td>
+                      </tr>
+                    </tfoot>
+                  )}
+                </DataTable>
+              </TableWrapper>
             )}
-          </DataTable>
-        </TableWrapper>
-)}
-{activeLink === "previous" && (
-          <TableWrapper>
-            <DataTable>
-              <thead>
-                <tr>
-                  <th>Month</th>
-                  
-                  <th>Balance of Debt</th>
-                  <th>Total Recovery</th>
-                  <th>Overtarget Bonus</th>
-                  <th>Cash at Hand</th>
-                  <th>Loan Balance</th>
-                  <th>Growth</th>
-                  
-                </tr>
-              </thead>
-              <tbody>
-                {filteredData.map((item) => (
-                  <tr key={item.monthIndex || item.month}>
-                    <td>{item.month}</td>
-                  
-                    <td>{formatAmount(item.overdueTotal)}</td>
-                    <td>{formatAmount(item.recoveryTotal)}</td>
-                    <td>{formatAmount(item.overshootTotal)}</td>
-                    <td>{formatAmount(item.cashAtHand)}</td>
-                     <td>{formatAmount(item.loanBalance)}</td>
-                    <td>{formatAmount(item.growth)}</td>
-                   
-                  </tr>
-                ))}
-                {filteredData.length === 0 && (
-                  <tr>
-                  <td colSpan={7}>No data available for this year.</td>
-                </tr>
-              )}
-            </tbody>
-            {filteredData.length > 0 && (
-              <tfoot>
-                <tr>
-                  <td>Total</td>
-                  
-                  <td>{formatAmount(totals.overdueTotal)}</td>
-                  <td>{formatAmount(totals.recoveryTotal)}</td>
-                  <td>{formatAmount(totals.overshootTotal)}</td>
-                   {/* <td>{formatAmount(totals.cashAtHand)}</td>
-                  <td>{formatAmount(totals.latestBalance)}</td>
-                  <td>{formatAmount(totals.growth)}</td> */}
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
-              </tfoot>
+            {activeLink === "previous" && (
+              <>
+                <TableWrapper>
+                  <DataTable>
+                    <thead>
+                      <tr>
+                        <th>Month</th>
+
+                        <th>Balance of Debt</th>
+                        <th>Total Recovery</th>
+                        <th>Overtarget Bonus</th>
+                        <th>Cash at Hand</th>
+                        <th>Loan Balance</th>
+                        <th>Growth</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredData.map((item) => {
+                        const key = (
+                          item.monthIndex ??
+                          item.month ??
+                          ""
+                        ).toString();
+                        const metricsEntry = metricsByMonth[key] || {};
+
+                        return (
+                          <tr key={item.monthIndex || item.month}>
+                            <td>{item.month}</td>
+
+                            <td>{formatAmount(item.overdueTotal)}</td>
+                            <td>{formatAmount(item.recoveryTotal)}</td>
+                            <td>{formatAmount(item.overshootTotal)}</td>
+
+                            <td>{formatAmount(metricsEntry.cashAtHand)}</td>
+                            <td>{formatAmount(metricsEntry.loanBalance)}</td>
+                            <td>{formatAmount(metricsEntry.growth)}</td>
+                          </tr>
+                        );
+                      })}
+                      {filteredData.length === 0 && (
+                        <tr>
+                          <td colSpan={7}>No data available for this year.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                    {filteredData.length > 0 && (
+                      <tfoot>
+                        <tr>
+                          <td>Total</td>
+                          {/* <td>{formatAmount(summaryTotals.overdueTotal)}</td>
+                          <td>{formatAmount(summaryTotals.recoveryTotal)}</td>
+                          <td>{formatAmount(summaryTotals.overshootTotal)}</td>
+                          <td>{formatAmount(metricsTotals.cashAtHand)}</td>
+                          <td>{formatAmount(metricsTotals.loanBalance)}</td>
+                          <td>{formatAmount(metricsTotals.growth)}</td> */}
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                      </tfoot>
+                    )}
+                  </DataTable>
+                </TableWrapper>
+              </>
             )}
-          </DataTable>
-        </TableWrapper>
-)}
-        </>
-      )}
+          </>
+        )}
       </div>
     </Container>
   );

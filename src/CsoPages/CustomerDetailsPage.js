@@ -298,7 +298,40 @@ const [remittanceAvailableShow, setRemittanceAvailableShow] = React.useState(fal
   const csoId = user?.workId;
 
 const [disburesementDrop, setDisbursementDrop] =useState(false)
+const [cooldownInfo, setCooldownInfo] = useState(null);
 
+  const calculateBusinessDaysBetween = (start, end) => {
+    if (!start || !end) return 0;
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    if (
+      Number.isNaN(startDate.getTime()) ||
+      Number.isNaN(endDate.getTime()) ||
+      endDate <= startDate
+    ) {
+      return 0;
+    }
+
+    const current = new Date(startDate);
+    current.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
+
+    current.setDate(current.getDate() + 1);
+
+    let count = 0;
+
+    while (current <= endDate) {
+      const day = current.getDay();
+      if (day !== 0 && day !== 6) {
+        count += 1;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+
+    return count;
+  };
 
 const handleDisbursementDrop = () => {
 setDisbursementDrop(true)
@@ -347,6 +380,95 @@ console.log(loans);
 
     dispatch(fetchFullyPaidLoansStart())
   }
+
+  const handleRequestNewLoan = (event) => {
+    if (!loan) {
+      return;
+    }
+
+    const dailyPayments = Array.isArray(loan?.loanDetails?.dailyPayment)
+      ? loan.loanDetails.dailyPayment.filter((payment) => payment?.date)
+      : [];
+
+    if (!dailyPayments.length) {
+      setCooldownInfo(null);
+      return;
+    }
+
+    let latestPaymentDate = null;
+
+    dailyPayments.forEach((payment) => {
+      const paymentDate = new Date(payment.date);
+
+      if (Number.isNaN(paymentDate.getTime())) {
+        return;
+      }
+
+      if (!latestPaymentDate || paymentDate > latestPaymentDate) {
+        latestPaymentDate = paymentDate;
+      }
+    });
+
+    if (!latestPaymentDate) {
+      setCooldownInfo(null);
+      return;
+    }
+
+    const businessDaysSinceDisbursement = calculateBusinessDaysBetween(
+      loan?.disbursedAt,
+      latestPaymentDate
+    );
+
+    const BUSINESS_DAY_LIMIT = 23;
+
+    if (!loan?.disbursedAt || businessDaysSinceDisbursement <= BUSINESS_DAY_LIMIT) {
+      setCooldownInfo(null);
+      return;
+    }
+
+    const repaymentScheduleEntries = Array.isArray(loan?.repaymentSchedule)
+      ? loan.repaymentSchedule
+      : [];
+
+    const pendingDefaultsCount = repaymentScheduleEntries
+      .slice(1)
+      .filter((entry) => ((entry?.status || "").toLowerCase() === "pending"))
+      .length;
+
+    if (pendingDefaultsCount < 3) {
+      setCooldownInfo(null);
+      return;
+    }
+
+    const baseDate = new Date(
+      latestPaymentDate.getFullYear(),
+      latestPaymentDate.getMonth(),
+      latestPaymentDate.getDate()
+    );
+
+    const requiredDays = (pendingDefaultsCount - 2) * 7;
+    const nextAllowedDate = new Date(baseDate);
+    nextAllowedDate.setDate(nextAllowedDate.getDate() + requiredDays);
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    if (todayStart < nextAllowedDate) {
+      event.preventDefault();
+      const MS_PER_DAY = 24 * 60 * 60 * 1000;
+      const daysRemaining = Math.ceil(
+        (nextAllowedDate.getTime() - todayStart.getTime()) / MS_PER_DAY
+      );
+
+      setCooldownInfo({
+        nextAllowedDate: nextAllowedDate.toISOString(),
+        defaults: pendingDefaultsCount,
+        daysRemaining,
+      });
+    } else {
+      setCooldownInfo(null);
+    }
+  };
   // Get today's amountPaid
   const today = new Date();
   let adjustedDate = new Date(today); // Copy today's date
@@ -605,6 +727,7 @@ if (repaymentScheduleLengthTillToday > 22) {
                     <Link
                       to={`/cso/minimalApplication/${loan?._id}`}
                       className="request-new-loan"
+                      onClick={handleRequestNewLoan}
                     >
                       Request New Loan
                     </Link>
@@ -764,6 +887,27 @@ if (repaymentScheduleLengthTillToday > 22) {
         
         </>
       ): ""}
+
+
+      {cooldownInfo ? (
+        <>
+          <div className="dropdown-container">
+            <div className="all-dropdown-div">
+              <div className="dropdown-content">
+                <p>
+                  This client is not eligible to apply for a new loan until {formatDateWithOrdinal(cooldownInfo.nextAllowedDate)}
+                  {cooldownInfo.daysRemaining > 0
+                    ? ` (${cooldownInfo.daysRemaining} day${cooldownInfo.daysRemaining > 1 ? "s" : ""} remaining)`
+                    : ""}. Reason: client has {cooldownInfo.defaults} default{cooldownInfo.defaults > 1 ? "s" : ""} in the previous loan.
+                </p>
+                <button className="submit-btn-2" onClick={() => setCooldownInfo(null)}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : ""}
 
 
          {disburesementDrop && loan?.loanDetails?.disbursementPicture

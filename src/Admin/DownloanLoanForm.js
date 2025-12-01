@@ -10,6 +10,8 @@ import jsPDF from "jspdf";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { fetchGuarantor } from "../redux/slices/guarantorSlice";
 
+const API_BASE_URL = (process.env.REACT_APP_API_BASE_URL || "https://api.jksolutn.com").replace(/\/$/, "");
+
 const DownloadRap = styled.div`
   width: 100%;
   padding: 40px;
@@ -249,6 +251,87 @@ const DownloadRap = styled.div`
 }
 `;
 
+const resolveImageSrc = (path) => {
+  if (!path) return "fallback.jpg";
+
+  const normalizedPath = Array.isArray(path) ? path[0] : path;
+  const isAbsoluteUrl = /^https?:\/\//i.test(normalizedPath);
+
+  const cleanedPath = normalizedPath.startsWith("/") || isAbsoluteUrl
+    ? normalizedPath
+    : `/${normalizedPath}`;
+
+  const originalUrl = isAbsoluteUrl
+    ? cleanedPath
+    : `${API_BASE_URL}${cleanedPath}`;
+
+  const proxyBase = `${API_BASE_URL}/api/proxy-image`;
+  const proxiedUrl = `${proxyBase}?url=${encodeURIComponent(originalUrl)}&inline=false`;
+
+  return proxiedUrl;
+};
+
+const buildImageProps = (path) => ({
+  src: resolveImageSrc(path),
+});
+
+const blobToDataURL = (blob) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+
+const inlineImagesForCanvas = async (ref) => {
+  if (!ref.current) return () => {};
+
+  const images = Array.from(ref.current.querySelectorAll("img"));
+  const restorers = await Promise.all(
+    images.map(async (img) => {
+      const originalSrc = img.getAttribute("data-original-src") || img.src;
+      const currentSrc = img.src;
+
+      if (!currentSrc || currentSrc.startsWith("data:")) {
+        return () => {};
+      }
+
+      try {
+        const response = await fetch(currentSrc, {
+          mode: "cors",
+        });
+
+        if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
+
+        const blob = await response.blob();
+        const dataUrl = await blobToDataURL(blob);
+
+        img.setAttribute("data-original-src", originalSrc);
+        img.src = dataUrl;
+
+        return () => {
+          const restoreSrc = img.getAttribute("data-original-src") || originalSrc;
+          img.src = restoreSrc;
+          img.removeAttribute("data-original-src");
+        };
+      } catch (error) {
+        console.warn("Unable to inline image for PDF", currentSrc, error);
+        return () => {};
+      }
+    })
+  );
+
+  return () => {
+    restorers.forEach((restore) => {
+      try {
+        restore();
+      } catch (error) {
+        console.warn("Failed to restore image src", error);
+      }
+    });
+  };
+};
+
 const DownloadLoanForm = () => {
   const { id } = useParams(); // Get loan ID from URL
   const dispatch = useDispatch();
@@ -310,13 +393,24 @@ console.log(loan);
     await waitForImagesToLoad(formRef);
     console.log("Images loaded, capturing...");
 
+    const cleanupImages = await inlineImagesForCanvas(formRef);
+
+    // Ensure inlined images are ready
+    await waitForImagesToLoad(formRef);
+
     // Capture with html2canvas
-    const canvas = await html2canvas(formRef.current, {
-      scale: 2, // better quality
-      useCORS: true,
-      allowTaint: false,
-      imageTimeout: 0,
-    });
+    let canvas;
+
+    try {
+      canvas = await html2canvas(formRef.current, {
+        scale: 2, // better quality
+        useCORS: true,
+        allowTaint: false,
+        imageTimeout: 0,
+      });
+    } finally {
+      cleanupImages();
+    }
 
     console.log("Canvas captured, generating PDF...");
 
@@ -607,27 +701,16 @@ console.log(loan);
                 <div className="picture-divs-sub">
                 <div className="form-body-info-sub-img">
                   <h5>Customer picture:</h5>
-     <img  
-                    src={
-                      loan?.pictures?.customer?.startsWith("http")
-                        ? loan?.pictures?.customer // Cloudinary URL
-                        : loan?.pictures?.customer
-                        ? `https://api.jksolutn.com${loan?.pictures?.customer}` // Local image
-                        : "fallback.jpg" // Optional fallback image
-                    }
+                  <img
+                    {...buildImageProps(loan?.pictures?.customer)}
                     alt="customer"
                     style={{ objectFit: "contain" }}
-                  />                </div>
+                  />
+                </div>
                 <div className="form-body-info-sub-img">
                   <h5>Business picture:</h5>
-                      <img  
-                    src={
-                      loan?.pictures?.business?.startsWith("http")
-                        ? loan?.pictures?.business // Cloudinary URL
-                        : loan?.pictures?.business
-                        ? `https://api.jksolutn.com${loan?.pictures?.business}` // Local image
-                        : "fallback.jpg" // Optional fallback image
-                    }
+                  <img
+                    {...buildImageProps(loan?.pictures?.business)}
                     alt="customer"
                     style={{ objectFit: "contain" }}
                   />
@@ -639,13 +722,7 @@ console.log(loan);
                   <div className="other-pictures-div">
                   {loan?.pictures?.others.map((image, index) => (
                          <img
-                    src={
-                     image?.startsWith("http")
-                        ?image // Cloudinary URL
-                        :image
-                        ? `https://api.jksolutn.com${image}` // Local image
-                        : "fallback.jpg" // Optional fallback image
-                    }
+                    {...buildImageProps(image)}
                     alt="customer"
                     style={{ objectFit: "contain" }}
                   />
@@ -683,42 +760,24 @@ console.log(loan);
               </div>
               <div className="signature">
                 <h5>Customer Signature:</h5>
-               <img 
-                    src={
-                      loan?.pictures?.signature?.startsWith("http")
-                        ? loan?.pictures?.signature // Cloudinary URL
-                        : loan?.pictures?.signature
-                        ? `https://api.jksolutn.com${loan?.pictures?.signature}` // Local image
-                        : "fallback.jpg" // Optional fallback image
-                    }
+               <img
+                    {...buildImageProps(loan?.pictures?.signature)}
                     alt="customer"
                     style={{ objectFit: "contain" }}
                   />  
               </div>
               <div className="signature">
                 <h5>Cso Signature:</h5>
-               <img 
-                    src={
-                      loan?.csoSignature?.startsWith("http")
-                        ? loan?.csoSignature // Cloudinary URL
-                        : loan?.csoSignature
-                        ? `https://api.jksolutn.com${loan?.csoSignature}` // Local image
-                        : "fallback.jpg" // Optional fallback image
-                    }
+               <img
+                    {...buildImageProps(loan?.csoSignature)}
                     alt="customer"
                     style={{ objectFit: "contain" }}
                   />  
               </div>
               <div className="signature">
                 <h5>Guarantor Signature:</h5>
-               <img 
-                    src={
-                      loan?.guarantorDetails?.signature?.startsWith("http")
-                        ? loan?.guarantorDetails?.signature // Cloudinary URL
-                        : loan?.guarantorDetails?.signature
-                        ? `https://api.jksolutn.com${loan?.guarantorDetails?.signature}` // Local image
-                        : "fallback.jpg" // Optional fallback image
-                    }
+               <img
+                    {...buildImageProps(loan?.guarantorDetails?.signature)}
                     alt="customer"
                     style={{ objectFit: "contain" }}
                   />  
@@ -738,14 +797,8 @@ console.log(loan);
               <h3  styled={{
             marginTop: "70px"
           }}>Loan Disclosure Document</h3>
-                <img  
-                    src={
-                      loan?.pictures?.disclosure?.startsWith("http")
-                        ? loan?.pictures?.disclosure // Cloudinary URL
-                        : loan?.pictures?.disclosure
-                        ? `https://api.jksolutn.com${loan?.pictures?.disclosure}` // Local image
-                        : "fallback.jpg" // Optional fallback image
-                    }
+                <img
+                    {...buildImageProps(loan?.pictures?.disclosure)}
                     alt="customer"
                     style={{ objectFit: "cover", width: "100%", height: "500px" }}
                   /> 

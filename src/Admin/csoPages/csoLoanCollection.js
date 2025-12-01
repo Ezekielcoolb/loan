@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { toast, Toaster } from "react-hot-toast";
 import { Link, useParams } from "react-router-dom";
 import Calendar from "react-calendar"; // Import the calendar
 
@@ -37,13 +38,19 @@ import {
   fetchCsoActiveLoans,
   fetchLoanAllTimeCounts,
   fetchLoanAppForms,
+  fetchLoansByCsoForHome,
   fetchPieRepaymentData,
+  setCsoHomePage,
   setPage,
+  transferLoanGroup,
+  clearUpdateLoanMessage,
 } from "../../redux/slices/LoanSlice";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { MoonLoader, PulseLoader } from "react-spinners";
 import { fetchRemittanceNewProgress } from "../../redux/slices/remittanceSlice";
 import { fetchOutstandingProgressChart } from "../../redux/slices/otherLoanSlice";
+import { fetchAllTheCsos } from "../../redux/slices/csoSlice";
+import { fetchGroupLeadersByCso } from "../../redux/slices/groupLeaderSlice";
 
 ChartJS.register(
   ArcElement,
@@ -59,6 +66,65 @@ ChartJS.register(
 
 const CollectRap = styled.div`
   width: 100%;
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  .modal-card {
+    background: #ffffff;
+    border-radius: 12px;
+    width: min(460px, 92vw);
+    box-shadow: 0 18px 40px rgba(3, 11, 38, 0.18);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .modal-card h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #030b26;
+  }
+  .modal-card p {
+    margin: 0;
+    font-size: 14px;
+    color: #727789;
+  }
+  .modal-card select {
+    width: 100%;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid #d0d5dd;
+    padding: 0 12px;
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+  .modal-actions button {
+    border-radius: 10px;
+    height: 38px;
+    padding: 0 16px;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .btn-secondary {
+    background: #f0f2f5;
+    color: #030b26;
+    border: none;
+  }
+  .btn-primary {
+    background: #030b26;
+    color: #ffffff;
+    border: none;
+  }
   .cso-1 {
     display: flex;
     align-items: center;
@@ -473,11 +539,17 @@ const CsoLoanCollection = () => {
   const [showCalendar, setShowCalendar] = useState(false); // State for calendar visibility
   const [totalAmountPaid, setTotalAmountPaid] = useState(0);
   const [updatecsoShow, setUpdateCsoShow] = useState(false);
+  const [selectedGroupLeaderId, setSelectedGroupLeaderId] = useState("");
   // const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedImage, setSelectedImage] = useState(null)
   const [issueDropdown, setIssueDropdown] = useState(false)
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [selectedLoanId, setSelectedLoanId] = useState(null);
+  const [selectedLoanDetails, setSelectedLoanDetails] = useState(null);
+  const [selectedTransferGroupId, setSelectedTransferGroupId] = useState("");
+  const [initialTransferGroupId, setInitialTransferGroupId] = useState("");
 
-const [currentMonth, setCurrentMonth] = useState(() => {
+  const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
     return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   });
@@ -486,7 +558,7 @@ const [currentMonth, setCurrentMonth] = useState(() => {
     setIssueDropdown(!issueDropdown)
   }
 
-   const handleIssueDropTwo = () => {
+  const handleIssueDropTwo = () => {
     setIssueDropdown(!issueDropdown)
     dispatch(setRemittanceIssueResolve())
   }
@@ -499,9 +571,9 @@ const [currentMonth, setCurrentMonth] = useState(() => {
   const [dayPicker, setDayPicker] = useState("today");
 
 
-const [date, setDate] = useState('');
+  const [date, setDate] = useState('');
   const [issueMessage, setIssueMessage] = useState('');
-const isValid =
+  const isValid =
     date !== "" &&
     issueMessage !== ""
 
@@ -533,8 +605,16 @@ const isValid =
     monthCount,
     weekCount,
     status,
+    csoHomepage, 
+    csoHometotalPages,
+     csoHomeloans,
     error,
   } = useSelector((state) => state.loan);
+
+  const {
+    options: groupLeaderOptions = [],
+    optionsLoading: groupLeaderOptionsLoading,
+  } = useSelector((state) => state.groupLeader);
 
   const {
     remmitdata,
@@ -551,12 +631,92 @@ const isValid =
     specifiedCsoTwo,
     dailyCsoCollections,
     updateCsoSuccessMessage,
+    list: csos,
+    loading: csosLoading,
   } = useSelector((state) => state.cso);
 
-console.log(remittanceCso);
-console.log(addRemittanceIssue);
-console.log(addRemittanceIssue);
-console.log(dailyCsoCollections);
+  const handleOpenAssignModal = (loan) => {
+    if (!loan) return;
+    setSelectedLoanId(loan?._id);
+    setSelectedLoanDetails(loan);
+
+    const defaultGroupId = loan?.groupDetails?.groupId || loan?.groupDetails?._id || "";
+    setSelectedTransferGroupId(defaultGroupId || "");
+    setInitialTransferGroupId(defaultGroupId || "");
+
+    setShowAssignModal(true);
+  };
+
+  const handleCloseAssignModal = () => {
+    setShowAssignModal(false);
+    setSelectedLoanId(null);
+    setSelectedLoanDetails(null);
+    setSelectedTransferGroupId("");
+    setInitialTransferGroupId("");
+    dispatch(clearUpdateLoanMessage());
+  };
+
+  const selectedGroupLeaderDetails = useMemo(
+    () =>
+      groupLeaderOptions.find((leader) => leader?._id === selectedTransferGroupId) || null,
+    [groupLeaderOptions, selectedTransferGroupId]
+  );
+
+  const selectedCustomerName = useMemo(() => {
+    if (!selectedLoanDetails?.customerDetails) return "";
+    const { firstName = "", lastName = "" } = selectedLoanDetails.customerDetails;
+    return `${firstName} ${lastName}`.trim();
+  }, [selectedLoanDetails]);
+
+  const hasGroupChange = useMemo(
+    () => Boolean(selectedTransferGroupId && selectedTransferGroupId !== initialTransferGroupId),
+    [selectedTransferGroupId, initialTransferGroupId]
+  );
+
+  const handleConfirmCsoUpdate = () => {
+    if (!selectedLoanId) return;
+
+    if (!(selectedTransferGroupId && selectedGroupLeaderDetails && hasGroupChange)) {
+      toast.error("Select a new group to transfer.");
+      return;
+    }
+
+    dispatch(
+      transferLoanGroup({
+        id: selectedLoanId,
+        groupDetails: {
+          ...selectedLoanDetails?.groupDetails,
+          groupId: selectedGroupLeaderDetails?._id,
+          groupName:
+            selectedGroupLeaderDetails?.groupName ||
+            `${selectedGroupLeaderDetails?.firstName || ""} ${selectedGroupLeaderDetails?.lastName || ""}`.trim() ||
+            undefined,
+          leaderName:
+            `${selectedGroupLeaderDetails?.firstName || ""} ${selectedGroupLeaderDetails?.lastName || ""}`.trim() ||
+            undefined,
+          address: selectedGroupLeaderDetails?.address || undefined,
+          mobileNo: selectedGroupLeaderDetails?.phone || undefined,
+        },
+      })
+    ).then((action) => {
+      if (action?.type?.endsWith("/fulfilled")) {
+        toast.success("Customer group updated successfully.");
+        handleCloseAssignModal();
+        dispatch(
+          fetchLoansByCsoForHome({
+            csoId,
+            page: csoHomepage,
+            groupLeaderId: selectedGroupLeaderId || undefined,
+          })
+        );
+      }
+    });
+  };
+
+  console.log(remittanceCso);
+  console.log(addRemittanceIssue);
+  console.log(addRemittanceIssue);
+  console.log(dailyCsoCollections);
 
   const { remittanceProgress } = useSelector((state) => state.remittance);
 
@@ -592,11 +752,8 @@ console.log(dailyCsoCollections);
     }
   }, [specifiedCso]);
 
-  console.log(specifiedCso);
-  console.log(updatingCsoloading);
-  console.log(specifiedCso);
-  console.log(updateCsoSuccessMessage);
-  console.log(loanAppForm);
+  console.log(csoHomeloans);
+ 
   
 
   useEffect(() => {
@@ -604,6 +761,30 @@ console.log(dailyCsoCollections);
       dispatch(fetchOutstandingProgressChart(csoId));
     }
   }, [csoId, dispatch]);
+
+  useEffect(() => {
+    if (csoId) {
+      dispatch(fetchGroupLeadersByCso(csoId));
+    }
+  }, [dispatch, csoId]);
+
+  useEffect(() => {
+    if (csoId) {
+      dispatch(
+        fetchLoansByCsoForHome({
+          csoId,
+          page: csoHomepage,
+          groupLeaderId: selectedGroupLeaderId || undefined,
+        })
+      );
+    }
+  }, [dispatch, csoId, csoHomepage, selectedGroupLeaderId]);
+
+  useEffect(() => {
+    if (selectedGroupLeaderId) {
+      dispatch(setCsoHomePage(1));
+    }
+  }, [dispatch, selectedGroupLeaderId]);
 
   useEffect(() => {
     dispatch(fetchallgetRemittances({ workId, date: selectedRemiteDate }));
@@ -614,7 +795,11 @@ console.log(dailyCsoCollections);
     dispatch(fetchRemittanceNewProgress(workId)); // Fetch remittance progress for this CSO
   }, [dispatch, workId]);
 
-const loadData = () => {
+  useEffect(() => {
+    dispatch(fetchAllTheCsos());
+  }, [dispatch]);
+
+  const loadData = () => {
     dispatch(fetchCsoRemittanceRemttanceIssue({
       workId,
       month: currentMonth.getUTCMonth() + 1,
@@ -693,6 +878,8 @@ const loadData = () => {
   useEffect(() => {
     dispatch(fetchLoanAllTimeCounts({ csoId }));
   }, [dispatch]);
+
+  
 
   useEffect(() => {
     dispatch(fetchRemittanceNewProgress(workId)); // Fetch remittance progress for this CSO
@@ -986,8 +1173,22 @@ const loadData = () => {
   };
 
 
+    const handleNextCustomer = () => {
+      if (csoHomepage < csoHometotalPages) {
+        dispatch(setCsoHomePage(csoHomepage + 1));
+      }
+    };
+  
+    const handlePrevCustomer = () => {
+      if (csoHomepage > 1) {
+        dispatch(setCsoHomePage(csoHomepage - 1));
+      }
+    };
+  
+
   return (
     <CollectRap>
+      <Toaster position="top-right" />
       <div className="cso-1">
         <div className="cso-link-container">
           <Link style={{}} className="cso-link" to="/admin/admincso">
@@ -1011,6 +1212,12 @@ const loadData = () => {
             onClick={() => handleLinkClick("collections")}
           >
             Collections
+          </Link>
+          <Link
+            className={`cso-link ${activeLink === "custom" ? "active" : ""}`}
+            onClick={() => handleLinkClick("custom")}
+          >
+            Customers
           </Link>
           <Link
             className={`cso-link ${activeLink === "dashboard" ? "active" : ""}`}
@@ -1716,6 +1923,105 @@ const loadData = () => {
             </div>
           </>
         )}
+        {activeLink==="custom" && (
+          <>
+            <div
+              className="input-div"
+              style={{
+                display: "flex",
+                gap: "12px",
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 20px 20px",
+              }}
+            >
+              <select
+                value={selectedGroupLeaderId}
+                onChange={(e) => setSelectedGroupLeaderId(e.target.value)}
+                style={{
+                  background: "#daf7ff",
+                  padding: "12px 16px",
+                  minWidth: "260px",
+                  height: "45px",
+                  border: "none",
+                  borderRadius: "20px",
+                }}
+              >
+                <option value="">All Groups</option>
+                {groupLeaderOptions.map((leader) => (
+                  <option key={leader?._id} value={leader?._id}>
+                    {leader?.groupName || `${leader?.firstName || ""} ${leader?.lastName || ""}`.trim()}
+                  </option>
+                ))}
+              </select>
+              {groupLeaderOptionsLoading && (
+                <span style={{ color: "#005e78", fontSize: "14px" }}>
+                  Loading group leaders...
+                </span>
+              )}
+            </div>
+            <div className="table-container">
+                  <div className="new-table-scroll">
+                    <div className="table-div-con">
+                      <table className="custom-table">
+                        <thead>
+                          <tr>
+                            <th>Customer Name</th>
+                            <th>Princiapl + Interest</th>
+                            
+                            <th>Group Name</th>
+                            <th>Group leader</th>
+                            <th>CSO in Charged</th>
+                            <th>Branch </th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {csoHomeloans?.slice().reverse().map((loan) => (
+                            <tr key={loan?._id}>
+                              <td>{`${loan?.customerDetails?.firstName} ${loan?.customerDetails?.lastName}`}</td>
+                              <td>{loan?.loanDetails?.amountApproved}</td>
+                              <td>{loan?.groupDetails?.groupName}</td>
+                              <td>{loan?.groupDetails?.leaderName}</td>
+                              <td>{loan?.csoName}</td>
+                              <td>{loan?.branch}</td>
+                              <td>
+                                <Link onClick={() => handleOpenAssignModal(loan)}>Transfer</Link>
+                              </td>
+                             
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+            
+                  {/* Pagination Controls */}
+                  <div className="pagination">
+                    <button
+                    className="page-btn"
+                    onClick={handlePrevCustomer}
+                    disabled={csoHomepage === 1}
+                  >
+                    Prev
+                  </button>
+            
+                   <span>
+                    Page {csoHomepage} of {csoHometotalPages}
+                  </span>
+            
+                       <button
+                                       className="page-btn"
+                                       onClick={handleNextCustomer}
+                                       disabled={csoHomepage === csoHometotalPages}
+                                     >
+                                       Next
+                                     </button>
+                  </div>
+                </div>
+          </>
+        )}
         {activeLink === "remmitance" && (
           <>
             {/* <div className="remmit">
@@ -1883,7 +2189,51 @@ const loadData = () => {
             </div>
           </>
         )}
+
+
       </div>
+
+      {showAssignModal && (
+        <div className="modal-backdrop">
+          <div className="modal-card">
+            <h3>Transfer Customer</h3>
+            {selectedCustomerName && (
+              <p style={{ fontWeight: 600, color: "#030b26" }}>{selectedCustomerName}</p>
+            )}
+            <label style={{ alignSelf: "flex-start", fontSize: "14px", color: "#727789" }}>
+              Move to Group
+            </label>
+            <select
+              value={selectedTransferGroupId}
+              onChange={(e) => setSelectedTransferGroupId(e.target.value)}
+              disabled={groupLeaderOptionsLoading}
+            >
+              <option value="">-- Keep current group --</option>
+              {groupLeaderOptions.map((leader) => {
+                const leaderName = `${leader?.groupName || ""}`.trim() ||
+                  `${leader?.firstName || ""} ${leader?.lastName || ""}`.trim();
+                return (
+                  <option key={leader?._id} value={leader?._id}>
+                    {leaderName || 'Unnamed Group'}
+                  </option>
+                );
+              })}
+            </select>
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={handleCloseAssignModal}>
+                Cancel
+              </button>
+              <button
+                className="btn-primary"
+                onClick={handleConfirmCsoUpdate}
+                disabled={groupLeaderOptionsLoading || !hasGroupChange}
+              >
+                Transfer Customer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {updatecsoShow ? (
         <>

@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
 
 const API_URL = "https://api.jksolutn.com/api/loan";
 // const API_URL = "http://localhost:5000/api/loan";
@@ -28,49 +28,54 @@ if (today >= firstMonday) {
 }
 
 export const fetchDailyPayments = createAsyncThunk(
-  'dailyPayments/fetchDailyPayments',
+  "dailyPayments/fetchDailyPayments",
   async ({ year, month }, thunkAPI) => {
-    const res = await axios.get(`${API_URL}/daily-payments/daily-collections?year=${year}&month=${month}`);
+    const res = await axios.get(
+      `${API_URL}/daily-payments/daily-collections?year=${year}&month=${month}`
+    );
     return res.data;
   }
 );
 
 export const fetchOutstandingLoans = createAsyncThunk(
-  'loans/fetchOutstanding',
-  async (csoId) => {
-try {
-    const res = await axios.get(`${API_URL}/fetch-loan-outstanding/${csoId}`);
-    console.log(res.data);
-    
-    return res.data;
-} catch (err) {
-  console.log(err);
-}
-  } 
-);
-
-export const fetchOutstandingProgressChart = createAsyncThunk(
-  'loanStats/fetchOutstandingProgressChart',
+  "loans/fetchOutstanding",
   async (csoId) => {
     try {
-    const res = await axios.get(`${API_URL}/loan-outstanding-progress-chartbar/${csoId}`);
-    console.log(res.data);
-    
-    return res.data;
-    }  catch (err) {
+      const res = await axios.get(`${API_URL}/fetch-loan-outstanding/${csoId}`);
+      console.log(res.data);
+
+      return res.data;
+    } catch (err) {
       console.log(err);
     }
   }
 );
 
+export const fetchOutstandingProgressChart = createAsyncThunk(
+  "loanStats/fetchOutstandingProgressChart",
+  async (csoId) => {
+    try {
+      const res = await axios.get(
+        `${API_URL}/loan-outstanding-progress-chartbar/${csoId}`
+      );
+      console.log(res.data);
+
+      return res.data;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+);
 
 export const fetchLoanBalancePaymentDisbursedSummary = createAsyncThunk(
-  'loanSummary/fetchLoanBalancePaymentDisbursedSummary',
+  "loanSummary/fetchLoanBalancePaymentDisbursedSummary",
   async () => {
     try {
-    const response = await axios.get(`${API_URL}/payment-disbursed-loanbalance-summary`);
-     console.log(response.data);
-    return response.data;
+      const response = await axios.get(
+        `${API_URL}/payment-disbursed-loanbalance-summary`
+      );
+      console.log(response.data);
+      return response.data;
     } catch (err) {
       console.log(err);
     }
@@ -78,12 +83,14 @@ export const fetchLoanBalancePaymentDisbursedSummary = createAsyncThunk(
 );
 
 export const fetchDebugLoanBalance = createAsyncThunk(
-  'loanSummary/fetchDebugLoanBalance',
+  "loanSummary/fetchDebugLoanBalance",
   async () => {
     try {
-    const response = await axios.get(`${API_URL}/payment-disbursed-loanbalance-summary`);
-     console.log(response.data);
-    return response.data;
+      const response = await axios.get(
+        `${API_URL}/payment-disbursed-loanbalance-summary`
+      );
+      console.log(response.data);
+      return response.data;
     } catch (err) {
       console.log(err);
     }
@@ -91,7 +98,7 @@ export const fetchDebugLoanBalance = createAsyncThunk(
 );
 
 export const fetchCsoOverdueLoans = createAsyncThunk(
-  'csoLoans/fetchOverdue',
+  "csoLoans/fetchOverdue",
   async ({ csoId, min = 23 }, { rejectWithValue }) => {
     try {
       const res = await axios.get(
@@ -101,13 +108,15 @@ export const fetchCsoOverdueLoans = createAsyncThunk(
       return res.data.data; // as returned by backend above
     } catch (err) {
       console.error(err);
-      return rejectWithValue(err.response?.data || { message: 'Failed to fetch' });
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to fetch" }
+      );
     }
   }
 );
 
 export const fetchCsoRecoveryLoaner = createAsyncThunk(
-  'fetchCsoRecoveryLoanser/fetchCsoRecoveryLoans',
+  "fetchCsoRecoveryLoanser/fetchCsoRecoveryLoans",
   async ({ csoId, min = 23 }, { rejectWithValue }) => {
     try {
       const res = await axios.get(
@@ -117,7 +126,9 @@ export const fetchCsoRecoveryLoaner = createAsyncThunk(
       return res.data.data; // as returned by backend above
     } catch (err) {
       console.error(err);
-      return rejectWithValue(err.response?.data || { message: 'Failed to fetch' });
+      return rejectWithValue(
+        err.response?.data || { message: "Failed to fetch" }
+      );
     }
   }
 );
@@ -126,7 +137,7 @@ export const fetchOverdueLoans = createAsyncThunk(
   async ({ page = 1, limit = 20, search = "" }, { rejectWithValue }) => {
     try {
       const { data } = await axios.get(`${API_URL}/loans-overdue-for-admin`, {
-        params: { page, limit, search }
+        params: { page, limit, search },
       });
       return data;
     } catch (error) {
@@ -139,40 +150,48 @@ export const payOverDuePenalty = createAsyncThunk(
   "penalty/payOverDuePenalty",
   async ({ loanId, amount }, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`${API_URL}/pay-customer-penalty/${loanId}`, { amount });
+      const res = await axios.post(
+        `${API_URL}/pay-customer-penalty/${loanId}`,
+        { amount }
+      );
       return res.data.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Error paying penalty");
+      return rejectWithValue(
+        err.response?.data?.message || "Error paying penalty"
+      );
     }
   }
 );
 
-
 export const fetchCsoReportsSummary = createAsyncThunk(
-  'csoSummary/fetchCsoReportsSummary',
+  "csoSummary/fetchCsoReportsSummary",
   async ({ month, year }) => {
     const params = {};
     if (month) params.month = month;
     if (year) params.year = year;
-    const response = await axios.get(`${API_URL}/cso-reports/cso-summary`, { params });
+    const response = await axios.get(`${API_URL}/cso-reports/cso-summary`, {
+      params,
+    });
     return response.data.csos;
   }
 );
 
 export const fetchCsoReportsSummarySingle = createAsyncThunk(
-  'csoSummary/fetchCsoReportsSummarySingle',
+  "csoSummary/fetchCsoReportsSummarySingle",
   async ({ month, year, csoId }) => {
     const params = {};
     if (month) params.month = month;
     if (year) params.year = year;
-    const response = await axios.get(`${API_URL}/cso-reports/cso-summary-single/${csoId}`, { params });
+    const response = await axios.get(
+      `${API_URL}/cso-reports/cso-summary-single/${csoId}`,
+      { params }
+    );
     return response.data;
   }
 );
 
-
 const OtherLoanslice = createSlice({
-  name: 'dailyPayments',
+  name: "dailyPayments",
   initialState: {
     data: [],
     csosReport: [],
@@ -187,8 +206,8 @@ const OtherLoanslice = createSlice({
     csosSingleReport: null,
     outstandingLoans: [],
     totalOutstandingLoans: 0,
-     pagination: { total: 0, page: 1, limit: 20 },
-    status: 'idle',
+    pagination: { total: 0, page: 1, limit: 20 },
+    status: "idle",
     error: null,
     currentMonth,
     paidOverdueLoan: null,
@@ -201,11 +220,10 @@ const OtherLoanslice = createSlice({
       state.currentWeek += 1;
     },
 
-     clearOverDuePay: (state) => {
-          state.paidOverdueLoan = null;
-      
-        },
-      
+    clearOverDuePay: (state) => {
+      state.paidOverdueLoan = null;
+    },
+
     prevWeek(state) {
       if (state.currentWeek > 0) state.currentWeek -= 1;
     },
@@ -231,20 +249,19 @@ const OtherLoanslice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchDailyPayments.pending, (state) => {
-        state.status = 'loading';
+        state.status = "loading";
       })
       .addCase(fetchDailyPayments.fulfilled, (state, action) => {
-        state.status = 'succeeded';
+        state.status = "succeeded";
         state.data = action.payload;
       })
       .addCase(fetchDailyPayments.rejected, (state, action) => {
-        state.status = 'failed';
+        state.status = "failed";
         state.error = action.error.message;
       });
 
-
-      builder
-      .addCase(fetchCsoReportsSummary.pending, state => {
+    builder
+      .addCase(fetchCsoReportsSummary.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
@@ -257,9 +274,8 @@ const OtherLoanslice = createSlice({
         state.error = action.error.message;
       });
 
-
-      builder
-      .addCase(fetchCsoReportsSummarySingle.pending, state => {
+    builder
+      .addCase(fetchCsoReportsSummarySingle.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
@@ -272,36 +288,42 @@ const OtherLoanslice = createSlice({
         state.error = action.error.message;
       });
 
-      builder
+    builder
       .addCase(fetchOutstandingProgressChart.pending, (state) => {
-        state.status = 'loading';
+        state.status = "loading";
       })
       .addCase(fetchOutstandingProgressChart.fulfilled, (state, action) => {
-        state.status = 'succeeded';
+        state.status = "succeeded";
         state.totalOutstandingChart = action?.payload?.totalOutstanding;
         state.defaultingTargetChart = action?.payload?.defaultingTarget;
         state.percentageChart = action?.payload?.percentage;
       })
       .addCase(fetchOutstandingProgressChart.rejected, (state, action) => {
-        state.status = 'failed';
+        state.status = "failed";
         state.error = action.error.message;
       });
 
-builder
+    builder
       .addCase(fetchLoanBalancePaymentDisbursedSummary.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchLoanBalancePaymentDisbursedSummary.fulfilled, (state, action) => {
-        state.loading = false;
-        state.dashPayLoan = action.payload;
-      })
-      .addCase(fetchLoanBalancePaymentDisbursedSummary.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-      });
+      .addCase(
+        fetchLoanBalancePaymentDisbursedSummary.fulfilled,
+        (state, action) => {
+          state.loading = false;
+          state.dashPayLoan = action.payload;
+        }
+      )
+      .addCase(
+        fetchLoanBalancePaymentDisbursedSummary.rejected,
+        (state, action) => {
+          state.loading = false;
+          state.error = action.error.message;
+        }
+      );
 
-      builder
+    builder
       .addCase(fetchDebugLoanBalance.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -315,8 +337,7 @@ builder
         state.error = action.error.message;
       });
 
-
-      builder
+    builder
       .addCase(fetchOutstandingLoans.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -331,7 +352,7 @@ builder
         state.error = action.error.message;
       });
 
-       builder
+    builder
       .addCase(fetchCsoOverdueLoans.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -342,10 +363,10 @@ builder
       })
       .addCase(fetchCsoOverdueLoans.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || 'Failed to load';
+        state.error = action.payload?.message || "Failed to load";
       });
 
-            builder
+    builder
       .addCase(fetchCsoRecoveryLoaner.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -356,10 +377,10 @@ builder
       })
       .addCase(fetchCsoRecoveryLoaner.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || 'Failed to load';
+        state.error = action.payload?.message || "Failed to load";
       });
 
-        builder
+    builder
       .addCase(fetchOverdueLoans.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -374,16 +395,15 @@ builder
         state.error = action.payload || "Failed to fetch overdue loans";
       });
 
-
-       builder
+    builder
       .addCase(payOverDuePenalty.pending, (state) => {
         state.payOverloading = true;
-       
+
         state.error = null;
       })
       .addCase(payOverDuePenalty.fulfilled, (state, action) => {
         state.payOverloading = false;
-       
+
         state.paidOverdueLoan = action.payload;
       })
       .addCase(payOverDuePenalty.rejected, (state, action) => {
@@ -393,12 +413,7 @@ builder
   },
 });
 
-export const {
-  nextWeek,
-  prevWeek,
-  nextMonth,
-  prevMonth,
-  clearOverDuePay,
-} = OtherLoanslice.actions;
+export const { nextWeek, prevWeek, nextMonth, prevMonth, clearOverDuePay } =
+  OtherLoanslice.actions;
 
 export default OtherLoanslice.reducer;

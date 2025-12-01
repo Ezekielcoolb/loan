@@ -1015,25 +1015,29 @@ const LoanApplicationForm = () => {
                 type="text"
                 value={formData.groupDetails.groupName}
                 placeholder="Group Name"
-                disabled
+                readOnly
+                className="display-only"
               />
               <input
                 type="text"
                 value={formData.groupDetails.leaderName}
                 placeholder="Group Leader's Name"
-                disabled
+                readOnly
+                className="display-only"
               />
               <input
                 type="text"
                 value={formData.groupDetails.address}
                 placeholder="Group Leader's Address"
-                disabled
+                readOnly
+                className="display-only"
               />
               <input
                 type="text"
                 value={formData.groupDetails.mobileNo}
                 placeholder="Group Leader's Number"
-                disabled
+                readOnly
+                className="display-only"
               />
             </div>
 

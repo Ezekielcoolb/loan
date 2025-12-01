@@ -7,6 +7,7 @@ import {
   fetchLoanAppForms,
   fetchSearchingCsoActiveLoansforCollection,
 } from "../redux/slices/LoanSlice";
+import { fetchGroupLeadersByCso } from "../redux/slices/groupLeaderSlice";
 import "react-calendar/dist/Calendar.css"; // Import calendar styles
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
@@ -69,7 +70,7 @@ const CollectionRap = styled.div`
     padding-left: 20px;
   }
   .input-div {
-    margin-left: 20px;
+    
     margin-bottom: 15px;
   }
   .all-summary h4 {
@@ -235,6 +236,13 @@ const CollectionRap = styled.div`
     padding: 5px 10px;
     border-radius: 100px;
   }
+  .all-input {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
 `;
 
 const ActiveLoansTable = () => {
@@ -243,7 +251,9 @@ const ActiveLoansTable = () => {
   const { customers, loanAppForm, loading, error, collectionloading } = useSelector(
     (state) => state.loan
   );
-
+  const { options: groupLeaderOptions = [] } = useSelector(
+    (state) => state.groupLeader || {}
+  );
    const { specificCso, remittancestatus, hoursLeft, minutesLeft } = useSelector(
       (state) => state.cso
     );
@@ -263,7 +273,8 @@ const ActiveLoansTable = () => {
   const currenttoday = new Date().toDateString();
   const [confirm, setConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-    const [name, setName] = useState('');
+  const [name, setName] = useState('');
+  const [selectedGroupLeaderId, setSelectedGroupLeaderId] = useState('');
         const { urls } = useSelector((state) => state.upload);
     console.log(user);
     
@@ -286,6 +297,12 @@ useEffect(() => {
     setImageUrl(urls[0]); // Or store all: setImageUrl(urls);
   }
 }, [urls]);
+
+  useEffect(() => {
+    if (csoId) {
+      dispatch(fetchGroupLeadersByCso(csoId));
+    }
+  }, [dispatch, csoId]);
   // Timer logic
   useEffect(() => {
     const now = new Date();
@@ -336,11 +353,14 @@ useEffect(() => {
     }, [workId, dispatch]);
 
   useEffect(() => {
+    const formattedDate = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
     // Dispatch the action to fetch loans when the component mounts or date changes
-    dispatch(fetchCsoActiveLoans({ csoId, date: selectedDate.getFullYear() +
-  "-" + String(selectedDate.getMonth() + 1).padStart(2, "0") +
-  "-" + String(selectedDate.getDate()).padStart(2, "0") }));
-  }, [dispatch, csoId, selectedDate]);
+    dispatch(fetchCsoActiveLoans({
+      csoId,
+      date: formattedDate,
+      groupLeaderId: selectedGroupLeaderId || undefined,
+    }));
+  }, [dispatch, csoId, selectedDate, selectedGroupLeaderId]);
 
 
 
@@ -348,8 +368,22 @@ useEffect(() => {
     const value = e.target.value;
     setName(value);
     if (value.trim() !== "") {
-      dispatch(fetchSearchingCsoActiveLoansforCollection({ csoId,  date: selectedDate.toISOString(), name }));
-    } 
+      dispatch(
+        fetchSearchingCsoActiveLoansforCollection({
+          csoId,
+          date: selectedDate.toISOString(),
+          name: value,
+          groupLeaderId: selectedGroupLeaderId || undefined,
+        })
+      );
+    } else {
+      const formattedDate = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
+      dispatch(fetchCsoActiveLoans({
+        csoId,
+        date: formattedDate,
+        groupLeaderId: selectedGroupLeaderId || undefined,
+      }));
+    }
   };
   
 
@@ -489,11 +523,36 @@ console.log(filteredRemittanceIssue);
             <span>{selectedDate.toDateString()}</span>{" "}
           </div>
         </div>
+        <div className="all-input">
+           <select
+            value={selectedGroupLeaderId}
+            onChange={(e) => setSelectedGroupLeaderId(e.target.value)}
+            style={{
+              background: "#daf7ff",
+             paddingLeft:"10px",
+              width: "333px",
+              height: "45px",
+              border: "none",
+              borderRadius: "20px",
+              marginRight: "12px",
+            }}
+          >
+            <option value="">All Groups</option>
+            {groupLeaderOptions.map((leader) => (
+              <option key={leader._id} value={leader._id}>
+                {leader.groupName || `${leader.firstName} ${leader.lastName}`}
+              </option>
+            ))}
+          </select>
+       
         <div className="input-div">
+         
           <input
-          value={name}
-        onChange={handleChange}
-          type="text" placeholder="Search" />
+            value={name}
+            onChange={handleChange}
+            type="text"
+            placeholder="Search"
+          />
           <Icon
             className="search-input-icon"
             icon="ic:baseline-search"
@@ -502,6 +561,7 @@ console.log(filteredRemittanceIssue);
             style={{ color: " #005E7880" }}
           />
         </div>
+         </div>
         {/* Calendar Dropdown */}
         {showCalendar && (
           <div

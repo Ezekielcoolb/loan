@@ -3,7 +3,7 @@ import { Toaster, toast } from "react-hot-toast";
 import axios from "axios";
 import { format } from "date-fns";
 
-const API_URL = 'https://api.jksolutn.com/api/cso'; // Backend API URL
+const API_URL = "https://api.jksolutn.com/api/cso"; // Backend API URL
 const CSO_URL = "https://api.jksolutn.com/api/loginauth";
 
 // const API_URL = "http://localhost:5000/api/cso";
@@ -17,9 +17,6 @@ export const fetchCso = createAsyncThunk(
     return response.data;
   }
 );
-
-
-
 
 // Async thunk to create a new branch
 export const createCso = createAsyncThunk("cso/createCso", async (csoData) => {
@@ -127,31 +124,44 @@ export const updateCSODetails = createAsyncThunk(
   "cso/updateDetails",
   async ({ id, updatedData }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${CSO_URL}/update-cso/${id}`, updatedData);
+      const response = await axios.put(
+        `${CSO_URL}/update-cso/${id}`,
+        updatedData
+      );
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Something went wrong");
     }
   }
 );
-export const deactivateCSO = createAsyncThunk("cso/deactivate", async (id, { rejectWithValue }) => {
-  try {
-    const response = await axios.put(`${API_URL}/deactivate/${id}`);
-    return response.data;
-  } catch (error) {
-    return rejectWithValue(error.response?.data?.message || "Error deactivating CSO");
+export const deactivateCSO = createAsyncThunk(
+  "cso/deactivate",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`${API_URL}/deactivate/${id}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Error deactivating CSO"
+      );
+    }
   }
-});
+);
 
 // Async thunk for activating a CSO
-export const activateCSO = createAsyncThunk("cso/activate", async (id, { rejectWithValue }) => {
-  try {
-    const response = await axios.put(`${API_URL}/activate/${id}`);
-    return response.data;
-  } catch (error) {
-    return rejectWithValue(error.response?.data?.message || "Error activating CSO");
+export const activateCSO = createAsyncThunk(
+  "cso/activate",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`${API_URL}/activate/${id}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Error activating CSO"
+      );
+    }
   }
-});
+);
 
 export const searchCso = createAsyncThunk("cso/searchCso", async (query) => {
   const response = await fetch(`${API_URL}/search-cso?query=${query}`);
@@ -162,22 +172,26 @@ export const searchCso = createAsyncThunk("cso/searchCso", async (query) => {
   return data;
 });
 
-
 // Update only the defaultingTarget
 export const updateDefaultingTarget = createAsyncThunk(
-  'csos/updateDefaultingTarget',
+  "csos/updateDefaultingTarget",
   async ({ id, defaultingTarget }) => {
-    const res = await axios.put(`${API_URL}/csos-defaultTarget-set/${id}`, { defaultingTarget });
+    const res = await axios.put(`${API_URL}/csos-defaultTarget-set/${id}`, {
+      defaultingTarget,
+    });
     console.log(res.data);
     toast.success(res.data.message);
     return res.data;
   }
 );
 
-export const fetchAllTheCsos = createAsyncThunk('csos/fetchAllTheCsos', async () => {
-  const res = await axios.get(`${API_URL}/fetct-all-csos`);
-  return res.data;
-});
+export const fetchAllTheCsos = createAsyncThunk(
+  "csos/fetchAllTheCsos",
+  async () => {
+    const res = await axios.get(`${API_URL}/fetct-all-csos`);
+    return res.data;
+  }
+);
 
 export const fetchCsoByWorkId = createAsyncThunk(
   "cso/fetchByWorkId",
@@ -195,30 +209,33 @@ export const fetchCsoByWorkId = createAsyncThunk(
 );
 
 export const fetchForAdminUpdateCSO = createAsyncThunk(
-  'cso/fetchForAdminUpdateCSO',
+  "cso/fetchForAdminUpdateCSO",
   async (workId, thunkAPI) => {
     try {
-      const response = await axios.get(`${API_URL}/get-cso-for-admin-editing/${workId}`);
+      const response = await axios.get(
+        `${API_URL}/get-cso-for-admin-editing/${workId}`
+      );
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response.data.message);
     }
   }
 );
-
 
 export const updateByAdminCSO = createAsyncThunk(
-  'cso/updateByAdminCSO',
+  "cso/updateByAdminCSO",
   async ({ workId, updateFields }, thunkAPI) => {
     try {
-      const response = await axios.put(`${API_URL}/update-cso-by-the-admin/${workId}`, updateFields);
+      const response = await axios.put(
+        `${API_URL}/update-cso-by-the-admin/${workId}`,
+        updateFields
+      );
       return response.data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response.data.message);
     }
   }
 );
-
 
 export const fetchRemittanceStatus = createAsyncThunk(
   "remittance/fetchStatus",
@@ -226,7 +243,7 @@ export const fetchRemittanceStatus = createAsyncThunk(
     try {
       const res = await axios.get(`${API_URL}/remittance-status/${csoId}`);
       console.log(res.data);
-      
+
       return res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response.data);
@@ -234,29 +251,38 @@ export const fetchRemittanceStatus = createAsyncThunk(
   }
 );
 
-
 export const submitDailyRemittanceReport = createAsyncThunk(
-  'remittance/submitDailyRemittanceReport',
+  "remittance/submitDailyRemittanceReport",
   async ({ workId, amount, image }, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`${API_URL}/remitance-comfirmation-posting/${workId}`, { amount, image });
+      const res = await axios.post(
+        `${API_URL}/remitance-comfirmation-posting/${workId}`,
+        { amount, image }
+      );
       console.log(res.data);
-      
+
       return res.data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || { error: 'Something went wrong' });
+      return rejectWithValue(
+        err.response?.data || { error: "Something went wrong" }
+      );
     }
   }
 );
 
 export const addRemitanceIssueCsoResolved = createAsyncThunk(
-  'remitanceIssues/addRemitanceIssueCsoResolved',
+  "remitanceIssues/addRemitanceIssueCsoResolved",
   async ({ workId, issue }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/cso-remittance-resolve-issue/${workId}/add-issue`, issue);
+      const response = await axios.post(
+        `${API_URL}/cso-remittance-resolve-issue/${workId}/add-issue`,
+        issue
+      );
       return response.data.remitanceIssues;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Something went wrong');
+      return rejectWithValue(
+        error.response?.data?.message || "Something went wrong"
+      );
     }
   }
 );
@@ -274,17 +300,20 @@ export const addRemitanceIssueCsoResolved = createAsyncThunk(
 // );
 
 export const fetchCsoRemittanceRemttanceIssue = createAsyncThunk(
-  'remittance/fetchCsoRemittanceRemttanceIssue',
+  "remittance/fetchCsoRemittanceRemttanceIssue",
   async ({ workId, month, year }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/remittance-remittance-issue/${workId}?month=${month}&year=${year}`);
+      const response = await axios.get(
+        `${API_URL}/remittance-remittance-issue/${workId}?month=${month}&year=${year}`
+      );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch remittance summary');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch remittance summary"
+      );
     }
   }
 );
-
 
 export const updateCsoSignature = createAsyncThunk(
   "cso/updateCsoSignature",
@@ -301,9 +330,7 @@ export const updateCsoSignature = createAsyncThunk(
       );
       return response.data; // { message, data }
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || error.message
-      );
+      return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
 );
@@ -342,9 +369,10 @@ export const updateCsoOverdueOnePerDay = createAsyncThunk(
         return { skipped: true }; // Already ran today
       }
       console.log(lastRun);
-      
 
-      const res = await axios.post(`${API_URL}/update-cso-overdue-everyday-once/${csoId}`);
+      const res = await axios.post(
+        `${API_URL}/update-cso-overdue-everyday-once/${csoId}`
+      );
 
       // Save today's date in localStorage
       localStorage.setItem(lastRunKey, today);
@@ -368,9 +396,10 @@ export const updateCsoRecoveryOnePerDay = createAsyncThunk(
         return { skipped: true }; // Already ran today
       }
       console.log(lastRun);
-      
 
-      const res = await axios.post(`${API_URL}/update-cso-recovery-everyday-once/${csoId}`);
+      const res = await axios.post(
+        `${API_URL}/update-cso-recovery-everyday-once/${csoId}`
+      );
 
       // Save today's date in localStorage
       localStorage.setItem(lastRunKey, today);
@@ -382,12 +411,11 @@ export const updateCsoRecoveryOnePerDay = createAsyncThunk(
   }
 );
 
-
 export const updateCsoOverSHootLoansOnePerDay = createAsyncThunk(
   "csoOverdue/updateCsoOverSHootLoansOnePerDay",
   async (csoId, { rejectWithValue }) => {
     try {
-      const lastRunKey = `cso-overshoot-lastRun-${csoId}`;
+      const lastRunKey = `cso-overshoot-lastRuning-${csoId}`;
       const lastRun = localStorage.getItem(lastRunKey);
       const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
@@ -395,9 +423,10 @@ export const updateCsoOverSHootLoansOnePerDay = createAsyncThunk(
         return { skipped: true }; // Already ran today
       }
       console.log(lastRun);
-      
 
-      const res = await axios.post(`${API_URL}/update-cso-overshoot-loans/${csoId}`);
+      const res = await axios.post(
+        `${API_URL}/update-cso-overshoot-loans/${csoId}`
+      );
 
       // Save today's date in localStorage
       localStorage.setItem(lastRunKey, today);
@@ -425,25 +454,23 @@ export const updateCsoOverShootPayment = createAsyncThunk(
   }
 );
 
-
-
 const csoSlice = createSlice({
   name: "cso",
   initialState: {
     totalcso: 0,
     totalPages: 1,
     isLoading: false,
-overShootPaidLoading: false,
-overdueUpdateLoading: false,
+    overShootPaidLoading: false,
+    overdueUpdateLoading: false,
     overdueUpdateData: null,
     overShootPaidData: null,
     overdueUpdateSkipped: null,
-   recoveryUpdateLoading: false,
-   recoveryUpdateSkipped: null,
-   overShootLoanUpdateSkipped: null,
-   overShootLoanUpdateLoading: false,
-   overShootLoanUpdateData: null,
-   recoveryUpdateData: null,
+    recoveryUpdateLoading: false,
+    recoveryUpdateSkipped: null,
+    overShootLoanUpdateSkipped: null,
+    overShootLoanUpdateLoading: false,
+    overShootLoanUpdateData: null,
+    recoveryUpdateData: null,
     loading: false,
     updatingCsoloading: false,
     currentPage: 1,
@@ -482,11 +509,11 @@ overdueUpdateLoading: false,
     selectedRemiteDate: format(new Date(), "yyyy-MM-dd"),
     remittanceCso: [],
     remitanceCsoIssues: [],
-     dailyCsoCollections: [],
+    dailyCsoCollections: [],
     addRemittanceIssue: null,
-     month: null,
+    month: null,
     year: null,
-    issueResolveloading: false
+    issueResolveloading: false,
   },
   reducers: {
     resetUploadState: (state) => {
@@ -494,7 +521,7 @@ overdueUpdateLoading: false,
       state.error = null;
       state.uploaded = false;
     },
-     resetSignatureState: (state) => {
+    resetSignatureState: (state) => {
       state.signatureloading = false;
       state.successSignatureMessage = null;
     },
@@ -507,10 +534,9 @@ overdueUpdateLoading: false,
     setSelectedCSO: (state, action) => {
       state.selectedCSO = action.payload;
     },
-     setRemittanceIssueResolve: (state, action) => {
+    setRemittanceIssueResolve: (state, action) => {
       state.addRemittanceIssue = action.payload;
     },
-
 
     clearMessages: (state) => {
       state.error = null;
@@ -546,74 +572,66 @@ overdueUpdateLoading: false,
         state.cso.push(action.payload);
       });
 
+    builder
+      .addCase(updateCsoOverdueOnePerDay.pending, (state) => {
+        state.overdueUpdateLoading = true;
+        state.error = null;
+      })
+      .addCase(updateCsoOverdueOnePerDay.fulfilled, (state, action) => {
+        state.overdueUpdateLoading = false;
+        state.overdueUpdateSkipped = action.payload.skipped;
+        state.overdueUpdateData = action.payload.data || null;
+      })
+      .addCase(updateCsoOverdueOnePerDay.rejected, (state, action) => {
+        state.overdueUpdateLoading = false;
+        state.error = action.payload || "Something went wrong";
+      });
 
+    builder
+      .addCase(updateCsoOverSHootLoansOnePerDay.pending, (state) => {
+        state.overShootLoanUpdateLoading = true;
+        state.error = null;
+      })
+      .addCase(updateCsoOverSHootLoansOnePerDay.fulfilled, (state, action) => {
+        state.overShootLoanUpdateLoading = false;
+        state.overShootLoanUpdateSkipped = action.payload.skipped;
+        state.overShootLoanUpdateData = action.payload.data || null;
+      })
+      .addCase(updateCsoOverSHootLoansOnePerDay.rejected, (state, action) => {
+        state.overShootLoanUpdateLoading = false;
+        state.error = action.payload || "Something went wrong";
+      });
 
-        builder
-    .addCase(updateCsoOverdueOnePerDay.pending, (state) => {
-  state.overdueUpdateLoading = true;
-  state.error = null;
-})
-.addCase(updateCsoOverdueOnePerDay.fulfilled, (state, action) => {
-  state.overdueUpdateLoading = false;
-  state.overdueUpdateSkipped = action.payload.skipped;
-  state.overdueUpdateData = action.payload.data || null;
-})
-.addCase(updateCsoOverdueOnePerDay.rejected, (state, action) => {
-  state.overdueUpdateLoading = false;
-  state.error = action.payload || "Something went wrong";
-});
+    builder
+      .addCase(updateCsoOverShootPayment.pending, (state) => {
+        state.overShootPaidLoading = true;
+        state.error = null;
+      })
+      .addCase(updateCsoOverShootPayment.fulfilled, (state, action) => {
+        state.overShootPaidLoading = false;
+        state.overShootPaidData = action.payload;
+      })
+      .addCase(updateCsoOverShootPayment.rejected, (state, action) => {
+        state.overShootPaidLoading = false;
+        state.error = action.payload || "Something went wrong";
+      });
 
+    builder
+      .addCase(updateCsoRecoveryOnePerDay.pending, (state) => {
+        state.recoveryUpdateLoading = true;
+        state.error = null;
+      })
+      .addCase(updateCsoRecoveryOnePerDay.fulfilled, (state, action) => {
+        state.recoveryUpdateLoading = false;
+        state.recoveryUpdateSkipped = action.payload.skipped;
+        state.recoveryUpdateData = action.payload.data || null;
+      })
+      .addCase(updateCsoRecoveryOnePerDay.rejected, (state, action) => {
+        state.recoveryUpdateLoading = false;
+        state.error = action.payload || "Something went wrong";
+      });
 
-        builder
-    .addCase(updateCsoOverSHootLoansOnePerDay.pending, (state) => {
-  state.overShootLoanUpdateLoading = true;
-  state.error = null;
-})
-.addCase(updateCsoOverSHootLoansOnePerDay.fulfilled, (state, action) => {
-  state.overShootLoanUpdateLoading = false;
-  state.overShootLoanUpdateSkipped = action.payload.skipped;
-  state.overShootLoanUpdateData = action.payload.data || null;
-})
-.addCase(updateCsoOverSHootLoansOnePerDay.rejected, (state, action) => {
-  state.overShootLoanUpdateLoading = false;
-  state.error = action.payload || "Something went wrong";
-});
-
-
-
-        builder
-    .addCase(updateCsoOverShootPayment.pending, (state) => {
-  state.overShootPaidLoading = true;
-  state.error = null;
-})
-.addCase(updateCsoOverShootPayment.fulfilled, (state, action) => {
-  state.overShootPaidLoading = false;
-  state.overShootPaidData = action.payload
-})
-.addCase(updateCsoOverShootPayment.rejected, (state, action) => {
-  state.overShootPaidLoading = false;
-  state.error = action.payload || "Something went wrong";
-});
-
-
-
-
-        builder
-    .addCase(updateCsoRecoveryOnePerDay.pending, (state) => {
-  state.recoveryUpdateLoading = true;
-  state.error = null;
-})
-.addCase(updateCsoRecoveryOnePerDay.fulfilled, (state, action) => {
-  state.recoveryUpdateLoading = false;
-  state.recoveryUpdateSkipped = action.payload.skipped;
-  state.recoveryUpdateData = action.payload.data || null;
-})
-.addCase(updateCsoRecoveryOnePerDay.rejected, (state, action) => {
-  state.recoveryUpdateLoading = false;
-  state.error = action.payload || "Something went wrong";
-});
-
-        builder
+    builder
       .addCase(updateCsoSignature.pending, (state) => {
         state.signatureloading = true;
         state.error = null;
@@ -629,37 +647,35 @@ overdueUpdateLoading: false,
         state.error = action.payload;
       });
 
-      builder
-  .addCase(fetchForAdminUpdateCSO.pending, (state) => {
-    state.loading = true;
-    state.error = null;
-  })
-  .addCase(fetchForAdminUpdateCSO.fulfilled, (state, action) => {
-    state.loading = false;
-    state.specifiedCso = action.payload;
-  })
-  .addCase(fetchForAdminUpdateCSO.rejected, (state, action) => {
-    state.loading = false;
-    state.error = action.payload;
-  });
+    builder
+      .addCase(fetchForAdminUpdateCSO.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchForAdminUpdateCSO.fulfilled, (state, action) => {
+        state.loading = false;
+        state.specifiedCso = action.payload;
+      })
+      .addCase(fetchForAdminUpdateCSO.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
 
-
-   builder
+    builder
       .addCase(addRemitanceIssueCsoResolved.pending, (state) => {
         state.issueResolveloading = true;
         state.error = null;
       })
       .addCase(addRemitanceIssueCsoResolved.fulfilled, (state, action) => {
         state.issueResolveloading = false;
-        state.addRemittanceIssue = action.payload
-        
+        state.addRemittanceIssue = action.payload;
       })
       .addCase(addRemitanceIssueCsoResolved.rejected, (state, action) => {
         state.issueResolveloading = false;
         state.error = action.payload;
       });
 
- builder
+    builder
       .addCase(fetchCsoRemittanceRemttanceIssue.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -668,7 +684,7 @@ overdueUpdateLoading: false,
         state.loading = false;
         state.remittanceCso = action.payload.remittance;
         state.remitanceCsoIssues = action.payload.remitanceIssues;
-         state.dailyCsoCollections = action.payload.dailyCollections;
+        state.dailyCsoCollections = action.payload.dailyCollections;
         state.month = action.payload.month;
         state.year = action.payload.year;
       })
@@ -677,8 +693,7 @@ overdueUpdateLoading: false,
         state.error = action.payload;
       });
 
-
-  builder
+    builder
       .addCase(submitDailyRemittanceReport.pending, (state) => {
         state.remiLoading = true;
         state.error = null;
@@ -690,7 +705,7 @@ overdueUpdateLoading: false,
       })
       .addCase(submitDailyRemittanceReport.rejected, (state, action) => {
         state.remiLoading = false;
-        state.error = action.payload?.error || 'Failed to submit remittance';
+        state.error = action.payload?.error || "Failed to submit remittance";
       });
 
     builder
@@ -709,26 +724,25 @@ overdueUpdateLoading: false,
         state.error = action.payload?.message || "Failed to fetch status";
       });
 
-  builder
-  .addCase(updateByAdminCSO.pending, (state) => {
-    state.updatingCsoloading = true;
-    state.error = null;
-    state.success = false;
-  })
-  .addCase(updateByAdminCSO.fulfilled, (state, action) => {
-    state.updatingCsoloading = false;
-    state.specifiedCso = action.payload.cso;
-    state.updateCsoSuccessMessage = action.payload.message
-    state.success = true;
-  })
-  .addCase(updateByAdminCSO.rejected, (state, action) => {
-    state.updatingCsoloading = false;
-    state.error = action.payload;
-    state.success = false;
-  });
+    builder
+      .addCase(updateByAdminCSO.pending, (state) => {
+        state.updatingCsoloading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(updateByAdminCSO.fulfilled, (state, action) => {
+        state.updatingCsoloading = false;
+        state.specifiedCso = action.payload.cso;
+        state.updateCsoSuccessMessage = action.payload.message;
+        state.success = true;
+      })
+      .addCase(updateByAdminCSO.rejected, (state, action) => {
+        state.updatingCsoloading = false;
+        state.error = action.payload;
+        state.success = false;
+      });
 
-
-      builder
+    builder
       .addCase(fetchCsoByWorkId.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -742,8 +756,8 @@ overdueUpdateLoading: false,
         state.error = action.payload;
       });
 
-      builder
-      .addCase(fetchAllTheCsos.pending, state => {
+    builder
+      .addCase(fetchAllTheCsos.pending, (state) => {
         state.loading = true;
       })
       .addCase(fetchAllTheCsos.fulfilled, (state, action) => {
@@ -756,15 +770,14 @@ overdueUpdateLoading: false,
       })
       .addCase(updateDefaultingTarget.fulfilled, (state, action) => {
         const updated = action.payload;
-        const index = state.list.findIndex(cso => cso._id === updated._id);
+        const index = state.list.findIndex((cso) => cso._id === updated._id);
         if (index !== -1) {
           state.list[index] = updated;
         }
         state.targetMessage = action.payload.message;
-
       });
 
-      builder
+    builder
       .addCase(deactivateCSO.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -873,8 +886,7 @@ overdueUpdateLoading: false,
         state.error = action.payload;
       });
 
-
-        builder
+    builder
       .addCase(submitCsoExpense.pending, (state) => {
         state.expenseUploadLoading = true;
       })
@@ -914,5 +926,15 @@ overdueUpdateLoading: false,
       });
   },
 });
-export const {clearTargetMessageMessages, setRemittanceIssueResolve, setRemittanceUploadReset, resetSignatureState, clearUpdateSuccessMessages, resetUploadState, setSelectedRemmitDate, setSelectedCSO, clearMessages } = csoSlice.actions;
+export const {
+  clearTargetMessageMessages,
+  setRemittanceIssueResolve,
+  setRemittanceUploadReset,
+  resetSignatureState,
+  clearUpdateSuccessMessages,
+  resetUploadState,
+  setSelectedRemmitDate,
+  setSelectedCSO,
+  clearMessages,
+} = csoSlice.actions;
 export default csoSlice.reducer;

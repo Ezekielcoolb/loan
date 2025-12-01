@@ -34,6 +34,21 @@ const NewLoanRap = styled.div`
     display: flex;
     gap: 20px;
   }
+
+  .exit-link {
+    text-decoration: none;
+    color: red;
+    font-weight: 700;
+    border: 1px solid red;
+    padding: 5px 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    width: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20px;
+  }
   .client-link {
     padding: 20px 20px;
     text-decoration: none;
@@ -182,6 +197,12 @@ const NewLoanRap = styled.div`
     height: 30px;
     padding: 0px 15px;
   }
+  .all-dropdown-div {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
   .fiter-cso-div {
     display: flex;
     align-items: center;
@@ -204,8 +225,8 @@ const Disbursment = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [pictureDropdown, setPictureDropdown] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
-     const [isEdited, setIsEdited] = useState(false);
-  
+  const [isEdited, setIsEdited] = useState(false);
+
   const [loanIdReal, setLoanIdReal] = useState("");
   const [filterCSO, setFilterCSO] = useState("");
   const handleLinkClick = (link) => {
@@ -308,10 +329,9 @@ const Disbursment = () => {
     }
   }, [urls]);
 
-
-   useEffect(() => {
-    if(disbursePictureUpload) {
-      setPictureDropdown(false)
+  useEffect(() => {
+    if (disbursePictureUpload) {
+      setPictureDropdown(false);
     }
   }, [disbursePictureUpload]);
 
@@ -359,14 +379,15 @@ const Disbursment = () => {
     }
   };
 
-   const handleEdit = (id) => {
-
-     if (window.confirm("You are about to ask cso to edit this loan. Are you sure?")) {
+  const handleEdit = (id) => {
+    if (
+      window.confirm(
+        "You are about to ask cso to edit this loan. Are you sure?"
+      )
+    ) {
       dispatch(editLoanStatus(id));
     }
-      
-       
-    };
+  };
 
   useEffect(() => {
     dispatch(fetchDisbursedLoansByDate(selectedDisburseDate));
@@ -414,10 +435,9 @@ const Disbursment = () => {
     );
   };
 
-    const handleOpenEdit = () => {
+  const handleOpenEdit = () => {
     setIsEdited(!isEdited);
-   
-}
+  };
 
   const handleFileChange = (files) => {
     if (!files.length) return;
@@ -460,6 +480,9 @@ const Disbursment = () => {
                 {" "}
                 {cashAtHandError}
               </p>
+              <Link to="/admin/operations" className="exit-link">
+                Exit
+              </Link>
             </div>
           </div>
         </>
@@ -604,7 +627,7 @@ const Disbursment = () => {
                                     zIndex: 10,
                                     display: "flex",
                                     flexDirection: "column",
-                                    gap: "15px"
+                                    gap: "15px",
                                   }}
                                 >
                                   <button
@@ -620,16 +643,19 @@ const Disbursment = () => {
                                   >
                                     Delete
                                   </button>
-                                   <button style={{
-                background: "blue",
-                 color: "white",
+                                  <button
+                                    style={{
+                                      background: "blue",
+                                      color: "white",
                                       padding: "10px",
                                       border: "none",
                                       width: "100%",
-                                      cursor: "pointer"
-              }}  onClick={() => handleEdit(loan._id)}>
-                Ask to Edit
-              </button>
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={() => handleEdit(loan._id)}
+                                  >
+                                    Ask to Edit
+                                  </button>
                                 </div>
                               )}
                             </td>
@@ -860,9 +886,6 @@ const Disbursment = () => {
           ) : (
             ""
           )}
-          
-
-            
         </div>
       )}
     </NewLoanRap>

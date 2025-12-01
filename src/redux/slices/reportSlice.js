@@ -53,11 +53,26 @@ export const fetchReportMonthlySummary = createAsyncThunk(
   }
 );
 
+export const fetchReportMonthlyMetrics = createAsyncThunk(
+  "fetchReportMonthlyMetrics/fetch",
+  async ({ year, month }) => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/report-monthly-metrics?year=${year}&month=${month}`
+      );
+      console.log("Monthly report metrics response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching monthly report metrics:", error);
+      throw error; // Propagate the error to be handled in the slice
+    }
+  }
+);
+
 // export const fetchReport = createAsyncThunk("report/fetch", async () => {
 //   const res = await axios.get(`${`${API_URL}/report-cash-expense`}`);
 //   return res.data;
 // });
-
 
 export const fetchReport = createAsyncThunk(
   "report/fetchReport",
@@ -77,9 +92,7 @@ export const fetchAllCashAtHand = createAsyncThunk(
   "report/fetchAllCashAtHand",
   async (__, { rejectWithValue }) => {
     try {
-      const res = await axios.get(
-        `${API_URL}/all-reports/cash-at-hand`
-      );
+      const res = await axios.get(`${API_URL}/all-reports/cash-at-hand`);
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || err.message);
@@ -112,9 +125,10 @@ const reportSlice = createSlice({
   name: "report",
   initialState: {
     data: null,
-    status: "idle",
-      ...getCurrentMonthYear(),
-        month: new Date().getMonth(),
+    dataMetrics: null,
+    status: false,
+    ...getCurrentMonthYear(),
+    month: new Date().getMonth(),
     year: new Date().getFullYear(),
     currentMonth: new Date().getMonth() + 1,
     currentYear: new Date().getFullYear(),
@@ -141,10 +155,10 @@ const reportSlice = createSlice({
     setMonthYear(state, action) {
       state.currentMonth = action.payload.month;
       state.currentYear = action.payload.year;
-      state.status = "idle";
+      // state.status = "idle";
     },
 
-     setMonth: (state, action) => {
+    setMonth: (state, action) => {
       state.month = action.payload;
     },
     setYear: (state, action) => {
@@ -199,19 +213,31 @@ const reportSlice = createSlice({
       });
     builder
       .addCase(fetchReportMonthlySummary.pending, (state) => {
-        state.status = "loading";
+        state.status = true;
       })
       .addCase(fetchReportMonthlySummary.fulfilled, (state, action) => {
-        state.status = "succeeded";
+        state.status = false;
         state.data = action.payload;
       })
       .addCase(fetchReportMonthlySummary.rejected, (state, action) => {
-        state.status = "failed";
+        state.status = false;
         state.error = action.error.message;
       });
 
+    builder
+      .addCase(fetchReportMonthlyMetrics.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchReportMonthlyMetrics.fulfilled, (state, action) => {
+        state.loading = false;
+        state.dataMetrics = action.payload;
+      })
+      .addCase(fetchReportMonthlyMetrics.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
 
-       builder
+    builder
       .addCase(fetchReport.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -226,8 +252,7 @@ const reportSlice = createSlice({
         state.error = action.error.message;
       });
 
-
-             builder
+    builder
       .addCase(fetchAllCashAtHand.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -241,8 +266,7 @@ const reportSlice = createSlice({
         state.error = action.error.message;
       });
 
-
-        builder
+    builder
       .addCase(deleteExpense.pending, (state) => {
         state.deleteExploading = true;
         state.error = null;
@@ -257,7 +281,7 @@ const reportSlice = createSlice({
         state.error = action.error.message;
       });
 
-        builder
+    builder
       .addCase(deleteCash.pending, (state) => {
         state.cashDeteleloading = true;
         state.error = null;
@@ -266,13 +290,11 @@ const reportSlice = createSlice({
         state.cashDeteleloading = false;
         state.cashAtHand = action.payload.data;
         state.cashDelete = action.payload.message;
-
       })
       .addCase(deleteCash.rejected, (state, action) => {
         state.cashDeteleloading = false;
         state.error = action.error.message;
       });
-      
   },
 });
 
@@ -280,9 +302,9 @@ export const {
   clearExpenseMessage, // Action to clear the expense message
   clearCashMessage, // Action to clear the cash message
   setMonthYear,
-  setMonth, 
+  setMonth,
   setYear,
   goToNextMonth,
-   goToPreviousMonth
+  goToPreviousMonth,
 } = reportSlice.actions;
 export default reportSlice.reducer;

@@ -203,8 +203,8 @@ export default function CsoReportSummaryTable() {
                       <th>Total Interest</th>
 
                       <th>Total Recovery</th>
-
-                      <th>Over Target Bonus</th>
+                      <th>Overshoot Value </th>
+                      <th> Bonus</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -221,15 +221,19 @@ export default function CsoReportSummaryTable() {
                         <td>{cso.totalInterest}</td>
 
                         <td>{cso.totalRecovery}</td>
+                        <td>{cso.overshootValue}</td>
 
                         <td>{cso.bonus}</td>
                         <td>
                           <button
                             className="view-btn"
                             onClick={() =>
-                              navigate(`/admin/cso/reports/${cso.csoId}?month=${month}&year=${year}`, {
-                                state: { cso, month, year },
-                              })
+                              navigate(
+                                `/admin/cso/reports/${cso.csoId}?month=${month}&year=${year}`,
+                                {
+                                  state: { cso, month, year },
+                                }
+                              )
                             }
                           >
                             View

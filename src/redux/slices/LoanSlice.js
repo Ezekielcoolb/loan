@@ -205,7 +205,7 @@ export const fetchRejectedCustomers = createAsyncThunk(
 
 export const makePaymenting = createAsyncThunk(
   "loans/makePaymenting",
-  async ({ id, amount }) => {
+  async ({ id, amount }, { rejectWithValue }) => {
     try {
       const response = await axios.post(`${API_URL}/loans/${id}/payment`, {
         amount,
@@ -215,8 +215,8 @@ export const makePaymenting = createAsyncThunk(
 
       return response.data;
     } catch (err) {
-      
-      return err.response.data;
+      const fallback = err?.response?.data || { error: err?.message || "Failed to make payment" };
+      return rejectWithValue(fallback);
     }
   }
 );
@@ -282,6 +282,21 @@ export const updateLoan = createAsyncThunk(
       const response = await axios.put(
         `${API_URL}/editting-for-a-user/loans/${id}`,
         updateData
+      );
+      return response.data; // contains { message, loan }
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const transferLoanGroup = createAsyncThunk(
+  "loans/transferLoanGroup",
+  async ({ id, groupDetails }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(
+        `${API_URL}/transfer-loan-group/loans-new/${id}`,
+        { groupDetails }
       );
       return response.data; // contains { message, loan }
     } catch (error) {
@@ -404,6 +419,21 @@ export const fetchLoanMonthlySummary = createAsyncThunk(
   }
 );
 
+export const fetchLoanMonthlyMatrics = createAsyncThunk(
+  "loans/fetchLoanMonthlyMatrics",
+  async (year, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/loans-chart/monthly-metrics`, {
+        params: { year },
+      });
+      return response.data;
+    } catch (error) {
+      const message = error?.response?.data?.error || error?.message || "Failed to load monthly summary";
+      return rejectWithValue(message);
+    }
+  }
+);
+
 export const fetchAllLoansByCsoId = createAsyncThunk(
   "loans/fetchAllLoansByCsoId",
   async ({ csoId }) => {
@@ -428,18 +458,24 @@ export const fetchAllLoansByCsoIdLoanDashboardLoans = createAsyncThunk(
 
 export const fetchCsoActiveLoans = createAsyncThunk(
   "loan/fetchCsoActiveLoans",
-  async ({ csoId, date }) => {
+  async ({ csoId, date, groupLeaderId, groupLeaderName }) => {
     try {
       console.log(date);
       
       const response = await axios.get(
         `${API_URL}/fetchCsoActiveLoans/${csoId}`,
-        { params: { date } } // Pass the date as a query parameter
+        {
+          params: {
+            date,
+            groupLeaderId,
+            groupLeaderName,
+          },
+        }
       );
       return response.data;
-    } catch (err) {
-      console.error("Error fetching active loans:", err);
-      throw err;
+    } catch (error) {
+      console.log(error);
+      throw error;
     }
   }
 );
@@ -465,10 +501,15 @@ export const secondfetchCsoActiveLoans = createAsyncThunk(
 
 export const fetchSearchingCsoActiveLoansforCollection = createAsyncThunk(
   'csoLoans/fetchSearchingCsoActiveLoansforCollection',
-  async ({ csoId, date, name }, thunkAPI) => {
+  async ({ csoId, date, name, groupLeaderId, groupLeaderName }, thunkAPI) => {
     try {
       const response = await axios.get(`${API_URL}/fetchSearchingCsoActiveLoansforCollection/${csoId}`, {
-        params: { date, name },
+        params: {
+          date,
+          name,
+          groupLeaderId,
+          groupLeaderName,
+        },
       });
       return response.data;
     } catch (error) {
@@ -667,10 +708,16 @@ export const fetchLoanAppForms = createAsyncThunk(
 
 export const fetchLoansByCsoForHome = createAsyncThunk(
   'loans/fetchLoansByCsoForHome',
-  async ({ csoId, page }, thunkAPI) => {
+  async ({ csoId, page, groupLeaderId, groupLeaderName }, thunkAPI) => {
     try {
-    const res = await axios.get(`${API_URL}/cso-loans-for-home/${csoId}?page=${page}`);
-    return res.data;
+      const res = await axios.get(`${API_URL}/cso-loans-for-home/${csoId}`, {
+        params: {
+          page,
+          groupLeaderId,
+          groupLeaderName,
+        },
+      });
+      return res.data;
     } catch (err) {
       console.error("Error fetching active loans:", err);
       throw err;
@@ -787,6 +834,10 @@ csoWeeklyReport: null,
     monthlySummaryStatus: false,
     monthlySummaryError: null,
     monthlySummaryYear: new Date().getFullYear(),
+    monthlySummaryMatrics: [],
+    monthlySummaryMatricsStatus: false,
+    monthlySummaryMatricsError: null,
+    monthlySummaryMatricsYear: new Date().getFullYear(),
     totalLoans: 0,
     activeLoans: 0,
     pendingLoans: 0,
@@ -801,7 +852,9 @@ csoWeeklyReport: null,
     rejectedDashboardLoans: [],
     paymentSuccess:"",
     paymentError: "",
-    loading: "idle",
+    paymentRemainingBalance: null,
+    wasFinalPayment: false,
+    loading: false,
     submitloading: false,
     paymentloading: false,
     error: null,
@@ -835,7 +888,7 @@ csoWeeklyReport: null,
     csoHomepage: 1,
     csoHometotalPages: 0,
     pagination: { page: 1, totalPages: 1, limit: 20, total: 0 },
-    summaryloading: "idle"
+    summaryloading: false
   },
   reducers: {
      setDisbursedSelectedDate: (state, action) => {
@@ -863,6 +916,9 @@ csoWeeklyReport: null,
     },
     clearPaymentMessages: (state) => {
       state.paymentSuccess = "";
+      state.paymentError = "";
+      state.paymentRemainingBalance = null;
+      state.wasFinalPayment = false;
     },
     clearDisbursementPicture: (state) => {
       state.disbursePictureUpload = null;
@@ -1078,6 +1134,26 @@ csoWeeklyReport: null,
         state.monthlySummaryError = action.payload || action.error.message;
         state.monthlySummary = [];
       })
+
+
+ .addCase(fetchLoanMonthlyMatrics.pending, (state) => {
+  state.monthlySummaryMatricsStatus = true;
+  state.monthlySummaryMatricsError = null;
+})
+.addCase(fetchLoanMonthlyMatrics.fulfilled, (state, action) => {
+  state.monthlySummaryMatricsStatus = false;
+  state.monthlySummaryMatrics = Array.isArray(action.payload?.data)
+    ? action.payload.data
+    : [];
+  state.monthlySummaryMatricsYear =
+    action.payload?.year ?? action.meta?.arg ?? new Date().getFullYear();
+})
+.addCase(fetchLoanMonthlyMatrics.rejected, (state, action) => {
+  state.monthlySummaryMatricsStatus = false;
+  state.monthlySummaryMatricsError = action.payload || action.error.message;
+  state.monthlySummaryMatrics = [];
+})
+
       .addCase(updateDisbursementPicture.pending, (state) => {
         state.disbursePictureloading = true;
         state.success = false;
@@ -1478,32 +1554,32 @@ csoWeeklyReport: null,
 
     builder
       .addCase(fetchAllLoansByCsoId.pending, (state) => {
-        state.loading = "loading";
+        state.loading = true;
         state.error = null;
       })
       .addCase(fetchAllLoansByCsoId.fulfilled, (state, action) => {
         state.loans = action.payload.loans;
         state.total = action.payload.total;
         loanSlice.caseReducers.calculateLoanStats(state);
-        state.loading = "succeeded";
+        state.loading = false;
       })
       .addCase(fetchAllLoansByCsoId.rejected, (state, action) => {
-        state.loading = "failed";
+        state.loading = false;
         state.error = action.error.message;
       });
 
     builder
       .addCase(fetchCustomersSummary.pending, (state) => {
-        state.summaryloading = "loading";
+        state.summaryloading = true;
       })
       .addCase(fetchCustomersSummary.fulfilled, (state, action) => {
         state.summaries = action.payload.data;
          state.summarytotalPages = action.payload.totalPages;
         state.summarytotalRecords = action.payload.totalRecords;
-        state.summaryloading = "succeeded";
+        state.summaryloading = false;
       })
       .addCase(fetchCustomersSummary.rejected, (state) => {
-        state.summaryloading = "failed";
+        state.summaryloading = false;
       });
 
       builder
@@ -1522,16 +1598,16 @@ csoWeeklyReport: null,
 
     builder
       .addCase(fetchLoans.pending, (state) => {
-        state.loading = "loading";
+        state.loading = true;
       })
       .addCase(fetchLoans.fulfilled, (state, action) => {
-        state.loading = "succeeded";
+        state.loading = false;
         state.loans = action.payload.loans;
         state.total = action.payload.total;
         state.totalPages = action.payload.totalPages;
       })
       .addCase(fetchLoans.rejected, (state, action) => {
-        state.loading = "failed";
+        state.loading = false;
         state.error = action.payload;
       });
 
@@ -1551,16 +1627,16 @@ csoWeeklyReport: null,
     builder
 
       .addCase(fetchWaitingLoans.pending, (state) => {
-        state.loading = "loading";
+        state.loading = true;
       })
       .addCase(fetchWaitingLoans.fulfilled, (state, action) => {
         state.loans = action.payload.loans;
         state.totalLoans = action.payload.totalLoans;
         state.totalPages = action.payload.totalPages;
-        state.loading = "succeeded";
+        state.loading = false
       })
       .addCase(fetchWaitingLoans.rejected, (state) => {
-        state.loading = "failed";
+        state.loading = false;
       });
 
       builder
@@ -1570,12 +1646,18 @@ csoWeeklyReport: null,
       })
       .addCase(makePaymenting.fulfilled, (state, action) => {
         state.paymentloading = false;
-        state.selectedLoan = action.payload;
-        state.paymentSuccess =  action.payload?.message || action.payload?.error
+        state.selectedLoan = action.payload?.loan || action.payload;
+        state.paymentSuccess = action.payload?.message || '';
+        state.paymentRemainingBalance = action.payload?.remainingBalance ?? null;
+        state.wasFinalPayment = !!action.payload?.wasFinalPayment;
       })
       .addCase(makePaymenting.rejected, (state, action) => {
         state.paymentloading = false;
-        state.paymentError = action.error;
+        const errorPayload = action.payload;
+        state.paymentError = errorPayload?.error || errorPayload?.message || action.error?.message || 'Payment failed';
+        state.paymentSuccess = '';
+        state.paymentRemainingBalance = null;
+        state.wasFinalPayment = false;
       });
 
       builder
@@ -1614,11 +1696,11 @@ csoWeeklyReport: null,
       })
 
       .addCase(fetchRepaymentSchedule.pending, (state) => {
-        state.loading = "loading";
+        state.loading = true;
       })
       .addCase(fetchRepaymentSchedule.fulfilled, (state, action) => {
         state.repaymentSchedule = action.payload.repaymentSchedule || [];
-        state.loading = "idle";
+        state.loading = false;
       })
 
       .addCase(fetchLoanById.fulfilled, (state, action) => {
@@ -1702,14 +1784,14 @@ csoWeeklyReport: null,
       });
     builder
       .addCase(fetchDisbursementDataChart.pending, (state) => {
-        state.status = "loading";
+        state.loading = true;
       })
       .addCase(fetchDisbursementDataChart.fulfilled, (state, action) => {
-        state.status = "succeeded";
+        state.loading = false;
         state.monthlyData = action.payload;
       })
       .addCase(fetchDisbursementDataChart.rejected, (state, action) => {
-        state.status = "failed";
+        state.loading = false;
         state.error = action.error.message;
       });
   },

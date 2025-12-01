@@ -381,8 +381,7 @@ const ReportPage = () => {
         </div>
       
 
-        {status === "loading" && <p>Loading...</p>}
-        {status === "failed" && <p>Error: {error}</p>}
+        {status && <p>Loading...</p>}
         </>
   )}
         {activeLink === "new" && (

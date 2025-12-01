@@ -5,7 +5,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { clearPaymentMessages, fetchLoanById, makePaymenting } from "../redux/slices/LoanSlice";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import styled from "styled-components";
-import axios from "axios";
 import { PulseLoader } from "react-spinners";
 import { submitDailyRemittanceReport } from "../redux/slices/csoSlice";
 
@@ -152,7 +151,13 @@ const PaymentPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const loan = useSelector((state) => state.loan.selectedLoan);
-    const { paymentloading, paymentError, paymentSuccess, status } = useSelector((state) => state.loan);
+  const {
+    paymentloading,
+    paymentError,
+    paymentSuccess,
+    paymentRemainingBalance,
+    wasFinalPayment,
+  } = useSelector((state) => state.loan);
   
 
 const workId = loan?.csoId
@@ -166,7 +171,6 @@ console.log(workId);
   const [visible, setVisible] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [pay, setPay] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   // Get today's amountPaid
   const today = new Date().toISOString().split("T")[0]; // Format as YYYY-MM-DD
@@ -176,7 +180,7 @@ console.log(workId);
 
   // const today = new Date();
 
-  const isValid = amount !== null && amount !== NaN
+  const isValid = typeof amount === "number" && !Number.isNaN(amount) && amount > 0;
 
   function countWeekdaysSinceFirstRepayment(schedule) {
     if (!schedule?.length) return 0;
@@ -222,8 +226,8 @@ console.log(workId);
   
   let AmountDueOne = totalDue - (loan?.loanDetails?.amountPaidSoFar || 0);
   
-if (AmountDueOne === NaN ) {
-  AmountDueOne = totalDue
+if (Number.isNaN(AmountDueOne)) {
+  AmountDueOne = totalDue;
 }
 
 
@@ -280,15 +284,19 @@ if (repaymentScheduleLengthTillToday > 22) {
     dispatch(fetchLoanById(id)); // Fetch loan data when the component loads
   }, [dispatch, id]);
 
-  const handlePayment = () => {
-    if (isValid) {
-      setLoading(true);
-      dispatch(makePaymenting({ id, amount }));
-      //  dispatch(submitDailyRemittanceReport({ workId, amount }));
+  const handlePayment = async () => {
+    if (!isValid || paymentloading) {
+      return;
+    }
+
+    try {
+      await dispatch(makePaymenting({ id, amount: Number(amount) })).unwrap();
       setAmount(null);
       setPay(true);
       setConfirm(false);
-      setLoading(false);
+      setVisible(false);
+    } catch (error) {
+      console.error("Payment failed", error);
     }
   };
 
@@ -300,8 +308,10 @@ if (repaymentScheduleLengthTillToday > 22) {
   };
 
   const handleCancel = () => {
-    dispatch(clearPaymentMessages())
-  }
+    dispatch(clearPaymentMessages());
+    setConfirm(false);
+    setVisible(false);
+  };
 
     const formatNumberWithCommas = (number) => {
     return new Intl.NumberFormat().format(number);
@@ -400,6 +410,18 @@ if (repaymentScheduleLengthTillToday > 22) {
             ) : (
               ""
             )}
+            {paymentError ? (
+              <div className="dropdown-container">
+                <div className="pay-dropdown">
+                  <p style={{ color: "red", textAlign: "center" }}>{paymentError}</p>
+                  <button onClick={handleCancel} className="exist-btn">
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
             {paymentSuccess ? (
               <div className="dropdown-container">
                 <div className="pay-dropdown">
@@ -412,7 +434,17 @@ if (repaymentScheduleLengthTillToday > 22) {
                     />
                   </div>
                   <p>{paymentSuccess}</p>
-                  <button onClick={handleCancel} className="exist-btn">Exit</button>
+                  {typeof paymentRemainingBalance === "number" && !wasFinalPayment && (
+                    <p>
+                      Remaining balance: {formatNumberWithCommas(paymentRemainingBalance)}
+                    </p>
+                  )}
+                  {wasFinalPayment && (
+                    <p>Loan fully settled. Congratulations!</p>
+                  )}
+                  <button onClick={handleCancel} className="exist-btn">
+                    Exit
+                  </button>
                 </div>
               </div>
             ) : (

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  fetchReportMonthlyMetrics,
   fetchReportMonthlySummary,
   setMonthYear,
 } from "../../redux/slices/reportSlice";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
+import { ClipLoader } from "react-spinners";
 
 const ReportRap = styled.div`
   width: 100%;
@@ -121,21 +123,27 @@ const SecondReportPage = () => {
   const dispatch = useDispatch();
   const [activeLink, setActiveLink] = useState("new");
   const [openweek, setOpenweek] = useState("week1");
-  const { data, status, error, currentMonth, currentYear } = useSelector(
+  const { data, dataMetrics, status, error,loading, currentMonth, currentYear } = useSelector(
     (state) => state.report
   );
-  console.log(data);
+  console.log(dataMetrics);
 
   const handleWeekOpen = (link) => {
     setOpenweek(link);
   };
   useEffect(() => {
-    if (status === "idle") {
+    
       dispatch(
         fetchReportMonthlySummary({ month: currentMonth, year: currentYear })
       );
-    }
-  }, [dispatch, status, currentMonth, currentYear]);
+
+       dispatch(
+        fetchReportMonthlyMetrics({ month: currentMonth, year: currentYear })
+      );
+    
+  }, [dispatch, currentMonth, currentYear]);
+
+  
 
   const handlePrevMonth = () => {
     let month = currentMonth - 1;
@@ -222,7 +230,39 @@ const SecondReportPage = () => {
   };
 
   const weeklyReports = data?.weeklyReports;
-  console.log(weeklyReports);
+  const metricsWeeklyReports = dataMetrics?.weeklyReports;
+
+  const metricsByDate = React.useMemo(() => {
+    if (!metricsWeeklyReports) return {};
+    const map = {};
+    metricsWeeklyReports.forEach((week) => {
+      week.days.forEach((day) => {
+        map[day.date] = day;
+      });
+    });
+    return map;
+  }, [metricsWeeklyReports]);
+
+  const getMetric = (date, key) => metricsByDate[date]?.[key] || 0;
+
+  const weeklyMetricsTotals = React.useMemo(() => {
+    if (!weeklyReports) return {};
+    const totals = {};
+    weeklyReports.forEach((week) => {
+      const name = week.weekName;
+      totals[name] = week.days.reduce(
+        (acc, day) => {
+          acc.totalLoanBalance += getMetric(day.date, "totalLoanBalance");
+          acc.totalCashAtHand += getMetric(day.date, "totalCashAtHand");
+          acc.growth += getMetric(day.date, "growth");
+          return acc;
+        },
+        { totalLoanBalance: 0, totalCashAtHand: 0, growth: 0 }
+      );
+    });
+    return totals;
+  }, [weeklyReports, metricsByDate]);
+
   const week1 = weeklyReports?.find((week) => week.weekName === "Week 1");
   const week2 = weeklyReports?.find((week) => week.weekName === "Week 2");
   const week3 = weeklyReports?.find((week) => week.weekName === "Week 3");
@@ -250,8 +290,7 @@ const SecondReportPage = () => {
   return (
     <ReportRap>
       <div className="find-lawyer-header">
-        {status === "loading" && <p>Loading...</p>}
-        {status === "failed" && <p>Error: {error}</p>}
+        {status && <p>Loading...</p>}
 
         <>
           <div className="weeks-days">
@@ -296,7 +335,7 @@ const SecondReportPage = () => {
               Week 5
             </p>
           </div>
-          {status === "succeeded" && (
+          
             <>
               {openweek === "week1" && (
                 <>
@@ -346,9 +385,12 @@ const SecondReportPage = () => {
                                   <td>{day?.totalInterest}</td>
                                   <td>{day?.totalExpenses}</td>
                                   <td>{day?.profit}</td>
-                                  <td>{day?.totalLoanBalance}</td>
-                                  <td>{day?.totalCashAtHand}</td>
-                                  <td>{day?.growth}</td>
+                                  <td> {loading ? <ClipLoader size={20} /> : (<>
+                                    {getMetric(day.date, "totalLoanBalance")}</>)}</td>
+                                  <td>{loading ? <ClipLoader size={20} /> : (<>
+                                    {getMetric(day.date, "totalCashAtHand")}</>)}</td>
+                                  <td>{loading ? <ClipLoader size={20} /> : (<>
+                                    {getMetric(day.date, "growth")}</>)}</td>
                                 </tr>
                               );
                             })}
@@ -391,9 +433,13 @@ const SecondReportPage = () => {
                                   0
                                 )}
                               </td>
-                              <td></td>
-                              <td></td>
-                              <td></td>
+                              <td>
+                                {weeklyMetricsTotals[week1?.weekName]?.totalLoanBalance || 0}
+                              </td>
+                              <td>
+                                {weeklyMetricsTotals[week1?.weekName]?.totalCashAtHand || 0}
+                              </td>
+                              <td>{weeklyMetricsTotals[week1?.weekName]?.growth || 0}</td>
                             </tr>
                           </tbody>
                         </table>
@@ -443,9 +489,12 @@ const SecondReportPage = () => {
                                   <td>{day?.totalInterest}</td>
                                   <td>{day?.totalExpenses}</td>
                                   <td>{day?.profit}</td>
-                                  <td>{day?.totalLoanBalance}</td>
-                                  <td>{day?.totalCashAtHand}</td>
-                                  <td>{day?.growth}</td>
+                                  <td> {loading ? <ClipLoader size={20} /> : (<>
+                                    {getMetric(day.date, "totalLoanBalance")}</>)}</td>
+                                  <td>{loading ? <ClipLoader size={20} /> : (<>
+                                    {getMetric(day.date, "totalCashAtHand")}</>)}</td>
+                                  <td>{loading ? <ClipLoader size={20} /> : (<>
+                                    {getMetric(day.date, "growth")}</>)}</td>
                                 </tr>
                               );
                             })}
@@ -539,9 +588,12 @@ const SecondReportPage = () => {
                                   <td>{day?.totalInterest}</td>
                                   <td>{day?.totalExpenses}</td>
                                   <td>{day?.profit}</td>
-                                  <td>{day?.totalLoanBalance}</td>
-                                  <td>{day?.totalCashAtHand}</td>
-                                  <td>{day?.growth}</td>
+                                 <td> {loading ? <ClipLoader size={20} /> : (<>
+                                    {getMetric(day.date, "totalLoanBalance")}</>)}</td>
+                                  <td>{loading ? <ClipLoader size={20} /> : (<>
+                                    {getMetric(day.date, "totalCashAtHand")}</>)}</td>
+                                  <td>{loading ? <ClipLoader size={20} /> : (<>
+                                    {getMetric(day.date, "growth")}</>)}</td>
                                 </tr>
                               );
                             })}
@@ -635,9 +687,12 @@ const SecondReportPage = () => {
                                   <td>{day?.totalInterest}</td>
                                   <td>{day?.totalExpenses}</td>
                                   <td>{day?.profit}</td>
-                                  <td>{day?.totalLoanBalance}</td>
-                                  <td>{day?.totalCashAtHand}</td>
-                                  <td>{day?.growth}</td>
+                                    <td> {loading ? <ClipLoader size={20} /> : (<>
+                                    {getMetric(day.date, "totalLoanBalance")}</>)}</td>
+                                  <td>{loading ? <ClipLoader size={20} /> : (<>
+                                    {getMetric(day.date, "totalCashAtHand")}</>)}</td>
+                                  <td>{loading ? <ClipLoader size={20} /> : (<>
+                                    {getMetric(day.date, "growth")}</>)}</td>
                                 </tr>
                               );
                             })}
@@ -730,9 +785,12 @@ const SecondReportPage = () => {
                                   <td>{day?.totalInterest}</td>
                                   <td>{day?.totalExpenses}</td>
                                   <td>{day?.profit}</td>
-                                  <td>{day?.totalLoanBalance}</td>
-                                  <td>{day?.totalCashAtHand}</td>
-                                  <td>{day?.growth}</td>
+                                  <td> {loading ? <ClipLoader size={20} /> : (<>
+                                    {getMetric(day.date, "totalLoanBalance")}</>)}</td>
+                                  <td>{loading ? <ClipLoader size={20} /> : (<>
+                                    {getMetric(day.date, "totalCashAtHand")}</>)}</td>
+                                  <td>{loading ? <ClipLoader size={20} /> : (<>
+                                    {getMetric(day.date, "growth")}</>)}</td>
                                 </tr>
                               );
                             })}
@@ -786,7 +844,7 @@ const SecondReportPage = () => {
                 </>
               )}
             </>
-          )}
+        
 
           {/* Monthly Summary Table */}
           <h3
