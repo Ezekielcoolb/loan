@@ -47,12 +47,25 @@ export const fetchCsoTransactions = createAsyncThunk(
 // Thunk to upload remittance with an image URL
 export const uploadRemittance = createAsyncThunk(
   "remittance/uploadRemittance",
-  async ({ amount, workId, imageUrl }, { rejectWithValue }) => {
+  async (
+    { amount, amountPaid, workId, imageUrl, remitDate },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await axios.post(`${API_URL}/add-remittance/${workId}`, {
+      const payload = {
         amount,
+        amountPaid: amountPaid ?? amount,
         imageUrl,
-      });
+      };
+
+      if (remitDate) {
+        payload.remitDate = remitDate;
+      }
+
+      const response = await axios.post(
+        `${API_URL}/add-remittance/${workId}`,
+        payload
+      );
       console.log(response, imageUrl);
 
       return response.data;
@@ -875,15 +888,36 @@ const csoSlice = createSlice({
     builder
       .addCase(uploadRemittance.pending, (state) => {
         state.isUploading = true;
+        state.error = null;
       })
       .addCase(uploadRemittance.fulfilled, (state, action) => {
         state.isUploading = false;
         state.uploaded = true;
-        state.remittanceuploadedSuccess = action.payload;
+        state.remittanceuploadedSuccess = action.payload.message;
+
+        // Update specificCso state immediately
+        if (state.specificCso && action.payload.remittance) {
+          const updatedRemittance = action.payload.remittance;
+
+          // Ensure remittance array exists
+          if (!state.specificCso.remittance) {
+            state.specificCso.remittance = [];
+          }
+
+          const existingIndex = state.specificCso.remittance.findIndex(
+            (r) => r._id === updatedRemittance._id
+          );
+
+          if (existingIndex !== -1) {
+            state.specificCso.remittance[existingIndex] = updatedRemittance;
+          } else {
+            state.specificCso.remittance.push(updatedRemittance);
+          }
+        }
       })
       .addCase(uploadRemittance.rejected, (state, action) => {
         state.isUploading = false;
-        state.error = action.payload;
+        state.error = action.payload?.message || "Upload failed";
       });
 
     builder

@@ -61,6 +61,16 @@ input {
     font-size: 16px;
     font-weight: 500;
 }
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.error-text {
+  color: #d92d20;
+  font-size: 13px;
+  text-align: center;
+  margin-top: 10px;
+}
 .loan-img {
     width: 160px;
     height: 116px;
@@ -85,23 +95,22 @@ const ManagerLogin = () => {
     const [password, setPassword] = useState('');
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const {token, user, error } = useSelector((state) => state.admin);
-    const [isLoading, setIsLoading] = useState(false)
-  
-    const handleLogin = () => {
-    setIsLoading(true)
+    const {token, user, error, loginLoading } = useSelector((state) => state.admin);
+
+    const handleLogin = (e) => {
+      e.preventDefault();
+      if (!email || !password || loginLoading) return;
       dispatch(managerAdminLogin({ email, password }));
-      setIsLoading(false)
     };
-    
+
     useEffect(() => {
-        if (token) {
+        if (token && user) {
            navigate("/manager")
            localStorage.setItem("managerToken", token);
            localStorage.setItem("managerAssigned", user.assignedRole);
           
         }
-      }, [token, navigate]);
+      }, [token, user, navigate]);
 
       
   return (
@@ -114,19 +123,19 @@ const ManagerLogin = () => {
         <h2>Are You The Manager?</h2>
         <p>Sign in to your account</p>
         </div>
-        <div className="login-input-div">
+        <form className="login-input-div" onSubmit={handleLogin}>
           <input  type="email" placeholder="Enter your email"  value={email}
         onChange={(e) => setEmail(e.target.value)}/>
           <input type="password" placeholder="Enter your password"  value={password}
         onChange={(e) => setPassword(e.target.value)}/>
-          <Link onClick={handleLogin} className="login-btn">
-          {isLoading ? 
-      
-                <ClipLoader color="white" size={10} />
+          <button type="submit" className="login-btn" disabled={loginLoading}>
+          {loginLoading ? 
+                <ClipLoader color="white" size={20} />
                   : "Login"
             }
-          </Link>
-        </div>
+          </button>
+          {error && <p className="error-text">{error}</p>}
+        </form>
 
 
      

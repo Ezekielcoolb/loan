@@ -8,7 +8,6 @@ import {
 } from "../redux/slices/appSlice";
 import LoanApplicationForm from "./CustomerLoanPop";
 import {
-  fetchAllLoansByCsoId,
   fetchFullyPaidLoansStart,
   fetchLoansByCsoForHome,
   searchCustomer,
@@ -28,9 +27,17 @@ import {
   updateCsoOverdueOnePerDay,
   updateCsoOverSHootLoansOnePerDay,
   updateCsoRecoveryOnePerDay,
-
 } from "../redux/slices/csoSlice";
-import { addGroupLeader, clearGroupLeaderMessages, fetchGroupLeadersByCso } from "../redux/slices/groupLeaderSlice";
+import {
+  addGroupLeader,
+  clearGroupLeaderMessages,
+  fetchGroupLeadersByCso,
+} from "../redux/slices/groupLeaderSlice";
+import {
+  getEffectivePreviousWorkDate,
+  getPendingRemittanceForPreviousWorkday,
+  toDateString,
+} from "../utils/remittanceUtils";
 
 const HomeCsoRap = styled.div`
   color: #005e78;
@@ -110,27 +117,27 @@ const HomeCsoRap = styled.div`
     list-style-type: none; /* Removes bullets from li elements */
   }
   .images-mapped {
-  display: flex; /* Ensures each item is treated as an inline block for spacing */
-  text-align: center;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  background: #ffffff;
-  width: fit-content;
-  border-radius: 12px;
-  padding: 10px;
-  height: 170px;
-  width: 120px;
+    display: flex; /* Ensures each item is treated as an inline block for spacing */
+    text-align: center;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    background: #ffffff;
+    width: fit-content;
+    border-radius: 12px;
+    padding: 10px;
+    height: 170px;
+    width: 120px;
 
-  /* ✅ shadow added */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  transition: box-shadow 0.3s ease-in-out;
-}
+    /* ✅ shadow added */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.3s ease-in-out;
+  }
 
-/* Optional: lift effect on hover */
-.images-mapped:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
-}
+  /* Optional: lift effect on hover */
+  .images-mapped:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+  }
 
   .circle-div {
     width: 12px;
@@ -336,8 +343,8 @@ const ModalContent = styled.div`
   padding: 24px;
   box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
   overflow-y: auto;
-  @media (max-width: 400px) { 
-  max-height: 450px;
+  @media (max-width: 400px) {
+    max-height: 450px;
   }
 `;
 
@@ -381,27 +388,25 @@ const ModalForm = styled.form`
     gap: 8px;
     cursor: pointer;
   }
-input {
-  width: 100% !important;
-}
+  input {
+    width: 100% !important;
+  }
   button:disabled {
     background: #98a2b3;
     cursor: not-allowed;
   }
-  
 `;
 const initialState = {
-  groupName: '',
-  firstName: '',
-  lastName: '',
-  address: '',
-  phone: '',
-  csoId: '',
-  csoName: '',
+  groupName: "",
+  firstName: "",
+  lastName: "",
+  address: "",
+  phone: "",
+  csoId: "",
+  csoName: "",
 };
 
 const MAX_GROUPS_ALLOWED = 10;
-
 
 const CsoHome = () => {
   // const { user } = useSelector((state) => state.auth);
@@ -417,9 +422,9 @@ const CsoHome = () => {
   const itemsPerPage = 20;
   const [currentPage, setCurrentPage] = useState(1);
   const [popupMessage, setPopupMessage] = useState(null);
-   const [popupStatus, setPopupStatus] = useState(null);
-   const [isModalOpen, setIsModalOpen] = useState(false);
-   const [formData, setFormData] = useState(initialState);
+  const [popupStatus, setPopupStatus] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState(initialState);
   const [popupColor, setPopupColor] = useState("#005e78");
   const [successGuarantorForm, setSuccessGuarantorForm] = useState(false);
   const [remittanceAvailableShow, setRemittanceAvailableShow] =
@@ -443,23 +448,23 @@ const CsoHome = () => {
     optionsLoading: groupLeaderOptionsLoading,
   } = useSelector((state) => state.groupLeader);
 
-    console.log(csoHomeloans);
-    
+  console.log(csoHomeloans);
 
-  const { specificCso,
+  const {
+    specificCso,
     overdueUpdateData,
     overdueUpdateSkipped,
     overShootLoanUpdateSkipped,
     overShootLoanUpdateData,
     recoveryUpdateData,
     recoveryUpdateSkipped,
-    remittancestatus, hoursLeft, minutesLeft } = useSelector(
-    (state) => state.cso
-  );
-console.log(specificCso);
-console.log(recoveryUpdateSkipped);
-console.log(recoveryUpdateData);
-
+    remittancestatus,
+    hoursLeft,
+    minutesLeft,
+  } = useSelector((state) => state.cso);
+  console.log(specificCso);
+  console.log(recoveryUpdateSkipped);
+  console.log(recoveryUpdateData);
 
   const [query, setQuery] = useState("");
   const [selectedGroupLeaderId, setSelectedGroupLeaderId] = useState("");
@@ -470,11 +475,11 @@ console.log(recoveryUpdateData);
 
   const isValid = useMemo(
     () =>
-      formData.groupName.trim() !== '' &&
-      formData.firstName.trim() !== '' &&
-      formData.lastName.trim() !== '' &&
-      formData.address.trim() !== '' &&
-      formData.phone.trim() !== '',
+      formData.groupName.trim() !== "" &&
+      formData.firstName.trim() !== "" &&
+      formData.lastName.trim() !== "" &&
+      formData.address.trim() !== "" &&
+      formData.phone.trim() !== "",
     [formData]
   );
 
@@ -484,11 +489,13 @@ console.log(recoveryUpdateData);
     if (value.trim() !== "") {
       dispatch(searchCustomerCsoHome({ query: value, csoId }));
     } else {
-      dispatch(fetchLoansByCsoForHome({
-        csoId,
-        page: csoHomepage,
-        groupLeaderId: selectedGroupLeaderId || undefined,
-      }));
+      dispatch(
+        fetchLoansByCsoForHome({
+          csoId,
+          page: csoHomepage,
+          groupLeaderId: selectedGroupLeaderId || undefined,
+        })
+      );
     }
   };
   const handleVisisble = () => {
@@ -503,7 +510,7 @@ console.log(recoveryUpdateData);
     dispatch(setDropSuccessVisible());
   };
 
- const handleOpenModal = () => {
+  const handleOpenModal = () => {
     const existingGroupCount = Array.isArray(groupLeaderOptions)
       ? groupLeaderOptions.length
       : 0;
@@ -528,42 +535,39 @@ console.log(recoveryUpdateData);
       }));
     }
   }, [isModalOpen, specificCso]);
-    useEffect(() => {
+  useEffect(() => {
     if (specificCso) {
       dispatch(updateCsoOverdueOnePerDay(specificCso._id));
     }
   }, [specificCso, dispatch]);
 
- useEffect(() => {
+  useEffect(() => {
     if (successMessage) {
       setFormData(initialState);
       setIsModalOpen(false);
     }
   }, [successMessage]);
-   useEffect(() => {
-      if (errorMessage || successMessage) {
-        const timeout = setTimeout(() => {
-          dispatch(clearGroupLeaderMessages());
-        }, 4000);
-        return () => clearTimeout(timeout);
-      }
-      return undefined;
-    }, [dispatch, errorMessage, successMessage]);
+  useEffect(() => {
+    if (errorMessage || successMessage) {
+      const timeout = setTimeout(() => {
+        dispatch(clearGroupLeaderMessages());
+      }, 4000);
+      return () => clearTimeout(timeout);
+    }
+    return undefined;
+  }, [dispatch, errorMessage, successMessage]);
 
-   useEffect(() => {
+  useEffect(() => {
     if (specificCso) {
       dispatch(updateCsoOverSHootLoansOnePerDay(specificCso._id));
     }
   }, [specificCso, dispatch]);
 
-
-      useEffect(() => {
+  useEffect(() => {
     if (specificCso) {
       dispatch(updateCsoRecoveryOnePerDay(specificCso._id));
     }
   }, [specificCso, dispatch]);
-
-
 
   useEffect(() => {
     if (csoId) {
@@ -571,21 +575,14 @@ console.log(recoveryUpdateData);
     }
   }, [csoId, dispatch]);
 
-  
   useEffect(() => {
-    const fetchLoans = async () => {
-      await dispatch(fetchAllLoansByCsoId({ csoId }));
-    };
-
-    fetchLoans();
-  }, [csoId]);
-
-  useEffect(() => {
-    dispatch(fetchLoansByCsoForHome({
-      csoId,
-      page: csoHomepage,
-      groupLeaderId: selectedGroupLeaderId || undefined,
-    }));
+    dispatch(
+      fetchLoansByCsoForHome({
+        csoId,
+        page: csoHomepage,
+        groupLeaderId: selectedGroupLeaderId || undefined,
+      })
+    );
   }, [dispatch, csoId, csoHomepage, selectedGroupLeaderId]);
 
   useEffect(() => {
@@ -603,6 +600,40 @@ console.log(recoveryUpdateData);
   }, [workId, dispatch]);
 
   const finalLoans = useMemo(() => csoHomeloans, [csoHomeloans]);
+
+  const pendingRemittanceInfo = useMemo(() => {
+    if (!specificCso?.remittance) return null;
+    return getPendingRemittanceForPreviousWorkday(specificCso.remittance);
+  }, [specificCso?.remittance]);
+
+  const hasPendingRemittanceReminder = Boolean(pendingRemittanceInfo);
+
+  const effectivePreviousDate = useMemo(
+    () => getEffectivePreviousWorkDate(),
+    []
+  );
+
+  const effectiveDateString = useMemo(
+    () => toDateString(effectivePreviousDate),
+    [effectivePreviousDate]
+  );
+
+  const filteredRemittance = useMemo(() => {
+    if (!specificCso?.remittance) return [];
+    return specificCso.remittance.filter(
+      (item) => item?.date && toDateString(item.date) === effectiveDateString
+    );
+  }, [specificCso?.remittance, effectiveDateString]);
+
+  const filteredRemittanceIssue = useMemo(() => {
+    if (!specificCso?.remitanceIssues) return [];
+    return specificCso.remitanceIssues.filter(
+      (item) => item?.date && toDateString(item.date) === effectiveDateString
+    );
+  }, [specificCso?.remitanceIssues, effectiveDateString]);
+
+  const hasRemittanceRecord =
+    filteredRemittance.length > 0 || filteredRemittanceIssue.length > 0;
 
   const handleGuarantorImage = async (e) => {
     try {
@@ -641,36 +672,35 @@ console.log(recoveryUpdateData);
     dispatch(fetchFullyPaidLoansStart());
   };
 
-
   const handleGoToEditLoan = () => {
     navigate(`/cso/editApplication/${customerId}`);
   };
 
-  
   const handleCustomerClick = (loan) => {
     let message = "";
     let color = "";
-    let status = ""
+    let status = "";
     if (loan?.status === "waiting for approval") {
       message = "Waiting for approval";
       color = "#005e78"; // Color for waiting for approval
-      status = "waiting for approval"
+      status = "waiting for approval";
       setCustomerId(loan?._id);
       setOpenGuarantorForm(true);
     } else if (loan?.status === "waiting for disbursement") {
       message = "Waiting for disbursement";
       setCustomerId(loan?._id);
       color = "green"; // Color for waiting disbursement
-      status = "waiting for disbursement"
-    }  else if (loan?.status === "edited") {
-      message = "You asked to edit this application. Please ask the admin/manager for the update and make the correction";
+      status = "waiting for disbursement";
+    } else if (loan?.status === "edited") {
+      message =
+        "You asked to edit this application. Please ask the admin/manager for the update and make the correction";
       setCustomerId(loan?._id);
-    status = "edited"
-    }else if (loan?.status === "rejected") {
+      status = "edited";
+    } else if (loan?.status === "rejected") {
       message = `Loan was rejected: ${loan?.rejectionReason}`;
       setCustomerId(loan?._id);
       color = "red"; // Color for rejected loan
-      status = "rejected"
+      status = "rejected";
     } else if (
       loan?.status === "active loan" ||
       loan?.status === "fully paid"
@@ -678,7 +708,7 @@ console.log(recoveryUpdateData);
       // Redirect to the customer details page if status is "active loan"
       navigate(`/cso/customer-details/${loan?._id}`);
     }
-setPopupStatus(status)
+    setPopupStatus(status);
     setPopupMessage(message);
     setPopupColor(color); // Store the color based on status
   };
@@ -724,45 +754,12 @@ setPopupStatus(status)
     return new Intl.NumberFormat().format(number);
   };
 
-  
-// 1️⃣ Get today's date in UTC (no time component)
-const now = new Date();
-const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-
-// 2️⃣ Calculate "effective yesterday" (adjusted for weekends)
-let effectiveDate = new Date(todayUTC);
-effectiveDate.setDate(effectiveDate.getDate() - 1); // Normal yesterday
-
-// If Saturday → move back to Friday
-if (effectiveDate.getDay() === 6) {
-  effectiveDate.setDate(effectiveDate.getDate() - 1);
-}
-
-// If Sunday → move back to Friday
-if (effectiveDate.getDay() === 0) {
-  effectiveDate.setDate(effectiveDate.getDate() - 2);
-}
-
-// 3️⃣ Format effective date as YYYY-MM-DD (to match item.date)
-const effectiveDateString = effectiveDate.toISOString().slice(0, 10);
-
-// 4️⃣ Filter remittance items where date matches
-const filteredRemittance = specificCso?.remittance?.filter(item => {
-  const itemDateString = new Date(item.date).toISOString().slice(0, 10);
-  return itemDateString === effectiveDateString;
-});
-
-const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
-  const itemDateString = new Date(item.date).toISOString().slice(0, 10);
-  return itemDateString === effectiveDateString;
-});
-
- const handleFormChange = (event) => {
+  const handleFormChange = (event) => {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
- const handleSubmit = (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
     dispatch(addGroupLeader(formData));
   };
@@ -772,12 +769,83 @@ const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
     dispatch(clearGroupLeaderMessages());
   };
 
+  const renderMissingRemittanceModal = () => (
+    <div className="dropdown-container">
+      <div className="all-dropdown-div">
+        <p
+          style={{
+            color: "red",
+            fontSize: "20px",
+            fontWeight: "600",
+            margin: "20px",
+            maxWidth: "500px",
+          }}
+        >
+          You did not submit remittance for {effectiveDateString}. Please
+          contact the manager to resolve the issue. Thanks.
+        </p>
+      </div>
+    </div>
+  );
 
-  
+  const renderPendingRemittanceModal = () => (
+    <div className="dropdown-container">
+      <div className="all-dropdown-div">
+        <p
+          style={{
+            color: "red",
+            fontSize: "20px",
+            fontWeight: "600",
+            margin: "20px",
+            maxWidth: "500px",
+          }}
+        >
+          Your remittance for {pendingRemittanceInfo?.displayDate} is
+          incomplete.
+          <br />
+          Expected:{" "}
+          {formatNumberWithCommas(pendingRemittanceInfo?.expected || 0)} | Paid:{" "}
+          {formatNumberWithCommas(pendingRemittanceInfo?.paid || 0)} |
+          Remaining:{" "}
+          {formatNumberWithCommas(pendingRemittanceInfo?.remaining || 0)}
+        </p>
+        <button
+          className="move-to-coll"
+          onClick={() => navigate("/cso/loans-collections")}
+        >
+          Submit Remaining Balance
+        </button>
+      </div>
+    </div>
+  );
+
+  if (!specificCso || !csoHomeloans) {
+    return (
+      <HomeCsoRap>
+        <p
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+          }}
+        >
+          <MoonLoader />
+        </p>
+      </HomeCsoRap>
+    );
+  }
+
+  if (!hasRemittanceRecord) {
+    return <HomeCsoRap>{renderMissingRemittanceModal()}</HomeCsoRap>;
+  }
+
+  if (hasPendingRemittanceReminder) {
+    return <HomeCsoRap>{renderPendingRemittanceModal()}</HomeCsoRap>;
+  }
+
   return (
     <HomeCsoRap>
-      {specificCso && csoHomeloans ? (<>
-      {filteredRemittance?.length > 0 || filteredRemittanceIssue?.length > 0 ? (
       <div>
         <div className="homes">
           <div className="home-first-div">
@@ -802,7 +870,17 @@ const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
                 />
               </div>
             </div>
-            <div className="input-div" style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center", justifyContent: "center", marginLeft:"20px" }}>
+            <div
+              className="input-div"
+              style={{
+                display: "flex",
+                gap: "12px",
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "center",
+                marginLeft: "20px",
+              }}
+            >
               <select
                 value={selectedGroupLeaderId}
                 onChange={(e) => setSelectedGroupLeaderId(e.target.value)}
@@ -818,7 +896,10 @@ const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
                 <option value="">All Groups</option>
                 {groupLeaderOptions.map((leader) => (
                   <option key={leader._id} value={leader._id}>
-                    {leader.groupName || `${leader.firstName || ""} ${leader.lastName || ""}`.trim()}
+                    {leader.groupName ||
+                      `${leader.firstName || ""} ${
+                        leader.lastName || ""
+                      }`.trim()}
                   </option>
                 ))}
               </select>
@@ -853,7 +934,8 @@ const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
                       key={loan._id}
                       onClick={() => handleCustomerClick(loan)}
                     >
-                      <img loading="lazy"
+                      <img
+                        loading="lazy"
                         src={
                           loan?.pictures?.customer?.startsWith("http")
                             ? loan?.pictures?.customer // Cloudinary URL
@@ -883,7 +965,7 @@ const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
                               ? "orange"
                               : loan?.status === "rejected"
                               ? "red"
-                               : loan?.status === "edited"
+                              : loan?.status === "edited"
                               ? "orange"
                               : loan?.status === "fully paid"
                               ? "purple"
@@ -938,29 +1020,6 @@ const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
           </ul>
         </div>
       </div>
-):
-    (<>
-        <div className="dropdown-container">
-          <div className="all-dropdown-div">
-            <p style={{
-              color: "red",
-              fontSize: "20px",
-              fontWeight: "600",
-              margin: "20px",
-              maxWidth: "500px"
-            }}> You did not submit remittance for {effectiveDateString}. Please  contact the manager to resolve issue. Thanks.</p>
-          </div>
-        </div>
-        </>)
-      
-}
-
-</>) : ( <p style={{
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  height: "100vh",
-}}> <MoonLoader /></p>)}
       {dropdowVisible &&
         (totalOutstandingLoans > defaultingTarget && defaultingTarget !== 0 ? (
           <div className="dropdown-container">
@@ -997,41 +1056,42 @@ const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
               {popupMessage}
             </p>
 
-            {popupStatus === "edited"  ||  popupStatus === "rejected" ? "" ||  popupStatus === "waiting for disbursement" : (
-
-            <>
-            {openGuarantorForm ? (
-              <div>
-                <div className="file-upload">
-                  <input
-                    id="fileInput"
-                    type="file"
-                    capture="user"
-                    className="hidden-input"
-                    onChange={(e) => handleGuarantorImage(e.target.files)}
-                    required
-                  />
-                  <label htmlFor="fileInput" className="custom-file-upload">
-                    {guarantorImage || "Upload guarantor form"}
-                  </label>{" "}
-                  <br />
-                </div>
-                <button
-                  className="gurantor-form-btn"
-                  onClick={handleUpdate}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <PulseLoader color="white" size={10} />
-                  ) : (
-                    "Update Guarantor Form"
-                  )}
-                </button>
-              </div>
+            {popupStatus === "edited" || popupStatus === "rejected" ? (
+              "" || popupStatus === "waiting for disbursement"
             ) : (
-              ""
-            )}
-</>
+              <>
+                {openGuarantorForm ? (
+                  <div>
+                    <div className="file-upload">
+                      <input
+                        id="fileInput"
+                        type="file"
+                        capture="user"
+                        className="hidden-input"
+                        onChange={(e) => handleGuarantorImage(e.target.files)}
+                        required
+                      />
+                      <label htmlFor="fileInput" className="custom-file-upload">
+                        {guarantorImage || "Upload guarantor form"}
+                      </label>{" "}
+                      <br />
+                    </div>
+                    <button
+                      className="gurantor-form-btn"
+                      onClick={handleUpdate}
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <PulseLoader color="white" size={10} />
+                      ) : (
+                        "Update Guarantor Form"
+                      )}
+                    </button>
+                  </div>
+                ) : (
+                  ""
+                )}
+              </>
             )}
 
             <div className="previous-loans-div">
@@ -1042,21 +1102,19 @@ const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
                 Close
               </button>
               {popupStatus === "edited" ? (
+                <button onClick={handleGoToEditLoan} className="previous-loans">
+                  Edit Loan
+                </button>
+              ) : popupStatus === "rejected" ? (
+                ""
+              ) : (
                 <button
-                onClick={handleGoToEditLoan}
-                className="previous-loans"
-              >
-                Edit Loan
-              </button>
-              ) : popupStatus === "rejected" ? "" : (
-                 <button
-                onClick={handleGoToPreviousLoans}
-                className="previous-loans"
-              >
-                Previous Loans
-              </button>
+                  onClick={handleGoToPreviousLoans}
+                  className="previous-loans"
+                >
+                  Previous Loans
+                </button>
               )}
-             
             </div>
           </div>
         </div>
@@ -1109,62 +1167,66 @@ const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
         ""
       )}
 
-       {isModalOpen && (
-              <ModalOverlay>
-                <ModalContent>
-                  <ModalHeader>
-                    <h3>Add Group</h3>
-                    <button type="button" onClick={handleCloseModal} aria-label="Close">
-                      ×
-                    </button>
-                  </ModalHeader>
-                  <ModalForm onSubmit={handleSubmit}>
-                    <label>
-                      Group Name
-                      <input
-                        name="groupName"
-                        value={formData.groupName}
-                        onChange={handleFormChange}
-                        required
-                      />
-                    </label>
-                    <label>
-                      Group Leader First Name
-                      <input
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleFormChange}
-                        required
-                      />
-                    </label>
-                    <label>
-                      Last Name
-                      <input
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleFormChange}
-                        required
-                      />
-                    </label>
-                    <label>
-                      Address
-                      <input
-                        name="address"
-                        value={formData.address}
-                        onChange={handleFormChange}
-                        required
-                      />
-                    </label>
-                    <label>
-                      Phone
-                      <input
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleFormChange}
-                        required
-                      />
-                    </label>
-                    {/* <label>
+      {isModalOpen && (
+        <ModalOverlay>
+          <ModalContent>
+            <ModalHeader>
+              <h3>Add Group</h3>
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </ModalHeader>
+            <ModalForm onSubmit={handleSubmit}>
+              <label>
+                Group Name
+                <input
+                  name="groupName"
+                  value={formData.groupName}
+                  onChange={handleFormChange}
+                  required
+                />
+              </label>
+              <label>
+                Group Leader First Name
+                <input
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleFormChange}
+                  required
+                />
+              </label>
+              <label>
+                Last Name
+                <input
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleFormChange}
+                  required
+                />
+              </label>
+              <label>
+                Address
+                <input
+                  name="address"
+                  value={formData.address}
+                  onChange={handleFormChange}
+                  required
+                />
+              </label>
+              <label>
+                Phone
+                <input
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleFormChange}
+                  required
+                />
+              </label>
+              {/* <label>
                       Customer Service Officer
                       <select
                         name="csoId"
@@ -1180,35 +1242,48 @@ const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
                         ))}
                       </select>
                     </label> */}
-      
-                    {(errorMessage || successMessage) && (
-                      <p className={`status-message ${errorMessage ? 'error' : 'success'}`}>
-                        {errorMessage || successMessage}
-                      </p>
-                    )}
-      
-                    <button type="submit" disabled={!isValid || submitting}>
-                      {submitting ? <PulseLoader color="#ffffff" size={8} /> : 'Submit'}
-                    </button>
-                  </ModalForm>
-                </ModalContent>
-              </ModalOverlay>
-            )}
-            {successMessage && (
-              <ModalOverlay>
-                <ModalContent>
-                  <p>{successMessage}</p>
-                  <button style={{
-                    backgroundColor: "#000000",
-                    color: "white",
-                    border: "none",
-                    padding: "10px 20px",
-                    cursor: "pointer",
-                    borderRadius: "5px",
-                  }} onClick={() => dispatch(clearGroupLeaderMessages())}>Close</button>
-                </ModalContent>
-              </ModalOverlay>
-            )}
+
+              {(errorMessage || successMessage) && (
+                <p
+                  className={`status-message ${
+                    errorMessage ? "error" : "success"
+                  }`}
+                >
+                  {errorMessage || successMessage}
+                </p>
+              )}
+
+              <button type="submit" disabled={!isValid || submitting}>
+                {submitting ? (
+                  <PulseLoader color="#ffffff" size={8} />
+                ) : (
+                  "Submit"
+                )}
+              </button>
+            </ModalForm>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+      {successMessage && (
+        <ModalOverlay>
+          <ModalContent>
+            <p>{successMessage}</p>
+            <button
+              style={{
+                backgroundColor: "#000000",
+                color: "white",
+                border: "none",
+                padding: "10px 20px",
+                cursor: "pointer",
+                borderRadius: "5px",
+              }}
+              onClick={() => dispatch(clearGroupLeaderMessages())}
+            >
+              Close
+            </button>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </HomeCsoRap>
   );
 };

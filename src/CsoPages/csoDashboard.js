@@ -133,6 +133,7 @@ const DashboardRap = styled.div`
 
 const CsoDashboard = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("csoUser"));
   const {  progressData, loading, error } = useSelector(
     (state) => state.cso

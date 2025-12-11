@@ -1,5 +1,5 @@
 // src/components/LoanDashboard.jsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
@@ -22,6 +22,11 @@ import { useNavigate } from "react-router-dom";
 import TopLoader from "../Preload/TopLoader";
 import { MoonLoader } from "react-spinners";
 import { fetchCsoByWorkId } from "../redux/slices/csoSlice";
+import {
+  getEffectivePreviousWorkDate,
+  getPendingRemittanceForPreviousWorkday,
+  toDateString,
+} from "../utils/remittanceUtils";
 
 
 const LoanCsoRap = styled.div`
@@ -484,45 +489,111 @@ const handleOpenActiveLoans = () => {
 
 
   // 1️⃣ Get today's date in UTC (no time component)
-const now = new Date();
-const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+const pendingRemittanceInfo = useMemo(() => {
+  if (!specificCso?.remittance) return null;
+  return getPendingRemittanceForPreviousWorkday(specificCso.remittance);
+}, [specificCso?.remittance]);
 
-// 2️⃣ Calculate "effective yesterday" (adjusted for weekends)
-let effectiveDate = new Date(todayUTC);
-effectiveDate.setDate(effectiveDate.getDate() - 1); // Normal yesterday
+const hasPendingRemittanceReminder = Boolean(pendingRemittanceInfo);
 
-// If Saturday → move back to Friday
-if (effectiveDate.getDay() === 6) {
-  effectiveDate.setDate(effectiveDate.getDate() - 1);
+const effectivePreviousDate = useMemo(
+  () => getEffectivePreviousWorkDate(),
+  []
+);
+
+const effectiveDateString = useMemo(
+  () => toDateString(effectivePreviousDate),
+  [effectivePreviousDate]
+);
+
+const filteredRemittance = useMemo(() => {
+  if (!specificCso?.remittance) return [];
+  return specificCso.remittance.filter(
+    (item) => item?.date && toDateString(item.date) === effectiveDateString
+  );
+}, [specificCso?.remittance, effectiveDateString]);
+
+const filteredRemittanceIssue = useMemo(() => {
+  if (!specificCso?.remitanceIssues) return [];
+  return specificCso.remitanceIssues.filter(
+    (item) => item?.date && toDateString(item.date) === effectiveDateString
+  );
+}, [specificCso?.remitanceIssues, effectiveDateString]);
+
+const hasRemittanceRecord =
+  filteredRemittance.length > 0 || filteredRemittanceIssue.length > 0;
+
+const renderMissingRemittanceModal = () => (
+  <div className="dropdown-container">
+    <div className="all-dropdown-div">
+      <p
+        style={{
+          color: "red",
+          fontSize: "20px",
+          fontWeight: "600",
+          margin: "20px",
+          maxWidth: "500px",
+        }}
+      >
+        You did not submit remittance for {effectiveDateString}. Please contact the manager to
+        resolve the issue. Thanks.
+      </p>
+    </div>
+  </div>
+);
+
+const renderPendingRemittanceModal = () => (
+  <div className="dropdown-container">
+    <div className="all-dropdown-div">
+      <p
+        style={{
+          color: "red",
+          fontSize: "20px",
+          fontWeight: "600",
+          margin: "20px",
+          maxWidth: "500px",
+        }}
+      >
+        Your remittance for {pendingRemittanceInfo?.displayDate} is incomplete.
+        <br />
+        Expected: {pendingRemittanceInfo?.expected?.toLocaleString()} | Paid: {" "}
+        {pendingRemittanceInfo?.paid?.toLocaleString()} | Remaining: {" "}
+        {pendingRemittanceInfo?.remaining?.toLocaleString()}
+      </p>
+      <button className="move-to-coll" onClick={() => navigate("/cso/loans-collections")}> 
+        Submit Remaining Balance
+      </button>
+    </div>
+  </div>
+);
+
+if (!specificCso) {
+  return (
+    <LoanCsoRap>
+      <p
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <MoonLoader />
+      </p>
+    </LoanCsoRap>
+  );
 }
 
-// If Sunday → move back to Friday
-if (effectiveDate.getDay() === 0) {
-  effectiveDate.setDate(effectiveDate.getDate() - 2);
+if (!hasRemittanceRecord) {
+  return <LoanCsoRap>{renderMissingRemittanceModal()}</LoanCsoRap>;
 }
 
-// 3️⃣ Format effective date as YYYY-MM-DD (to match item.date)
-const effectiveDateString = effectiveDate.toISOString().slice(0, 10);
-console.log(effectiveDateString); // e.g., "2023-10-01"
-
-// 4️⃣ Filter remittance items where date matches
-const filteredRemittance = specificCso?.remittance?.filter(item => {
-  const itemDateString = new Date(item.date).toISOString().slice(0, 10);
-  return itemDateString === effectiveDateString;
-});
-
-const filteredRemittanceIssue = specificCso?.remitanceIssues?.filter(item => {
-  const itemDateString = new Date(item.date).toISOString().slice(0, 10);
-  return itemDateString === effectiveDateString;
-});
-
-console.log("Filtered Remittance:", filteredRemittance);
-console.log(filteredRemittanceIssue);
+if (hasPendingRemittanceReminder) {
+  return <LoanCsoRap>{renderPendingRemittanceModal()}</LoanCsoRap>;
+}
 
   return (
     <LoanCsoRap>
-         {specificCso  ? (<>
-      {filteredRemittance?.length > 0 || filteredRemittanceIssue?.length > 0 ? (
 
 
       <div className="all-loan">
@@ -1206,28 +1277,6 @@ console.log(filteredRemittanceIssue);
         </div>
         <div></div>
       </div>
-):
-    (<>
-        <div className="dropdown-container">
-          <div className="all-dropdown-div">
-            <p style={{
-              color: "red",
-              fontSize: "20px",
-              fontWeight: "600",
-              margin: "20px",
-              maxWidth: "500px"
-            }}> You did not submit remittance for {effectiveDateString}. Please  contact the manager to resolve issue. Thanks.</p>
-          </div>
-        </div>
-        </>)
-      
-}
-</>) :  ( <p style={{
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  height: "100vh",
-}}> <MoonLoader /></p>)}
       <div>
         {submitted ? (
           <>

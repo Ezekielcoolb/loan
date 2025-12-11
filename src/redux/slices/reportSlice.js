@@ -21,6 +21,18 @@ export const submitExpense = createAsyncThunk(
   }
 );
 
+export const updateExpenseDate = createAsyncThunk(
+  "report/updateExpenseDate",
+  async ({ oldDate, newDate }, { rejectWithValue }) => {
+    try {
+      const res = await axios.put(`${API_URL}/expense/date`, { oldDate, newDate });
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message);
+    }
+  }
+);
+
 // Submit a new cash at hand
 export const submitCash = createAsyncThunk(
   "report/submitCash",
@@ -136,6 +148,7 @@ const reportSlice = createSlice({
     loading: false,
     cashDeteleloading: false,
     deleteExploading: false,
+    updateExpenseLoading: false,
     expenses: [],
     allCashAtHand: null,
     cashAtHand: [],
@@ -210,6 +223,20 @@ const reportSlice = createSlice({
       .addCase(submitCash.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+      });
+
+    builder
+      .addCase(updateExpenseDate.pending, (state) => {
+        state.updateExpenseLoading = true;
+        state.error = null;
+      })
+      .addCase(updateExpenseDate.fulfilled, (state, action) => {
+        state.updateExpenseLoading = false;
+        state.expenseMessage = action.payload.message;
+      })
+      .addCase(updateExpenseDate.rejected, (state, action) => {
+        state.updateExpenseLoading = false;
+        state.error = action.payload || action.error.message;
       });
     builder
       .addCase(fetchReportMonthlySummary.pending, (state) => {

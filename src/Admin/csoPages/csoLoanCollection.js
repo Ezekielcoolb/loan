@@ -611,6 +611,20 @@ const CsoLoanCollection = () => {
     error,
   } = useSelector((state) => state.loan);
 
+  const normalizedError = useMemo(() => {
+    if (!error) return "";
+    if (typeof error === "string") return error;
+    if (typeof error === "object") {
+      if (error?.message) return error.message;
+      try {
+        return JSON.stringify(error);
+      } catch (err) {
+        return "An error occurred";
+      }
+    }
+    return String(error);
+  }, [error]);
+
   const {
     options: groupLeaderOptions = [],
     optionsLoading: groupLeaderOptionsLoading,
@@ -728,6 +742,7 @@ const CsoLoanCollection = () => {
     branch: "",
     address: "",
     status: "",
+    password: "",
     guaratorEmail: "",
     guaratorName: "",
     guaratorPhone: "",
@@ -742,6 +757,7 @@ const CsoLoanCollection = () => {
         email: specifiedCso.email || "",
         phone: specifiedCso.phone || "",
         branch: specifiedCso.branch || "",
+        password: specifiedCso.password || "",
         address: specifiedCso.address || "",
         status: specifiedCso.status || "",
         guaratorEmail: specifiedCso.guaratorEmail || "",
@@ -1115,7 +1131,7 @@ const CsoLoanCollection = () => {
   };
 
   if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (error) return <p>Error: {normalizedError}</p>;
   if (!progressData)
     return (
       <p
@@ -2050,7 +2066,9 @@ const CsoLoanCollection = () => {
                   <MoonLoader />
                 </p>
               )}
-              {status === "failed" && <p className="text-red-500">{error}</p>}
+              {status === "failed" && (
+                <p className="text-red-500">{normalizedError}</p>
+              )}
               {status === "succeeded" && remmitdata.length === 0 && (
                 <p>No remittances for this date.</p>
               )}
@@ -2168,6 +2186,10 @@ const CsoLoanCollection = () => {
               <div className="detail-in-sub">
                 <p>Address</p>
                 <h6>{specifiedCso?.address} </h6>
+              </div>
+              <div className="detail-in-sub">
+                <p>Password</p>
+                <h6>{specifiedCso?.password} </h6>
               </div>
               <div className="detail-in-sub">
                 <p>Guarantor Name</p>
@@ -2295,6 +2317,13 @@ const CsoLoanCollection = () => {
                   value={form.address}
                   onChange={handleChange}
                   placeholder="Address"
+                />
+                <label>Change Password</label>
+                <input
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="Password"
                 />
                 <h6>Cso Guarantor Information</h6>
                 <input

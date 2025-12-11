@@ -1,12 +1,12 @@
 // src/components/ExpenseForm.js
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
 import {
   clearCashMessage,
   clearExpenseMessage,
   deleteCash,
   deleteExpense,
+  updateExpenseDate,
   fetchReport,
   goToNextMonth,
   goToPreviousMonth,
@@ -286,6 +286,7 @@ const Operations = () => {
     expenses,
     month,
     year,
+    updateExpenseLoading,
   } = useSelector((state) => state.report);
 
   console.log(expenses)
@@ -322,6 +323,7 @@ const handleSelectSpenderManage = (id) => {
 };
 
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [dateEditModal, setDateEditModal] = useState({ open: false, oldDate: "", newDate: "" });
   const { holidays, successHolidayMessage, holidayloading } = useSelector(
     (state) => state.holiday
   );
@@ -539,6 +541,26 @@ const handleSelectSpenderManage = (id) => {
     setExpenseShow(false);
   };
 
+  const openDateEditModal = (date) => {
+    setDateEditModal({ open: true, oldDate: date, newDate: date });
+  };
+
+  const closeDateEditModal = () => {
+    setDateEditModal({ open: false, oldDate: "", newDate: "" });
+  };
+
+  const handleDateUpdate = (e) => {
+    e.preventDefault();
+    if (!dateEditModal.oldDate || !dateEditModal.newDate) return;
+    dispatch(updateExpenseDate({ oldDate: dateEditModal.oldDate, newDate: dateEditModal.newDate }))
+      .unwrap()
+      .then(() => {
+        closeDateEditModal();
+        dispatch(fetchReport({ month, year }));
+      })
+      .catch(() => {});
+  };
+
   useEffect(() => {
     dispatch(fetchReport({ month, year }));
   }, [dispatch, month, year]);
@@ -644,6 +666,45 @@ console.log(totalAmount.toLocaleString());
             </div>
           </div>
         )}
+
+      {dateEditModal.open && (
+        <div className="dropdown-container">
+          <div className="all-dropdown-div">
+            <form onSubmit={handleDateUpdate}>
+              <div className="dropdown-header">
+                <h3>Edit Expense Date</h3>
+                <Icon
+                  onClick={closeDateEditModal}
+                  icon="stash:times-circle"
+                  width="24"
+                  height="24"
+                  style={{ color: "#005e78", cursor: "pointer" }}
+                />
+              </div>
+              <div className="dropdown-content">
+                <label>Current Date</label>
+                <input value={dateEditModal.oldDate} disabled />
+                <label>New Date</label>
+                <input
+                  type="date"
+                  value={dateEditModal.newDate}
+                  onChange={(e) =>
+                    setDateEditModal((prev) => ({ ...prev, newDate: e.target.value }))
+                  }
+                  required
+                />
+                <button className="submit-btn" type="submit" disabled={updateExpenseLoading}>
+                  {updateExpenseLoading ? (
+                    <PulseLoader color="white" size={10} />
+                  ) : (
+                    "Update Date"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
         {activeLink === "expenses" && (
           <>
             <div>
@@ -683,6 +744,12 @@ console.log(totalAmount.toLocaleString());
                                   </li>
                                 ))}
                               </ul>
+                              <button
+                                style={{ marginTop: "10px" }}
+                                onClick={() => openDateEditModal(e.date)}
+                              >
+                                Edit Date
+                              </button>
                             </td>
                             <td
                               style={{
@@ -1037,7 +1104,7 @@ console.log(totalAmount.toLocaleString());
         ""
       )}
 
-          {expenseUploded ? (
+      {expenseUploded ? (
         <div className="dropdown-container">
           <div className="all-dropdown-div">
             <div className="dropdown-content">

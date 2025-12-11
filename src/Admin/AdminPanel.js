@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addAdmin, fetchAdmins } from "../redux/slices/adminSlice";
+import { addAdmin, fetchAdmins, suspendAdmin, activateAdmin } from "../redux/slices/adminSlice";
 import styled from "styled-components";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { Link } from "react-router-dom";
@@ -194,7 +194,7 @@ const AdminForm = () => {
   const dispatch = useDispatch();
   const [activeLink, setActiveLink] = useState("cso");
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const { admins, loading } = useSelector((state) => state.admin);
+  const { admins, loading, actionLoading } = useSelector((state) => state.admin);
   const [adminId, setAdminId] = useState(null);
   console.log(adminId);
 
@@ -254,6 +254,15 @@ const AdminForm = () => {
 
   const handleView = (id) => {
     setAdminId(id);
+  };
+
+  const handleToggleSuspend = () => {
+    if (!userAdmin) return;
+    if (userAdmin.isSuspended) {
+      dispatch(activateAdmin(userAdmin._id));
+    } else {
+      dispatch(suspendAdmin(userAdmin._id));
+    }
   };
 
   return (
@@ -492,6 +501,29 @@ const AdminForm = () => {
                  <p>
                   <span>Role:</span> {userAdmin.assignedRole}
                 </p>
+                <p>
+                  <span>Status:</span> {userAdmin.isSuspended ? "Suspended" : "Active"}
+                </p>
+                <button
+                  className="submit-btn"
+                  onClick={handleToggleSuspend}
+                  disabled={actionLoading}
+                  style={{
+                    border: "1px solid #112240",
+                    background: userAdmin.isSuspended ? "#12d27d" : "#f97066",
+                    color: "white",
+                    borderRadius: "8px",
+                    height: "40px",
+                  }}
+                >
+                  {actionLoading ? (
+                    <PulseLoader color="white" size={8} />
+                  ) : userAdmin.isSuspended ? (
+                    "Activate"
+                  ) : (
+                    "Suspend"
+                  )}
+                </button>
               </div>
             ) : (
               "No Details Available"
