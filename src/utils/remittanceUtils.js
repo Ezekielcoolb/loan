@@ -32,29 +32,49 @@ export const getPendingRemittanceForPreviousWorkday = (remittances = []) => {
     return toDateString(item.date) === targetDateString;
   });
 
-  // Pick the first entry as requested by the user
-  const entry = entries.length > 0 ? entries[0] : null;
-
-  if (!entry) {
+  if (entries.length === 0) {
     return null;
   }
 
-  const expected = Number(entry.amount || 0);
-  const paid = Number(entry.amountPaid || 0);
-  console.log(entry.amountPaid, expected, paid);
+  // Check the first entry
+  const firstEntry = entries[0];
+  const firstExpected = Number(firstEntry.amount || 0);
+  const firstPaid = Number(firstEntry.amountPaid || 0);
+  const firstRemaining = Math.max(firstExpected - firstPaid, 0);
+  const firstIsFullyPaid = firstRemaining <= 0;
 
-  const remaining = Math.max(expected - paid, 0);
+  // Check the last entry
+  const lastEntry = entries[entries.length - 1];
+  const lastExpected = Number(lastEntry.amount || 0);
+  const lastPaid = Number(lastEntry.amountPaid || 0);
+  const lastRemaining = Math.max(lastExpected - lastPaid, 0);
+  const lastIsFullyPaid = lastRemaining <= 0;
 
-  if (remaining <= 0) {
+  console.log("First entry:", {
+    amount: firstExpected,
+    paid: firstPaid,
+    remaining: firstRemaining,
+    fullyPaid: firstIsFullyPaid,
+  });
+  console.log("Last entry:", {
+    amount: lastExpected,
+    paid: lastPaid,
+    remaining: lastRemaining,
+    fullyPaid: lastIsFullyPaid,
+  });
+
+  // If either first or last is fully paid, don't show popup
+  if (firstIsFullyPaid || lastIsFullyPaid) {
     return null;
   }
 
+  // Both have remaining balance - use the first entry (or you could choose last)
   return {
-    entry,
-    expected,
-    paid,
-    remaining,
+    entry: firstEntry,
+    expected: firstExpected,
+    paid: firstPaid,
+    remaining: firstRemaining,
     dateString: targetDateString,
-    displayDate: new Date(entry.date).toDateString(),
+    displayDate: new Date(firstEntry.date).toDateString(),
   };
 };

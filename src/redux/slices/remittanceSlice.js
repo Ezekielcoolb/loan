@@ -2,9 +2,9 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 
-const API_URL = 'https://api.jksolutn.com/api/cso';
+// const API_URL = 'https://api.jksolutn.com/api/cso';
 
-// const API_URL = "http://localhost:5000/api/cso"
+const API_URL = "http://localhost:5000/api/cso"
 
 // Async thunk for fetching remittance progress
 export const fetchRemittanceNewProgress = createAsyncThunk(

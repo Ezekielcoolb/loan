@@ -146,6 +146,152 @@ useEffect(() => {
     setMonth((prev) => (prev === 12 ? 1 : prev + 1));
     if (month === 12) setYear((prev) => prev + 1);
   };
+
+  const formatAmount = (value) => {
+    if (value === null || value === undefined || value === "") return "--";
+    const numericValue = Number(value);
+    if (Number.isNaN(numericValue)) return value;
+    return `₦${numericValue.toLocaleString()}`;
+  };
+
+  const formatDate = (value) => {
+    if (!value) return "--";
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return "--";
+    return date.toLocaleDateString();
+  };
+
+  const formatTime = (value) => {
+    if (!value) return "--";
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return "--";
+    return date.toLocaleTimeString();
+  };
+
+  const sortedRemittances = remittances
+    ?.slice()
+    .sort((a, b) => new Date(b.date) - new Date(a.date)) || [];
+
+  const tableRows = sortedRemittances.flatMap((remit, index) => {
+    const partials = Array.isArray(remit.partialSubmissions)
+      ? remit.partialSubmissions
+      : [];
+    const hasPartials = partials.length > 0;
+    const baseKey = remit.remittanceId || remit._id || `${index}`;
+
+    if (hasPartials) {
+      const rowSpan = partials.length;
+
+      return partials.map((partial, partialIndex) => {
+        const partialDate = partial.submittedAt ? new Date(partial.submittedAt) : null;
+        const partialKey = partial._id || `${baseKey}-partial-${partialIndex}`;
+        const isFirstPartial = partialIndex === 0;
+
+        return (
+          <tr key={partialKey}>
+            {isFirstPartial && <td rowSpan={rowSpan}>{remit.csoName || "--"}</td>}
+            <td>{`Partial Remittance ${partialIndex + 1}`}</td>
+            <td>{formatDate(partialDate)}</td>
+            <td>{formatTime(partialDate)}</td>
+            <td>{formatAmount(remit.amount)}</td>
+            <td>{formatAmount(partial.amount)}</td>
+            {/* {isFirstPartial && (
+              <>
+                <td rowSpan={rowSpan}>{formatAmount(remit.amountRemitted)}</td>
+                <td rowSpan={rowSpan}>{formatAmount(remit.amountOnTeller)}</td>
+              </>
+            )} */}
+            <td>
+              {partial.image ? (
+                <button onClick={() => setImageModal(partial.image)}>View</button>
+              ) : (
+                "--"
+              )}
+            </td>
+            {isFirstPartial && (
+              <>
+                <td
+                  rowSpan={rowSpan}
+                  style={{ color: remit.remark === "Auto Clear" ? "blue" : "red" }}
+                >
+                  {remit.remark || "--"}
+                </td>
+                <td rowSpan={rowSpan}>
+                  {!remit.manuallyCleared && remit.remark !== "Auto Clear" ? (
+                    <button onClick={() => setModalData(remit)}>Resolve</button>
+                  ) : (
+                    "--"
+                  )}
+                </td>
+                <td rowSpan={rowSpan}>
+                  {remit.remark === "Auto Clear"
+                    ? "Auto Clear"
+                    : remit.issueResolution || "--"}
+                </td>
+                <td rowSpan={rowSpan}>
+                  {remit.manuallyCleared
+                    ? "Manually Cleared"
+                    : remit.remark === "Auto Clear"
+                    ? "Auto Clear"
+                    : ""}
+                </td>
+                <td rowSpan={rowSpan}>
+                  <button onClick={() => handleUpdateAmounts(remit)}>Review</button>
+                </td>
+              </>
+            )}
+          </tr>
+        );
+      });
+    }
+
+    const baseDate = remit.date ? new Date(remit.date) : null;
+
+    return (
+      <tr key={`${baseKey}-main`}>
+        <td>{remit.csoName || "--"}</td>
+        <td>Main Submission</td>
+        <td>{formatDate(baseDate)}</td>
+        <td>{formatTime(baseDate)}</td>
+        <td>{formatAmount(remit.amount)}</td>
+        <td>{formatAmount(remit.amountRemitted)}</td>
+        <td>{formatAmount(remit.amountOnTeller)}</td>
+        <td>
+          {remit.image ? (
+            <button onClick={() => setImageModal(remit.image)}>View</button>
+          ) : (
+            "--"
+          )}
+        </td>
+        <td style={{ color: remit.remark === "Auto Clear" ? "blue" : "red" }}>
+          {remit.remark || "--"}
+        </td>
+        <td>
+          {!remit.manuallyCleared && remit.remark !== "Auto Clear" ? (
+            <button onClick={() => setModalData(remit)}>Resolve</button>
+          ) : (
+            "--"
+          )}
+        </td>
+        <td>
+          {remit.remark === "Auto Clear"
+            ? "Auto Clear"
+            : remit.issueResolution || "--"}
+        </td>
+        <td>
+          {remit.manuallyCleared
+            ? "Manually Cleared"
+            : remit.remark === "Auto Clear"
+            ? "Auto Clear"
+            : ""}
+        </td>
+        <td>
+          <button onClick={() => handleUpdateAmounts(remit)}>Review</button>
+        </td>
+      </tr>
+    );
+  });
+
   if (status === "loading") return <p>Loading...</p>;
   if (status === "failed") return <p>Error loading data</p>;
 
@@ -166,9 +312,10 @@ useEffect(() => {
       <thead>
   <tr>
     <th>CSO Name</th>
+    <th>Entry Type</th>
     <th>Date</th>
     <th>Time</th>
-    <th>Amount</th>
+    <th>Amount To Be Remitted</th>
     <th>Amount Remitted</th>
     <th>Amount on Teller</th>
     <th>Image</th>
@@ -180,48 +327,15 @@ useEffect(() => {
   </tr>
 </thead>
 <tbody>
-  {remittances
-  ?.slice()
-  .sort((a, b) => new Date(b.date) - new Date(a.date)) // sort by date+time descending
-  .map((remit, index) => {
-    const dateObj = new Date(remit.date);
-    return (
-      <tr key={index}>
-        <td>{remit.csoName}</td>
-        <td>{dateObj.toLocaleDateString()}</td>
-        <td>{dateObj.toLocaleTimeString()}</td>
-        <td>{remit.amount}</td>
-        <td>{remit.amountRemitted}</td>
-        <td>{remit.amountOnTeller}</td>
-        <td>
-          <button onClick={() => setImageModal(remit.image)}>View</button>
-        </td>
-        <td style={{ color: remit.remark === "Auto Clear" ? "blue" : "red" }}>
-          {remit.remark}
-        </td>
-        <td>
-          {!remit.manuallyCleared && remit.remark !== "Auto Clear" && (
-            <button onClick={() => setModalData(remit)}>Resolve</button>
-          )}
-        </td>
-        <td>
-          {remit.remark === "Auto Clear"
-            ? "Auto Clear"
-            : remit.issueResolution}
-        </td>
-        <td>
-          {remit.manuallyCleared
-            ? "Manually Cleared"
-            : remit.remark === "Auto Clear"
-            ? "Auto Clear"
-            : ""}
-        </td>
-        <td>
-          <button onClick={() => handleUpdateAmounts(remit)}>Review</button>
-        </td>
-      </tr>
-    );
-  })}
+  {tableRows.length > 0 ? (
+    tableRows
+  ) : (
+    <tr>
+      <td colSpan={13} style={{ textAlign: "center", padding: "16px" }}>
+        No remittances found for this month.
+      </td>
+    </tr>
+  )}
 
 </tbody>
 

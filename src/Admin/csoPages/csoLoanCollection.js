@@ -15,7 +15,9 @@ import {
   LinearScale,
   BarElement,
   LineElement,
+  PointElement,
   Title,
+  LineController,
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import {
@@ -58,7 +60,9 @@ ChartJS.register(
   LinearScale,
   BarElement,
   LineElement,
+  PointElement,
   Title,
+  LineController,
   Tooltip,
   Legend,
   ChartDataLabels
@@ -180,7 +184,7 @@ const CollectRap = styled.div`
     object-fit: cover;
     height: 400px;
   }
-  .all-dropdown-div  {
+  .all-dropdown-div {
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -375,12 +379,11 @@ const CollectRap = styled.div`
   }
 
   form input {
-     border: 1px solid #d0d5dd;
+    border: 1px solid #d0d5dd;
     height: 40px;
     width: 400px;
-     border-radius: 100px;
+    border-radius: 100px;
     padding: 0px 15px;
-
   }
 
   form {
@@ -541,8 +544,8 @@ const CsoLoanCollection = () => {
   const [updatecsoShow, setUpdateCsoShow] = useState(false);
   const [selectedGroupLeaderId, setSelectedGroupLeaderId] = useState("");
   // const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedImage, setSelectedImage] = useState(null)
-  const [issueDropdown, setIssueDropdown] = useState(false)
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [issueDropdown, setIssueDropdown] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedLoanId, setSelectedLoanId] = useState(null);
   const [selectedLoanDetails, setSelectedLoanDetails] = useState(null);
@@ -555,14 +558,14 @@ const CsoLoanCollection = () => {
   });
 
   const handleIssueDrop = () => {
-    setIssueDropdown(!issueDropdown)
-  }
+    setIssueDropdown(!issueDropdown);
+  };
 
   const handleIssueDropTwo = () => {
-    setIssueDropdown(!issueDropdown)
-    dispatch(setRemittanceIssueResolve())
-  }
-  
+    setIssueDropdown(!issueDropdown);
+    dispatch(setRemittanceIssueResolve());
+  };
+
   const handleUpdateCsoShow = () => {
     setUpdateCsoShow(!updatecsoShow);
   };
@@ -570,12 +573,9 @@ const CsoLoanCollection = () => {
     useSelector((state) => state.otherLoan);
   const [dayPicker, setDayPicker] = useState("today");
 
-
-  const [date, setDate] = useState('');
-  const [issueMessage, setIssueMessage] = useState('');
-  const isValid =
-    date !== "" &&
-    issueMessage !== ""
+  const [date, setDate] = useState("");
+  const [issueMessage, setIssueMessage] = useState("");
+  const isValid = date !== "" && issueMessage !== "";
 
   const csoId = id;
   const {
@@ -605,9 +605,9 @@ const CsoLoanCollection = () => {
     monthCount,
     weekCount,
     status,
-    csoHomepage, 
+    csoHomepage,
     csoHometotalPages,
-     csoHomeloans,
+    csoHomeloans,
     error,
   } = useSelector((state) => state.loan);
 
@@ -654,7 +654,8 @@ const CsoLoanCollection = () => {
     setSelectedLoanId(loan?._id);
     setSelectedLoanDetails(loan);
 
-    const defaultGroupId = loan?.groupDetails?.groupId || loan?.groupDetails?._id || "";
+    const defaultGroupId =
+      loan?.groupDetails?.groupId || loan?.groupDetails?._id || "";
     setSelectedTransferGroupId(defaultGroupId || "");
     setInitialTransferGroupId(defaultGroupId || "");
 
@@ -672,25 +673,34 @@ const CsoLoanCollection = () => {
 
   const selectedGroupLeaderDetails = useMemo(
     () =>
-      groupLeaderOptions.find((leader) => leader?._id === selectedTransferGroupId) || null,
+      groupLeaderOptions.find(
+        (leader) => leader?._id === selectedTransferGroupId
+      ) || null,
     [groupLeaderOptions, selectedTransferGroupId]
   );
 
   const selectedCustomerName = useMemo(() => {
     if (!selectedLoanDetails?.customerDetails) return "";
-    const { firstName = "", lastName = "" } = selectedLoanDetails.customerDetails;
+    const { firstName = "", lastName = "" } =
+      selectedLoanDetails.customerDetails;
     return `${firstName} ${lastName}`.trim();
   }, [selectedLoanDetails]);
 
   const hasGroupChange = useMemo(
-    () => Boolean(selectedTransferGroupId && selectedTransferGroupId !== initialTransferGroupId),
+    () =>
+      Boolean(
+        selectedTransferGroupId &&
+          selectedTransferGroupId !== initialTransferGroupId
+      ),
     [selectedTransferGroupId, initialTransferGroupId]
   );
 
   const handleConfirmCsoUpdate = () => {
     if (!selectedLoanId) return;
 
-    if (!(selectedTransferGroupId && selectedGroupLeaderDetails && hasGroupChange)) {
+    if (
+      !(selectedTransferGroupId && selectedGroupLeaderDetails && hasGroupChange)
+    ) {
       toast.error("Select a new group to transfer.");
       return;
     }
@@ -703,11 +713,14 @@ const CsoLoanCollection = () => {
           groupId: selectedGroupLeaderDetails?._id,
           groupName:
             selectedGroupLeaderDetails?.groupName ||
-            `${selectedGroupLeaderDetails?.firstName || ""} ${selectedGroupLeaderDetails?.lastName || ""}`.trim() ||
+            `${selectedGroupLeaderDetails?.firstName || ""} ${
+              selectedGroupLeaderDetails?.lastName || ""
+            }`.trim() ||
             undefined,
           leaderName:
-            `${selectedGroupLeaderDetails?.firstName || ""} ${selectedGroupLeaderDetails?.lastName || ""}`.trim() ||
-            undefined,
+            `${selectedGroupLeaderDetails?.firstName || ""} ${
+              selectedGroupLeaderDetails?.lastName || ""
+            }`.trim() || undefined,
           address: selectedGroupLeaderDetails?.address || undefined,
           mobileNo: selectedGroupLeaderDetails?.phone || undefined,
         },
@@ -769,8 +782,6 @@ const CsoLoanCollection = () => {
   }, [specifiedCso]);
 
   console.log(csoHomeloans);
- 
-  
 
   useEffect(() => {
     if (csoId) {
@@ -816,11 +827,13 @@ const CsoLoanCollection = () => {
   }, [dispatch]);
 
   const loadData = () => {
-    dispatch(fetchCsoRemittanceRemttanceIssue({
-      workId,
-      month: currentMonth.getUTCMonth() + 1,
-      year: currentMonth.getUTCFullYear()
-    }));
+    dispatch(
+      fetchCsoRemittanceRemttanceIssue({
+        workId,
+        month: currentMonth.getUTCMonth() + 1,
+        year: currentMonth.getUTCFullYear(),
+      })
+    );
   };
 
   useEffect(() => {
@@ -846,27 +859,42 @@ const CsoLoanCollection = () => {
   }, [dispatch]);
 
   useEffect(() => {
-     // Dispatch the action to fetch loans when the component mounts or date changes
-     dispatch(fetchCsoActiveLoans({ csoId, date: selectedDate.getFullYear() +
-   "-" + String(selectedDate.getMonth() + 1).padStart(2, "0") +
-   "-" + String(selectedDate.getDate()).padStart(2, "0") }));
-   }, [dispatch, csoId, selectedDate]);
+    // Dispatch the action to fetch loans when the component mounts or date changes
+    dispatch(
+      fetchCsoActiveLoans({
+        csoId,
+        date:
+          selectedDate.getFullYear() +
+          "-" +
+          String(selectedDate.getMonth() + 1).padStart(2, "0") +
+          "-" +
+          String(selectedDate.getDate()).padStart(2, "0"),
+      })
+    );
+  }, [dispatch, csoId, selectedDate]);
 
+  useEffect(() => {
+    dispatch(
+      fetchLoanAppForms({
+        csoId,
+        date:
+          selectedDate.getFullYear() +
+          "-" +
+          String(selectedDate.getMonth() + 1).padStart(2, "0") +
+          "-" +
+          String(selectedDate.getDate()).padStart(2, "0"),
+      })
+    );
+  }, [dispatch, csoId, selectedDate]);
 
-    useEffect(() => {
-       dispatch(fetchLoanAppForms({ csoId, date: selectedDate.getFullYear() +
-     "-" + String(selectedDate.getMonth() + 1).padStart(2, "0") +
-     "-" + String(selectedDate.getDate()).padStart(2, "0") }));
-     }, [dispatch, csoId, selectedDate]);
-
-       useEffect(() => {
-         if (loanAppForm) {
-           const totalPaid = loanAppForm.reduce((sum, customer) => {
-             return sum + customer.amount;
-           }, 0);
-           setAdminFee(totalPaid); // Update total amount paid
-         }
-       }, [loanAppForm, selectedDate]);
+  useEffect(() => {
+    if (loanAppForm) {
+      const totalPaid = loanAppForm.reduce((sum, customer) => {
+        return sum + customer.amount;
+      }, 0);
+      setAdminFee(totalPaid); // Update total amount paid
+    }
+  }, [loanAppForm, selectedDate]);
 
   // Calculate total amount paid for the selected date
   useEffect(() => {
@@ -894,8 +922,6 @@ const CsoLoanCollection = () => {
   useEffect(() => {
     dispatch(fetchLoanAllTimeCounts({ csoId }));
   }, [dispatch]);
-
-  
 
   useEffect(() => {
     dispatch(fetchRemittanceNewProgress(workId)); // Fetch remittance progress for this CSO
@@ -1132,75 +1158,85 @@ const CsoLoanCollection = () => {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {normalizedError}</p>;
-  if (!progressData)
-    return (
-      <p
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          height: "90vh",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        {" "}
-        <MoonLoader />
-      </p>
+  // if (!progressData)
+  //   return (
+  //     <p
+  //       style={{
+  //         display: "flex",
+  //         flexDirection: "column",
+  //         height: "90vh",
+  //         justifyContent: "center",
+  //         alignItems: "center",
+  //       }}
+  //     >
+  //       {" "}
+  //       <MoonLoader />
+  //     </p>
+  //   );
+
+  const handlePrev = () => {
+    const prev = new Date(
+      Date.UTC(currentMonth.getUTCFullYear(), currentMonth.getUTCMonth() - 1, 1)
     );
-
-
- const handlePrev = () => {
-    const prev = new Date(Date.UTC(currentMonth.getUTCFullYear(), currentMonth.getUTCMonth() - 1, 1));
     setCurrentMonth(prev);
   };
 
   const handleNext = () => {
-    const next = new Date(Date.UTC(currentMonth.getUTCFullYear(), currentMonth.getUTCMonth() + 1, 1));
+    const next = new Date(
+      Date.UTC(currentMonth.getUTCFullYear(), currentMonth.getUTCMonth() + 1, 1)
+    );
     setCurrentMonth(next);
   };
 
-  const monthLabel = currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
+  const monthLabel = currentMonth.toLocaleString("default", {
+    month: "long",
+    year: "numeric",
+  });
 
   const mergedData = {};
 
-  dailyCsoCollections?.forEach(item => {
-    mergedData[item.date] = { amount: item.amount, image: '', issue: '' };
+  dailyCsoCollections?.forEach((item) => {
+    mergedData[item.date] = { amount: item.amount, image: "", issue: "" };
   });
 
-  remittanceCso?.forEach(item => {
-    const dateKey = new Date(item.date).toISOString().split('T')[0];
-    if (!mergedData[dateKey]) mergedData[dateKey] = { amount: 0, image: '', issue: '' };
-    mergedData[dateKey].image = item.image || '';
+  remittanceCso?.forEach((item) => {
+    const dateKey = new Date(item.date).toISOString().split("T")[0];
+    if (!mergedData[dateKey])
+      mergedData[dateKey] = { amount: 0, image: "", issue: "" };
+    mergedData[dateKey].image = item.image || "";
   });
 
-  remitanceCsoIssues?.forEach(item => {
-    const dateKey = new Date(item.date).toISOString().split('T')[0];
-    if (!mergedData[dateKey]) mergedData[dateKey] = { amount: 0, image: '', issue: '' };
-    mergedData[dateKey].issue = item.issueMessage || '';
+  remitanceCsoIssues?.forEach((item) => {
+    const dateKey = new Date(item.date).toISOString().split("T")[0];
+    if (!mergedData[dateKey])
+      mergedData[dateKey] = { amount: 0, image: "", issue: "" };
+    mergedData[dateKey].issue = item.issueMessage || "";
   });
 
-  const sortedDates = Object.keys(mergedData).sort((a, b) => new Date(b) - new Date(a));
+  const sortedDates = Object.keys(mergedData).sort(
+    (a, b) => new Date(b) - new Date(a)
+  );
 
   const handleSubmitIssue = (e) => {
     e.preventDefault();
-    if (!date || !issueMessage) return alert('Both fields are required.');
+    if (!date || !issueMessage) return alert("Both fields are required.");
 
-    dispatch(addRemitanceIssueCsoResolved({ workId, issue: { date, issueMessage } }));
+    dispatch(
+      addRemitanceIssueCsoResolved({ workId, issue: { date, issueMessage } })
+    );
   };
 
+  const handleNextCustomer = () => {
+    if (csoHomepage < csoHometotalPages) {
+      dispatch(setCsoHomePage(csoHomepage + 1));
+    }
+  };
 
-    const handleNextCustomer = () => {
-      if (csoHomepage < csoHometotalPages) {
-        dispatch(setCsoHomePage(csoHomepage + 1));
-      }
-    };
-  
-    const handlePrevCustomer = () => {
-      if (csoHomepage > 1) {
-        dispatch(setCsoHomePage(csoHomepage - 1));
-      }
-    };
-  
+  const handlePrevCustomer = () => {
+    if (csoHomepage > 1) {
+      dispatch(setCsoHomePage(csoHomepage - 1));
+    }
+  };
 
   return (
     <CollectRap>
@@ -1215,46 +1251,46 @@ const CsoLoanCollection = () => {
               style={{ color: "black", cursor: "pointer" }}
             />
           </Link>
-          <Link
+          <div
             className={`cso-link ${activeLink === "loans" ? "active" : ""}`}
             onClick={() => handleLinkClick("loans")}
           >
             Loans
-          </Link>
-          <Link
+          </div>
+          <div
             className={`cso-link ${
               activeLink === "collections" ? "active" : ""
             }`}
             onClick={() => handleLinkClick("collections")}
           >
             Collections
-          </Link>
-          <Link
+          </div>
+          <div
             className={`cso-link ${activeLink === "custom" ? "active" : ""}`}
             onClick={() => handleLinkClick("custom")}
           >
             Customers
-          </Link>
-          <Link
+          </div>
+          <div
             className={`cso-link ${activeLink === "dashboard" ? "active" : ""}`}
             onClick={() => handleLinkClick("dashboard")}
           >
             Dashboard
-          </Link>
-          <Link
+          </div>
+          <div
             className={`cso-link ${
               activeLink === "remmitance" ? "active" : ""
             }`}
             onClick={() => handleLinkClick("remmitance")}
           >
             Remmitance
-          </Link>
-          <Link
+          </div>
+          <div
             className={`cso-link ${activeLink === "details" ? "active" : ""}`}
             onClick={() => handleLinkClick("details")}
           >
             Details
-          </Link>
+          </div>
         </div>
       </div>
 
@@ -1401,54 +1437,56 @@ const CsoLoanCollection = () => {
                 </div>
               </div>
 
-               <h2 style={{ textAlign: "center", marginTop: "20px" }}>
-          Admin and Application Fees
-        </h2>
-        <div className="">
-         <div className="table-container">
+              <h2 style={{ textAlign: "center", marginTop: "20px" }}>
+                Admin and Application Fees
+              </h2>
+              <div className="">
+                <div className="table-container">
                   <div className="new-table-scroll">
                     <div className="table-div-con">
                       <table className="custom-table">
-              <thead>
-                <tr>
-                  <th>S/N</th> {/* Serial number column header */}
-                  <th>Customer Name</th>
-                  <th>Admin fee</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loanAppForm
-                  ?.slice()
-                  .reverse()
-                  .map((customer, index) => (
-                    <tr key={index}>
-                      <td>{index + 1}</td>{" "}
-                      {/* Serial number, starting from 1 */}
-                      <td>{customer.customerName}</td>
-                      <td>{customer.amount}</td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-            </div>
-            </div>
-          </div>
-        </div>
+                        <thead>
+                          <tr>
+                            <th>S/N</th> {/* Serial number column header */}
+                            <th>Customer Name</th>
+                            <th>Admin fee</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {loanAppForm
+                            ?.slice()
+                            .reverse()
+                            .map((customer, index) => (
+                              <tr key={index}>
+                                <td>{index + 1}</td>{" "}
+                                {/* Serial number, starting from 1 */}
+                                <td>{customer.customerName}</td>
+                                <td>{customer.amount}</td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className="all-summary">
                 <h4>Daily Summary</h4>
                 <div className="summary-div">
                   <h6>Total Amount Collected:</h6>
                   <span> {formatNumberWithCommas(totalAmountPaid)}</span>
                 </div>
-                 <div className="summary-div">
-            <h6>Total Admin and Application Fee</h6>
-            <span> {formatNumberWithCommas(totalAdminFee)}</span>
-          </div>
+                <div className="summary-div">
+                  <h6>Total Admin and Application Fee</h6>
+                  <span> {formatNumberWithCommas(totalAdminFee)}</span>
+                </div>
 
-           <div className="summary-div">
-            <h2>Overall Total =</h2>
-            <h2>{formatNumberWithCommas(totalAdminFee + totalAmountPaid)}</h2>
-          </div>
+                <div className="summary-div">
+                  <h2>Overall Total =</h2>
+                  <h2>
+                    {formatNumberWithCommas(totalAdminFee + totalAmountPaid)}
+                  </h2>
+                </div>
               </div>
             </div>
           </>
@@ -1461,38 +1499,43 @@ const CsoLoanCollection = () => {
                 <span>{selectedDate?.toDateString()}</span>{" "}
               </div>
               <div className="link-container">
-                <Link
+                <div
                   className={`link ${dayPicker === "today" ? "active" : ""}`}
                   onClick={() => handleDayPicker("today")}
+                  style={{ cursor: "pointer" }}
                 >
                   Today
-                </Link>
-                <Link
+                </div>
+                <div
                   className={`link ${
                     dayPicker === "yesterday" ? "active" : ""
                   }`}
                   onClick={() => handleDayPicker("yesterday")}
+                  style={{ cursor: "pointer" }}
                 >
                   Yesterday
-                </Link>
-                <Link
+                </div>
+                <div
                   className={`link ${dayPicker === "weekly" ? "active" : ""}`}
                   onClick={() => handleDayPicker("weekly")}
+                  style={{ cursor: "pointer" }}
                 >
                   Weekly
-                </Link>
-                <Link
+                </div>
+                <div
                   className={`link ${dayPicker === "monthly" ? "active" : ""}`}
                   onClick={() => handleDayPicker("monthly")}
+                  style={{ cursor: "pointer" }}
                 >
                   Monthly
-                </Link>
-                <Link
+                </div>
+                <div
                   className={`link ${dayPicker === "yearly" ? "active" : ""}`}
                   onClick={() => handleDayPicker("yearly")}
+                  style={{ cursor: "pointer" }}
                 >
                   Yearly
-                </Link>
+                </div>
               </div>
               <div style={{ marginTop: "15px" }} className="overrall-perform">
                 <div
@@ -1939,7 +1982,7 @@ const CsoLoanCollection = () => {
             </div>
           </>
         )}
-        {activeLink==="custom" && (
+        {activeLink === "custom" && (
           <>
             <div
               className="input-div"
@@ -1967,7 +2010,10 @@ const CsoLoanCollection = () => {
                 <option value="">All Groups</option>
                 {groupLeaderOptions.map((leader) => (
                   <option key={leader?._id} value={leader?._id}>
-                    {leader?.groupName || `${leader?.firstName || ""} ${leader?.lastName || ""}`.trim()}
+                    {leader?.groupName ||
+                      `${leader?.firstName || ""} ${
+                        leader?.lastName || ""
+                      }`.trim()}
                   </option>
                 ))}
               </select>
@@ -1978,64 +2024,68 @@ const CsoLoanCollection = () => {
               )}
             </div>
             <div className="table-container">
-                  <div className="new-table-scroll">
-                    <div className="table-div-con">
-                      <table className="custom-table">
-                        <thead>
-                          <tr>
-                            <th>Customer Name</th>
-                            <th>Princiapl + Interest</th>
-                            
-                            <th>Group Name</th>
-                            <th>Group leader</th>
-                            <th>CSO in Charged</th>
-                            <th>Branch </th>
-                            <th>Action</th>
+              <div className="new-table-scroll">
+                <div className="table-div-con">
+                  <table className="custom-table">
+                    <thead>
+                      <tr>
+                        <th>Customer Name</th>
+                        <th>Princiapl + Interest</th>
+
+                        <th>Group Name</th>
+                        <th>Group leader</th>
+                        <th>CSO in Charged</th>
+                        <th>Branch </th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {csoHomeloans
+                        ?.slice()
+                        .reverse()
+                        .map((loan) => (
+                          <tr key={loan?._id}>
+                            <td>{`${loan?.customerDetails?.firstName} ${loan?.customerDetails?.lastName}`}</td>
+                            <td>{loan?.loanDetails?.amountApproved}</td>
+                            <td>{loan?.groupDetails?.groupName}</td>
+                            <td>{loan?.groupDetails?.leaderName}</td>
+                            <td>{loan?.csoName}</td>
+                            <td>{loan?.branch}</td>
+                            <td>
+                              <Link onClick={() => handleOpenAssignModal(loan)}>
+                                Transfer
+                              </Link>
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {csoHomeloans?.slice().reverse().map((loan) => (
-                            <tr key={loan?._id}>
-                              <td>{`${loan?.customerDetails?.firstName} ${loan?.customerDetails?.lastName}`}</td>
-                              <td>{loan?.loanDetails?.amountApproved}</td>
-                              <td>{loan?.groupDetails?.groupName}</td>
-                              <td>{loan?.groupDetails?.leaderName}</td>
-                              <td>{loan?.csoName}</td>
-                              <td>{loan?.branch}</td>
-                              <td>
-                                <Link onClick={() => handleOpenAssignModal(loan)}>Transfer</Link>
-                              </td>
-                             
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-            
-                  {/* Pagination Controls */}
-                  <div className="pagination">
-                    <button
-                    className="page-btn"
-                    onClick={handlePrevCustomer}
-                    disabled={csoHomepage === 1}
-                  >
-                    Prev
-                  </button>
-            
-                   <span>
-                    Page {csoHomepage} of {csoHometotalPages}
-                  </span>
-            
-                       <button
-                                       className="page-btn"
-                                       onClick={handleNextCustomer}
-                                       disabled={csoHomepage === csoHometotalPages}
-                                     >
-                                       Next
-                                     </button>
-                  </div>
+                        ))}
+                    </tbody>
+                  </table>
                 </div>
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="pagination">
+                <button
+                  className="page-btn"
+                  onClick={handlePrevCustomer}
+                  disabled={csoHomepage === 1}
+                >
+                  Prev
+                </button>
+
+                <span>
+                  Page {csoHomepage} of {csoHometotalPages}
+                </span>
+
+                <button
+                  className="page-btn"
+                  onClick={handleNextCustomer}
+                  disabled={csoHomepage === csoHometotalPages}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </>
         )}
         {activeLink === "remmitance" && (
@@ -2097,68 +2147,91 @@ const CsoLoanCollection = () => {
               </div>
             </div> */}
 
-       <div>
-       <div style={{
-       display: "flex",
-       alignItems: "center",
-       justifyContent: "space-between"
-       }}>
-        <h3>Remittance</h3>
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <h3>Remittance</h3>
 
-        <button style={{
-          width: "fit-content",
-          padding: "10px",
-          color: "white",
-          background: "green",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "30px",
-          borderRadius: "8px",
-          border: "none"
-        }} onClick={handleIssueDrop}>Resolve Issue</button>
-       </div>
-     
+                <button
+                  style={{
+                    width: "fit-content",
+                    padding: "10px",
+                    color: "white",
+                    background: "green",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "30px",
+                    borderRadius: "8px",
+                    border: "none",
+                  }}
+                  onClick={handleIssueDrop}
+                >
+                  Resolve Issue
+                </button>
+              </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-        <button onClick={handlePrev}>&laquo; Prev</button>
-        <h4 style={{ margin: '0 15px' }}>{monthLabel}</h4>
-        <button onClick={handleNext}>Next &raquo;</button>
-      </div>
-     
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: 10,
+                }}
+              >
+                <button onClick={handlePrev}>&laquo; Prev</button>
+                <h4 style={{ margin: "0 15px" }}>{monthLabel}</h4>
+                <button onClick={handleNext}>Next &raquo;</button>
+              </div>
 
-
-       <div className="table-container">
-                  <div className="new-table-scroll">
-                    <div className="table-div-con">
-      <table className="custom-table">
-        <thead>
-          <tr>
-            <th>Date (UTC)</th>
-            <th>Amount (₦)</th>
-            <th>Image</th>
-            <th>Issue</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedDates.map(date => (
-            <tr key={date}>
-              <td>{date}</td>
-              <td>₦{Number(mergedData[date].amount || 0).toLocaleString()}</td>
-              <td>
-  {mergedData[date].image ? (
-    <button onClick={() => setSelectedImage(mergedData[date].image)}>View</button>
-  ) : '-'}
-</td>
-              <td>{mergedData[date].issue || '-'}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      </div>
-      </div>
-      </div>
-    </div>
+              <div className="table-container">
+                <div className="new-table-scroll">
+                  <div className="table-div-con">
+                    <table className="custom-table">
+                      <thead>
+                        <tr>
+                          <th>Date (UTC)</th>
+                          <th>Amount (₦)</th>
+                          <th>Image</th>
+                          <th>Issue</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sortedDates.map((date) => (
+                          <tr key={date}>
+                            <td>{date}</td>
+                            <td>
+                              ₦
+                              {Number(
+                                mergedData[date].amount || 0
+                              ).toLocaleString()}
+                            </td>
+                            <td>
+                              {mergedData[date].image ? (
+                                <button
+                                  onClick={() =>
+                                    setSelectedImage(mergedData[date].image)
+                                  }
+                                >
+                                  View
+                                </button>
+                              ) : (
+                                "-"
+                              )}
+                            </td>
+                            <td>{mergedData[date].issue || "-"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
           </>
         )}
 
@@ -2211,8 +2284,6 @@ const CsoLoanCollection = () => {
             </div>
           </>
         )}
-
-
       </div>
 
       {showAssignModal && (
@@ -2220,9 +2291,17 @@ const CsoLoanCollection = () => {
           <div className="modal-card">
             <h3>Transfer Customer</h3>
             {selectedCustomerName && (
-              <p style={{ fontWeight: 600, color: "#030b26" }}>{selectedCustomerName}</p>
+              <p style={{ fontWeight: 600, color: "#030b26" }}>
+                {selectedCustomerName}
+              </p>
             )}
-            <label style={{ alignSelf: "flex-start", fontSize: "14px", color: "#727789" }}>
+            <label
+              style={{
+                alignSelf: "flex-start",
+                fontSize: "14px",
+                color: "#727789",
+              }}
+            >
               Move to Group
             </label>
             <select
@@ -2232,17 +2311,21 @@ const CsoLoanCollection = () => {
             >
               <option value="">-- Keep current group --</option>
               {groupLeaderOptions.map((leader) => {
-                const leaderName = `${leader?.groupName || ""}`.trim() ||
+                const leaderName =
+                  `${leader?.groupName || ""}`.trim() ||
                   `${leader?.firstName || ""} ${leader?.lastName || ""}`.trim();
                 return (
                   <option key={leader?._id} value={leader?._id}>
-                    {leaderName || 'Unnamed Group'}
+                    {leaderName || "Unnamed Group"}
                   </option>
                 );
               })}
             </select>
             <div className="modal-actions">
-              <button className="btn-secondary" onClick={handleCloseAssignModal}>
+              <button
+                className="btn-secondary"
+                onClick={handleCloseAssignModal}
+              >
                 Cancel
               </button>
               <button
@@ -2388,75 +2471,106 @@ const CsoLoanCollection = () => {
       )}
 
       {selectedImage ? (
-      <div className="dropdown-container">
-      <div className="all-dropdown-div">
-        <img
-                        src={
-                          selectedImage?.startsWith("http")
-                            ? selectedImage // Cloudinary URL
-                            : selectedImage
-                            ? `https://api.jksolutn.com${selectedImage}` // Local image
-                            : "fallback.jpg" // Optional fallback image
-                        }
-                        alt="Remitance"
-                       
-                      />
+        <div className="dropdown-container">
+          <div className="all-dropdown-div">
+            <img
+              src={
+                selectedImage?.startsWith("http")
+                  ? selectedImage // Cloudinary URL
+                  : selectedImage
+                  ? `https://api.jksolutn.com${selectedImage}` // Local image
+                  : "fallback.jpg" // Optional fallback image
+              }
+              alt="Remitance"
+            />
 
-                      <button style={{
-                      background: "red",
-                      color: "white",
-                      width: "150px",
-                      height: "50px",
-                      borderRadius: "8px",
-                      border: "none"
-                      
-                      }} onClick={() => setSelectedImage(null)}>Cancel</button>
-      </div>
-      
-      </div>
-      ):""}
+            <button
+              style={{
+                background: "red",
+                color: "white",
+                width: "150px",
+                height: "50px",
+                borderRadius: "8px",
+                border: "none",
+              }}
+              onClick={() => setSelectedImage(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
 
       {issueDropdown ? (
-      <div className="dropdown-container">
-        <div className="all-dropdown-div">
-         <h3>Add Remittance Issue</h3>
-      <form onSubmit={handleSubmitIssue}>
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-        <input type="text" value={issueMessage} onChange={(e) => setIssueMessage(e.target.value)} placeholder="Issue Message" required />
-       <button
-  style={{
-    background: isValid ? "blue" : "",
-     color: isValid ? "white" : ""
-  }}
-  type="submit"
-  disabled={issueResolveloading || !isValid}  // 🔑 Disable if loading or invalid
->
-  {issueResolveloading ? <PulseLoader color="white" size={10} /> : "Submit"}
-</button>
-<button style={{
-  background: "red",
-  color: "white"
-}} onClick={handleIssueDrop}>
-                  Exit
-                </button>
-      </form>
+        <div className="dropdown-container">
+          <div className="all-dropdown-div">
+            <h3>Add Remittance Issue</h3>
+            <form onSubmit={handleSubmitIssue}>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
+              />
+              <input
+                type="text"
+                value={issueMessage}
+                onChange={(e) => setIssueMessage(e.target.value)}
+                placeholder="Issue Message"
+                required
+              />
+              <button
+                style={{
+                  background: isValid ? "blue" : "",
+                  color: isValid ? "white" : "",
+                }}
+                type="submit"
+                disabled={issueResolveloading || !isValid} // 🔑 Disable if loading or invalid
+              >
+                {issueResolveloading ? (
+                  <PulseLoader color="white" size={10} />
+                ) : (
+                  "Submit"
+                )}
+              </button>
+              <button
+                style={{
+                  background: "red",
+                  color: "white",
+                }}
+                onClick={handleIssueDrop}
+              >
+                Exit
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
-      ): ""}
+      ) : (
+        ""
+      )}
 
       {addRemittanceIssue ? (
         <div className="dropdown-container">
           <div className="all-dropdown-div">
             <p>Issue Ressolved Successfully</p>
-            <button style={{
-              background: "red",
-              color: "white",
-              width: "200px",
-              height: "30px"
-            }} onClick={handleIssueDropTwo}>Exit</button>
+            <button
+              style={{
+                background: "red",
+                color: "white",
+                width: "200px",
+                height: "30px",
+              }}
+              onClick={handleIssueDropTwo}
+            >
+              Exit
+            </button>
           </div>
         </div>
-      ): ""}
+      ) : (
+        ""
+      )}
     </CollectRap>
   );
 };

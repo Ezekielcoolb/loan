@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = "https://api.jksolutn.com/api/loan";
-// const API_URL = "http://localhost:5000/api/loan";
+// const API_URL = "https://api.jksolutn.com/api/loan";
+const API_URL = "http://localhost:5000/api/loan";
 
 // Helper to calculate the first Monday of a month
 const getFirstMonday = (year, monthIndex) => {

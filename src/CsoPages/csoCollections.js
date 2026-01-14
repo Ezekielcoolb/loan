@@ -344,6 +344,15 @@ const ActiveLoansTable = () => {
     [effectiveDateObj]
   );
 
+  // Get today's date string for checking today's partial remittance
+  const todayDateString = useMemo(() => {
+    const now = new Date();
+    const todayUTC = new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+    );
+    return toDateString(todayUTC);
+  }, []);
+
   const filteredRemittance = useMemo(() => {
     if (!specificCso?.remittance) return [];
     return specificCso.remittance.filter((item) => {
@@ -351,6 +360,15 @@ const ActiveLoansTable = () => {
       return itemDateString === effectiveDateString;
     });
   }, [specificCso, effectiveDateString]);
+
+  // Filter today's remittance entries separately
+  const todayRemittance = useMemo(() => {
+    if (!specificCso?.remittance) return [];
+    return specificCso.remittance.filter((item) => {
+      const itemDateString = toDateString(item.date);
+      return itemDateString === todayDateString;
+    });
+  }, [specificCso, todayDateString]);
 
   const filteredRemittanceIssue = useMemo(() => {
     if (!specificCso?.remitanceIssues) return [];
@@ -360,8 +378,62 @@ const ActiveLoansTable = () => {
     });
   }, [specificCso, effectiveDateString]);
 
-  const yesterdayRemittanceEntry =
-    filteredRemittance?.length > 0 ? filteredRemittance[0] : null;
+  // Helper function to find pending entry from remittance array
+  const findPendingEntry = (remittanceArray) => {
+    if (!remittanceArray || remittanceArray.length === 0) return null;
+
+    const firstEntry = remittanceArray[0];
+    const firstExpected = Number(firstEntry.amount || 0);
+    const firstPaid = Number(firstEntry.amountPaid || 0);
+    const firstRemaining = Math.max(firstExpected - firstPaid, 0);
+    const firstIsFullyPaid = firstRemaining <= 0;
+
+    const lastEntry = remittanceArray[remittanceArray.length - 1];
+    const lastExpected = Number(lastEntry.amount || 0);
+    const lastPaid = Number(lastEntry.amountPaid || 0);
+    const lastRemaining = Math.max(lastExpected - lastPaid, 0);
+    const lastIsFullyPaid = lastRemaining <= 0;
+
+    // If either first or last is fully paid, no pending entry
+    if (firstIsFullyPaid || lastIsFullyPaid) {
+      return null;
+    }
+
+    // Both have remaining balance - return the first entry
+    return firstEntry;
+  };
+
+  // Check both yesterday AND today for pending remittance
+  // Priority: yesterday first, then today (so CSO clears older pending first)
+  const computedPendingEntry = useMemo(() => {
+    // First check yesterday (previous work date)
+    const yesterdayEntry = findPendingEntry(filteredRemittance);
+    if (yesterdayEntry) {
+      console.log("Pending entry from yesterday:", {
+        date: yesterdayEntry.date,
+        amount: yesterdayEntry.amount,
+        paid: yesterdayEntry.amountPaid,
+      });
+      return yesterdayEntry;
+    }
+
+    // Then check today for partial remittance
+    const todayEntry = findPendingEntry(todayRemittance);
+    if (todayEntry) {
+      console.log("Pending entry from today:", {
+        date: todayEntry.date,
+        amount: todayEntry.amount,
+        paid: todayEntry.amountPaid,
+      });
+      return todayEntry;
+    }
+
+    return null;
+  }, [filteredRemittance, todayRemittance]);
+
+  // Keep yesterdayRemittanceEntry as alias for backward compatibility
+  const yesterdayRemittanceEntry = computedPendingEntry;
+
   const yesterdayRemainingInfo = useMemo(() => {
     if (!yesterdayRemittanceEntry) return null;
     const expected = Number(yesterdayRemittanceEntry.amount || 0);
